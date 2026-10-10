@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { UniqueConstraintError } from 'sequelize';
 import { AppConfigService } from '@server_1/core';
@@ -40,6 +40,13 @@ export interface ICreateCheckoutGatewayOrderInput {
 }
 
 export interface ICheckoutGatewayOrder extends IPublicCheckoutGatewayPayload {
+  franchisePaymentGatewayId: number;
+}
+
+export interface ICheckoutPaymentLink {
+  gatewayCode: PaymentGatewayEnum;
+  paymentLinkId: string;
+  shortUrl: string;
   franchisePaymentGatewayId: number;
 }
 
@@ -116,26 +123,7 @@ export class CheckoutGatewayService {
 
   /** Creates the gateway order for exactly `amount` and returns the checkout payload. */
   public async createGatewayOrder(input: ICreateCheckoutGatewayOrderInput): Promise<ICheckoutGatewayOrder> {
-    if (!(input.amount > 0)) {
-      throw new BadRequestException('Order total must be greater than zero');
-    }
-    let resolved;
-    try {
-      resolved = await this.paymentGatewayResolverService.resolve({
-        franchiseId: input.franchiseId,
-        currency: input.currency,
-        isInternational: false,
-        amount: input.amount,
-      });
-    } catch (error) {
-      throw new BadRequestException(error instanceof Error ? error.message : 'Failed to resolve payment gateway');
-    }
-    if (input.requestedGatewayId && resolved.franchisePaymentGatewayId !== input.requestedGatewayId) {
-      throw new BadRequestException('Selected payment gateway is not available for the given criteria');
-    }
-    if (!CHECKOUT_GATEWAYS.has(resolved.gatewayCode)) {
-      throw new BadRequestException(`Online checkout is not available for ${resolved.gatewayCode} yet`);
-    }
+    const resolved = await this.resolveGateway(input.franchiseId, input.currency, input.amount, input.requestedGatewayId);
     const { keyId, keySecret } = await this.getCredentials(resolved.franchisePaymentGatewayId);
     const notes = {
       ...input.notes,
@@ -255,6 +243,121 @@ export class CheckoutGatewayService {
         });
       }
     }
+  }
+
+  /**
+   * Admin gateway payments (decision 13): a payment link for exactly the record's stored total,
+   * created only after the record is saved.
+   */
+  public async createGatewayPaymentLink(input: ICreateCheckoutGatewayOrderInput): Promise<ICheckoutPaymentLink> {
+    const resolved = await this.resolveGateway(input.franchiseId, input.currency, input.amount, input.requestedGatewayId);
+    const credentials = await this.getCredentials(resolved.franchisePaymentGatewayId);
+    const notes = {
+      ...input.notes,
+      franchisePaymentGatewayId: resolved.franchisePaymentGatewayId.toString(),
+    };
+    const adaptor = this.paymentGatewayFactory.getAdapter(resolved.gatewayCode);
+    const link = await adaptor.createPaymentLink(
+      input.amount,
+      input.currency,
+      input.description,
+      input.customer,
+      notes,
+      credentials,
+    );
+    return {
+      gatewayCode: resolved.gatewayCode as PaymentGatewayEnum,
+      paymentLinkId: link.id,
+      shortUrl: link.short_url,
+      franchisePaymentGatewayId: resolved.franchisePaymentGatewayId,
+    };
+  }
+
+  /**
+   * Cancel a record's open payment link at the gateway (decision 14). Returns false when the
+   * link had already been paid, so the caller must not treat the record as abandoned.
+   */
+  public async cancelGatewayPaymentLink(input: {
+    paymentLinkId: string;
+    gatewayProvider: string | null;
+    franchisePaymentGatewayId: number | null;
+  }): Promise<{ cancelled: boolean; status: string }> {
+    if (!input.franchisePaymentGatewayId) {
+      throw new BadRequestException('This payment has no gateway to cancel the link with');
+    }
+    const adaptor = this.paymentGatewayFactory.getAdapter(input.gatewayProvider || PaymentGatewayEnum.RAZORPAY);
+    if (!adaptor.cancelPaymentLink) {
+      throw new BadRequestException(`Cancelling payment links is not supported for ${input.gatewayProvider}`);
+    }
+    const credentials = await this.getCredentials(input.franchisePaymentGatewayId);
+    const { status } = await adaptor.cancelPaymentLink(input.paymentLinkId, credentials);
+    return { cancelled: status !== 'paid', status };
+  }
+
+  /**
+   * Decision 14 "Cancel payment link": cancel the record's link at the gateway, then move the
+   * record PENDING → FAILED through the confirmation service (row lock, state matrix).
+   * A link that was already paid is left for the webhook to confirm (409).
+   */
+  public async cancelRecordPaymentLink(record: {
+    gatewayOrderId: string | null;
+    gatewayProvider: string | null;
+    franchisePaymentGatewayId: number | null;
+    requestedIp: string;
+    adminId: number;
+  }): Promise<IGatewayConfirmationResult> {
+    const paymentLinkId = this.requirePaymentLinkId(record.gatewayOrderId);
+    const { cancelled, status } = await this.cancelGatewayPaymentLink({
+      paymentLinkId,
+      gatewayProvider: record.gatewayProvider,
+      franchisePaymentGatewayId: record.franchisePaymentGatewayId,
+    });
+    if (!cancelled) {
+      throw new ConflictException('This payment link has already been paid; the payment will be confirmed by the gateway.');
+    }
+    return this.paymentConfirmationService.markGatewayPaymentFailed({
+      gatewayOrderId: paymentLinkId,
+      gatewayPaymentId: null,
+      gatewayResponse: { paymentLinkStatus: status, cancelledByAdminId: record.adminId, cancelledAt: new Date().toISOString() },
+      requestedIp: record.requestedIp,
+    });
+  }
+
+  /** Admin links are Razorpay payment links (`plink_…`); website orders (`order_…`) have none. */
+  public requirePaymentLinkId(gatewayOrderId: string | null): string {
+    if (!gatewayOrderId || !gatewayOrderId.startsWith('plink_')) {
+      throw new BadRequestException('This payment has no payment link');
+    }
+    return gatewayOrderId;
+  }
+
+  private async resolveGateway(
+    franchiseId: number,
+    currency: string,
+    amount: number,
+    requestedGatewayId?: number,
+  ): Promise<{ franchisePaymentGatewayId: number; gatewayCode: string }> {
+    if (!(amount > 0)) {
+      throw new BadRequestException('Order total must be greater than zero');
+    }
+    let resolved;
+    try {
+      resolved = await this.paymentGatewayResolverService.resolve({
+        franchiseId,
+        currency,
+        isInternational: false,
+        amount,
+      });
+    } catch (error) {
+      throw new BadRequestException(error instanceof Error ? error.message : 'Failed to resolve payment gateway');
+    }
+    if (requestedGatewayId && resolved.franchisePaymentGatewayId !== requestedGatewayId) {
+      throw new BadRequestException('Selected payment gateway is not available for the given criteria');
+    }
+    if (!CHECKOUT_GATEWAYS.has(resolved.gatewayCode)) {
+      throw new BadRequestException(`Online checkout is not available for ${resolved.gatewayCode} yet`);
+    }
+    return resolved;
   }
 
   private async getCredentials(franchisePaymentGatewayId: number): Promise<{ keyId: string; keySecret: string }> {

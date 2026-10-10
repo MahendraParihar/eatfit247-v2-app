@@ -1,12 +1,14 @@
 import {
   IsDateString,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   MaxLength,
   Min,
+  ValidateIf,
 } from 'class-validator';
 import {
   IManageMemberPayment,
@@ -49,9 +51,12 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_250)
   transactionId?: string;
+  // Manual payments only: a payment-gateway record's status and date are set by the gateway
+  @ValidateIf((o: { paymentSource?: PaymentSourceEnum }) => o.paymentSource === PaymentSourceEnum.MANUAL)
   @IsNotEmpty()
   @IsDateString()
   paymentDate!: Date;
+  @ValidateIf((o: { paymentSource?: PaymentSourceEnum }) => o.paymentSource === PaymentSourceEnum.MANUAL)
   @IsNotEmpty()
   @IsNumber()
   paymentStatusId!: number;
@@ -83,6 +88,11 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsOptional()
   @IsString()
   gatewayOrderId?: string;
+  /** Payment-gateway records: the admin's gateway choice; the server creates the link after saving. */
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  franchisePaymentGatewayId?: number;
 }
 
 export class PlanTaxCalculationRequestDto implements IPlanTaxCalculationRequest {

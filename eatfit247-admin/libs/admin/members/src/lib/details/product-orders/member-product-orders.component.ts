@@ -180,12 +180,25 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
             icon: 'link',
             tooltip: 'Generate Payment Link',
             onClick: (row: IMemberProduct) => this.regeneratePaymentLink(row),
-            visible: (row: IMemberProduct) => {
-              return (
-                row.paymentStatusId !== PaymentStatusEnum.PAID &&
-                row.paymentSource !== PaymentSourceEnum.MANUAL
-              );
+            visible: (row: IMemberProduct) =>
+              row.paymentStatusId === PaymentStatusEnum.PENDING &&
+              row.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY,
+          },
+          {
+            label: 'Cancel Payment Link',
+            icon: 'link_off',
+            color: 'warn',
+            tooltip: 'Cancel Payment Link',
+            visible: (row: IMemberProduct) =>
+              row.paymentStatusId === PaymentStatusEnum.PENDING &&
+              row.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY,
+            confirm: {
+              title: 'Cancel payment link',
+              message:
+                'Cancel this payment link? The member will no longer be able to pay it and the order will be marked Failed. Create a new order to collect again.',
+              confirmText: 'Cancel link',
             },
+            onClick: (row: IMemberProduct) => this.cancelPaymentLink(row),
           },
         ],
         column: {
@@ -336,6 +349,19 @@ export class MemberProductOrdersComponent implements OnInit, OnDestroy {
           duration: 5000,
         }
       );
+    }
+  }
+
+  async cancelPaymentLink(productOrder: IMemberProduct): Promise<void> {
+    if (!this.memberId) {
+      return;
+    }
+    try {
+      await this.apiService.cancelProductPaymentLink(this.memberId, productOrder.memberProductId);
+      this.snackBar.open('Payment link cancelled; the order is marked Failed', 'Close', { duration: 3000 });
+      await this.loadProductOrders();
+    } catch {
+      // Error toast is handled by HttpErrorInterceptor (e.g. the link was already paid)
     }
   }
 

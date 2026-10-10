@@ -5,7 +5,6 @@ import { PaymentGatewayCredentialService } from '@server_1/modules/payment';
 import { GatewayEventResultEnum } from '@eatfit247-shared-lib';
 import { RazorpayWebhookController } from './razorpay-webhook.controller';
 import { RazorpayWebhookService } from '../../services/razorpay-webhook.service';
-import { RazorpayWebhookDto } from '../../dto/razorpay-webhook.dto';
 
 describe('RazorpayWebhookController', () => {
   const webhookSecret = 'test_webhook_secret';
@@ -31,7 +30,6 @@ describe('RazorpayWebhookController', () => {
   };
   const rawBody = JSON.stringify(body);
   const sign = (raw: string): string => crypto.createHmac('sha256', webhookSecret).update(raw).digest('hex');
-  const dto = body as unknown as RazorpayWebhookDto;
 
   let controller: RazorpayWebhookController;
   let getActiveCredentials: jest.Mock;
@@ -50,7 +48,7 @@ describe('RazorpayWebhookController', () => {
   });
 
   it('verifies the signature and hands the raw-body payload and event id to the service', async () => {
-    const res = await controller.handleWebhook({ rawBody }, dto, sign(rawBody), '127.0.0.1', 'evt_123');
+    const res = await controller.handleWebhook({ rawBody }, sign(rawBody), '127.0.0.1', 'evt_123');
 
     expect(getActiveCredentials).toHaveBeenCalledWith(1, 'test');
     expect(handleVerifiedEvent).toHaveBeenCalledWith('evt_123', body, '127.0.0.1');
@@ -58,15 +56,48 @@ describe('RazorpayWebhookController', () => {
   });
 
   it('falls back to a hash of the raw body when the event id header is missing', async () => {
-    await controller.handleWebhook({ rawBody }, dto, sign(rawBody), '127.0.0.1');
+    await controller.handleWebhook({ rawBody }, sign(rawBody), '127.0.0.1');
 
     const expectedId = crypto.createHash('sha256').update(rawBody).digest('hex');
     expect(handleVerifiedEvent).toHaveBeenCalledWith(expectedId, body, '127.0.0.1');
   });
 
+  it('accepts a real payment_link.paid body with fields no DTO listed (no whitelist on gateway payloads)', async () => {
+    const realBody = JSON.stringify({
+      entity: 'event',
+      account_id: 'acc_test',
+      event: 'payment_link.paid',
+      contains: ['payment_link', 'payment'],
+      payload: {
+        payment_link: {
+          entity: {
+            id: 'plink_1', amount: 118000, amount_paid: 118000, currency: 'INR', status: 'paid',
+            allow_full_payment: true, payment_plan: null, payments: [{ payment_id: 'pay_1' }],
+            customer: { name: '', email: '', contact: '' },
+            notes: { franchisePaymentGatewayId: '1' },
+          },
+        },
+      },
+    });
+
+    await controller.handleWebhook({ rawBody: realBody }, sign(realBody), '127.0.0.1', 'evt_link');
+
+    expect(handleVerifiedEvent).toHaveBeenCalledWith('evt_link', JSON.parse(realBody), '127.0.0.1');
+  });
+
+  it('rejects a body that is not JSON or not an event', async () => {
+    await expect(controller.handleWebhook({ rawBody: 'not json' }, sign('not json'), '127.0.0.1')).rejects.toThrow(
+      'not valid JSON',
+    );
+    const noEvent = JSON.stringify({ hello: 'world' });
+    await expect(controller.handleWebhook({ rawBody: noEvent }, sign(noEvent), '127.0.0.1')).rejects.toThrow(
+      'not a Razorpay event',
+    );
+  });
+
   it('rejects an invalid signature without processing or logging the event', async () => {
     await expect(
-      controller.handleWebhook({ rawBody }, dto, sign('tampered'), '127.0.0.1', 'evt_123'),
+      controller.handleWebhook({ rawBody }, sign('tampered'), '127.0.0.1', 'evt_123'),
     ).rejects.toThrow(UnauthorizedException);
     expect(handleVerifiedEvent).not.toHaveBeenCalled();
   });
@@ -74,26 +105,26 @@ describe('RazorpayWebhookController', () => {
   it('rejects a body changed after signing', async () => {
     const tampered = rawBody.replace('10000', '1');
     await expect(
-      controller.handleWebhook({ rawBody: tampered }, dto, sign(rawBody), '127.0.0.1', 'evt_123'),
+      controller.handleWebhook({ rawBody: tampered }, sign(rawBody), '127.0.0.1', 'evt_123'),
     ).rejects.toThrow(UnauthorizedException);
   });
 
   it('rejects a missing signature header', async () => {
-    await expect(controller.handleWebhook({ rawBody }, dto, '', '127.0.0.1')).rejects.toThrow(
+    await expect(controller.handleWebhook({ rawBody }, '', '127.0.0.1')).rejects.toThrow(
       UnauthorizedException,
     );
   });
 
   it('rejects a missing raw body', async () => {
     await expect(
-      controller.handleWebhook({ rawBody: null }, dto, sign(rawBody), '127.0.0.1'),
+      controller.handleWebhook({ rawBody: null }, sign(rawBody), '127.0.0.1'),
     ).rejects.toThrow(UnauthorizedException);
   });
 
   it('rejects when no gateway credentials exist', async () => {
     getActiveCredentials.mockResolvedValue(null);
     await expect(
-      controller.handleWebhook({ rawBody }, dto, sign(rawBody), '127.0.0.1'),
+      controller.handleWebhook({ rawBody }, sign(rawBody), '127.0.0.1'),
     ).rejects.toThrow(UnauthorizedException);
   });
 });

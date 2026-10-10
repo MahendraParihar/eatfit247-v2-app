@@ -101,7 +101,6 @@ export class PlaceProductOrderComponent implements OnInit {
   loading = signal(false);
   submitting = signal(false);
   calculatingTax = signal(false);
-  creatingPaymentLink = signal(false);
   isEditMode = false;
   selectedIndex = signal(0);
   InputLengthEnum = InputLengthEnum;
@@ -110,6 +109,8 @@ export class PlaceProductOrderComponent implements OnInit {
     null
   );
   paymentLink = signal<string | null>(null);
+  /** The gateway order was saved and its link created (shown for copying). */
+  linkCreatedOnSave = signal(false);
   paymentLinkId = signal<string | null>(null);
   supportedGateways = signal<
     Array<{
@@ -530,8 +531,9 @@ export class PlaceProductOrderComponent implements OnInit {
     const isPaymentGateway =
       paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY ||
       paymentSource === 'PAYMENT_GATEWAY';
+    // A gateway must be chosen; the link is created by the server when the order is saved
     if (isPaymentGateway) {
-      return !!this.paymentLink() && this.paymentLink()!.trim().length > 0;
+      return !!this.step4FormGroup.get('franchisePaymentGatewayId')?.value;
     }
     return true;
   }
@@ -560,61 +562,6 @@ export class PlaceProductOrderComponent implements OnInit {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loadingGateways.set(false);
-    }
-  }
-
-  async createPaymentLinkIfNeeded(): Promise<void> {
-    if (this.paymentLink()) {
-      return;
-    }
-    const totalAmount = this.totalAmount;
-    if (totalAmount <= 0) {
-      this.snackBar.open('Invalid amount for payment link', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-    const selectedGatewayId =
-      this.formGroup.get('franchisePaymentGatewayId')?.value ||
-      this.selectedGatewayId();
-    if (!selectedGatewayId) {
-      this.snackBar.open('Please select a payment gateway', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-    this.creatingPaymentLink.set(true);
-    try {
-      const currencyCode = this.formGroup.get('currencyCode')?.value || 'INR';
-      const productNames = this.cartItems().map((item) => item.productName);
-      const request = {
-        amount: totalAmount,
-        currency: currencyCode,
-        franchisePaymentGatewayId: selectedGatewayId,
-        description: `Payment for products: ${productNames.join(', ')}`,
-        notes: {
-          memberId: this.data.memberId.toString(),
-          type: 'product',
-        },
-      };
-      const result = await this.apiService.createProductPaymentLink(
-        this.data.memberId,
-        request
-      );
-      this.paymentLink.set(result.shortUrl);
-      this.paymentLinkId.set(result.id);
-      this.step4FormGroup.patchValue({
-        paymentLink: result.shortUrl,
-        gatewayProvider: result.gatewayCode,
-        gatewayOrderId: result.id,
-        paymentStatusId: PaymentStatusEnum.PENDING,
-      });
-    } catch (error) {
-      this.snackBar.open('Failed to create payment link', 'Close', {
-        duration: 3000,
-      });
-    } finally {
-      this.creatingPaymentLink.set(false);
     }
   }
 
@@ -662,23 +609,19 @@ export class PlaceProductOrderComponent implements OnInit {
     ) {
       this.submitting.set(true);
       try {
-        if (!this.isManualPaymentSource()) {
-          if (
-            !this.step4FormGroup.value.paymentLink ||
-            this.step4FormGroup.value.paymentLink.length === 0
-          ) {
-            this.snackBar.open(
-              'Payment link not generated, order can not be placed',
-              'Close',
-              {
-                duration: 3000,
-              }
-            );
-            return;
-          }
+        if (!this.isManualPaymentSource() && !this.step4FormGroup.get('franchisePaymentGatewayId')?.value) {
+          this.snackBar.open('Please select a payment gateway', 'Close', { duration: 3000 });
+          return;
         }
         const payload = this.buildPayload();
-        await this.apiService.createProductOrder(this.data.memberId, payload);
+        const created = await this.apiService.createProductOrder(this.data.memberId, payload);
+        if (!this.isManualPaymentSource() && created?.paymentLink) {
+          // Saved; show the server-created link to copy, then "Done" closes the dialog
+          this.paymentLink.set(created.paymentLink);
+          this.paymentLinkId.set(created.gatewayOrderId || null);
+          this.linkCreatedOnSave.set(true);
+          return;
+        }
         this.snackBar.open('Product order created successfully', 'Close', {
           duration: 3000,
         });
@@ -718,10 +661,10 @@ export class PlaceProductOrderComponent implements OnInit {
       promoCode: '',
       paymentDate: getValue('paymentDate') || new Date(),
       paymentSource: getValue('paymentSource'),
-      paymentLink: getValue('paymentLink'),
-      gatewayProvider: getValue('gatewayProvider'),
-      gatewayOrderId: getValue('gatewayOrderId'),
-      gatewayPaymentId: getValue('gatewayPaymentId'),
+      // Gateway orders: only the gateway choice; the server sets status, date and the link
+      franchisePaymentGatewayId: this.isManualPaymentSource()
+        ? undefined
+        : this.step4FormGroup.get('franchisePaymentGatewayId')?.value || undefined,
       orderItems: this.cartItems().map(
         (item) =>
           <IMemberProductOrderItemBasic>{

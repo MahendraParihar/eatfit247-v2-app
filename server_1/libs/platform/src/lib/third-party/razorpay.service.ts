@@ -84,6 +84,24 @@ export class RazorpayService {
   }
 
   /**
+   * Cancel a payment link so it can no longer be paid.
+   * Returns the link's resulting status; 'paid' means it was paid before it could be cancelled.
+   */
+  async cancelPaymentLink(
+    paymentLinkId: string,
+    keyId: string,
+    keySecret: string,
+  ): Promise<{ status: string }> {
+    const razorpay = this.getRazorpayInstance(keyId, keySecret);
+    const link = await razorpay.paymentLink.fetch(paymentLinkId);
+    if (['paid', 'cancelled', 'expired'].includes(String(link.status))) {
+      return { status: String(link.status) };
+    }
+    const cancelled = await razorpay.paymentLink.cancel(paymentLinkId);
+    return { status: String(cancelled.status) };
+  }
+
+  /**
    * Fetch a payment from the Razorpay API (status, amount in minor units, order id).
    * The checkout verify path trusts this, never the browser.
    */

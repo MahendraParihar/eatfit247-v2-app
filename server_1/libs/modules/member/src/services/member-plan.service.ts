@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberPayment } from '../models';
 import {
@@ -410,10 +410,16 @@ export class MemberPlanService {
       if (adminId) {
         Object.assign(paymentData, { createdBy: adminId, modifiedBy: adminId });
       }
-      if (obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
-        paymentData.paymentLink = obj.paymentLink;
-        paymentData.gatewayOrderId = obj.gatewayOrderId;
-        paymentData.gatewayProvider = obj.gatewayProvider;
+      const isGatewayPayment = obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY;
+      if (isGatewayPayment) {
+        // Decision 14: only the gateway sets status, date and ids; the link comes after the save
+        Object.assign(paymentData, {
+          paymentStatusId: PaymentStatusEnum.PENDING,
+          paymentDate: null,
+          transactionId: null,
+          paymentModeId: null,
+          paymentGatewayResponse: null,
+        });
       }
       const payment = await this.memberPaymentRepository.create(paymentData, { transaction: t });
       // Create TxnMemberDietPlan entry using service
@@ -426,8 +432,39 @@ export class MemberPlanService {
         adminId,
         t,
       );
+      if (isGatewayPayment) {
+        // Decision 13: link for exactly the stored total, after the record exists
+        await payment.reload({ transaction: t });
+        const link = await this.checkoutGatewayService.createGatewayPaymentLink({
+          franchiseId: member.franchiseId,
+          currency: payment.currency,
+          amount: Number(payment.totalAmount),
+          requestedGatewayId: obj.franchisePaymentGatewayId,
+          receipt: `plan_${payment.memberPaymentId}`,
+          description: `Payment for ${programPlan.plan}`,
+          customer: {
+            name: `${member.firstName || ''} ${member.lastName || ''}`.trim() || undefined,
+            email: member.emailId || undefined,
+            contact: member.contactNumber || undefined,
+          },
+          notes: {
+            memberId: memberId.toString(),
+            type: 'plan',
+            memberPaymentId: payment.memberPaymentId.toString(),
+          },
+        });
+        await payment.update(
+          {
+            paymentLink: link.shortUrl,
+            gatewayOrderId: link.paymentLinkId,
+            gatewayProvider: link.gatewayCode,
+            franchisePaymentGatewayId: link.franchisePaymentGatewayId,
+          },
+          { transaction: t },
+        );
+      }
       // Generate an invoice number if payment status is PAID and invoiceId is not already set
-      if (obj.paymentStatusId === PaymentStatusEnum.PAID && !payment.invoiceId) {
+      if (payment.paymentStatusId === PaymentStatusEnum.PAID && !payment.invoiceId) {
         if (member.franchiseId) {
           const franchiseDetails = await this.franchiseService.fetchById(member.franchiseId);
           const invoiceNumber = await this.invoiceSequenceService.generateInvoiceNumber(
@@ -527,56 +564,61 @@ export class MemberPlanService {
       throw new NotFoundException('Payment not found');
     }
 
-    PaymentValidationUtil.validateManualPaymentSource({
-      paymentSource: obj.paymentSource,
-      paymentModeId: obj.paymentModeId,
-      paymentDate: obj.paymentDate,
-      paymentStatusId: obj.paymentStatusId,
-      transactionId: obj.transactionId,
-    });
+    const isGatewayRecord = payment.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY;
+    // Decision 14: the source of a payment can't be switched
+    if (isGatewayRecord && obj.paymentSource !== PaymentSourceEnum.PAYMENT_GATEWAY) {
+      throw new BadRequestException(
+        'A payment-gateway payment cannot be changed to manual. Record an offline payment as a new manual payment.',
+      );
+    }
+    if (!isGatewayRecord && obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
+      throw new BadRequestException('To collect online, create a new payment with the payment gateway.');
+    }
+    // While its link is open, the amount the customer was asked to pay can't change
+    const linkOpen = isGatewayRecord && payment.paymentStatusId !== PaymentStatusEnum.PAID;
+    if (linkOpen && this.isFinancialChange(payment, obj)) {
+      throw new BadRequestException(
+        'This payment has an open payment link. Cancel the link and create a new payment to change the amount.',
+      );
+    }
+    if (!isGatewayRecord) {
+      PaymentValidationUtil.validateManualPaymentSource({
+        paymentSource: obj.paymentSource,
+        paymentModeId: obj.paymentModeId,
+        paymentDate: obj.paymentDate,
+        paymentStatusId: obj.paymentStatusId,
+        transactionId: obj.transactionId,
+      });
+    }
 
     const draft = await this.buildPaymentDraft(memberId, obj);
     const t = await this.sequelize.transaction();
     try {
-      payment.paymentModeId = obj.paymentModeId;
-      payment.programPlanId = obj.programPlanId;
       payment.programId = obj.programId;
       payment.addressId = obj.addressId || null;
-      payment.billingAddressId = obj.billingAddressId || null;
-      payment.transactionId = obj.transactionId || null;
-      payment.paymentDate = obj.paymentDate;
-      payment.paymentStatusId = obj.paymentStatusId;
-      payment.promoCode = obj.promoCode || null;
-      payment.paymentGatewayResponse = obj.paymentGatewayResponse || null;
       payment.gstNumber = obj.gstNumber || null;
+      // Billing can't change while a link is open, so the snapshot only picks up the shipping address
       payment.memberAddress = draft.memberAddressSnapshot;
-      payment.paymentSource = obj.paymentSource;
-      payment.orderAmount = draft.paymentObj.orderAmount;
-      payment.discountAmount = draft.paymentObj.discountAmount;
-      payment.taxAmount = draft.paymentObj.taxAmount;
-      payment.totalAmount = draft.paymentObj.totalAmount;
-      payment.currency = draft.paymentObj.currency;
-      payment.taxType = draft.paymentObj.taxType;
-      payment.taxMode = draft.paymentObj.taxMode;
-      payment.taxPercentage = draft.paymentObj.taxPercentage;
-      payment.isLutApplied = draft.paymentObj.isLutApplied;
-      payment.taxObj = draft.paymentObj.taxObj;
-      payment.jurisdiction = draft.paymentObj.jurisdiction;
-      // payment.invoiceNote = draft.paymentObj.invoiceNote;
-      payment.noOfCycle = draft.noOfCycle;
-      payment.daysInCycle = draft.noOfDaysInCycle;
       payment.modifiedIp = requestedIp;
       payment.modifiedBy = adminId;
-
-      if (obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
-        payment.paymentLink = obj.paymentLink || null;
-        payment.gatewayOrderId = obj.gatewayOrderId || null;
-        payment.gatewayProvider = obj.gatewayProvider || null;
+      if (isGatewayRecord) {
+        // Status, date, transaction, gateway ids and source stay as the gateway set them;
+        // while the link is open the stored amounts stay too (they are what the link charges).
+        if (!linkOpen) {
+          this.applyPaymentDraft(payment, obj, draft);
+        }
       } else {
+        payment.paymentModeId = obj.paymentModeId;
+        payment.transactionId = obj.transactionId || null;
+        payment.paymentDate = obj.paymentDate;
+        payment.paymentStatusId = obj.paymentStatusId;
+        payment.paymentGatewayResponse = obj.paymentGatewayResponse || null;
+        payment.paymentSource = obj.paymentSource;
         payment.paymentLink = null;
         payment.gatewayOrderId = null;
         payment.gatewayProvider = null;
         payment.gatewayPaymentId = null;
+        this.applyPaymentDraft(payment, obj, draft);
       }
 
       // Invoice number is never generated or changed during edit — it is issued only on
@@ -586,8 +628,8 @@ export class MemberPlanService {
       await this.memberDietPlanService.updateLimitsForPayment(
         memberId,
         paymentId,
-        draft.noOfCycle,
-        draft.noOfDaysInCycle,
+        linkOpen ? payment.noOfCycle : draft.noOfCycle,
+        linkOpen ? payment.daysInCycle : draft.noOfDaysInCycle,
         requestedIp,
         adminId,
         t,
@@ -607,6 +649,41 @@ export class MemberPlanService {
       await t.rollback();
       throw error;
     }
+  }
+
+  /** Plan, currency, discount or billing address differ from the stored payment. */
+  private isFinancialChange(payment: TxnMemberPayment, obj: IManageMemberPayment): boolean {
+    return (
+      Number(obj.programPlanId) !== Number(payment.programPlanId) ||
+      (obj.currency || '').toUpperCase() !== (payment.currency || '').toUpperCase() ||
+      Math.abs(Number(obj.discountAmount || 0) - Number(payment.discountAmount || 0)) > 0.001 ||
+      Number(obj.billingAddressId || 0) !== Number(payment.billingAddressId || 0)
+    );
+  }
+
+  /** The priced fields recomputed from the edit (plan, billing address, discount, tax). */
+  private applyPaymentDraft(
+    payment: TxnMemberPayment,
+    obj: IManageMemberPayment,
+    draft: Awaited<ReturnType<MemberPlanService['buildPaymentDraft']>>,
+  ): void {
+    payment.programPlanId = obj.programPlanId;
+    payment.billingAddressId = obj.billingAddressId || null;
+    payment.promoCode = obj.promoCode || null;
+    payment.memberAddress = draft.memberAddressSnapshot;
+    payment.orderAmount = draft.paymentObj.orderAmount;
+    payment.discountAmount = draft.paymentObj.discountAmount;
+    payment.taxAmount = draft.paymentObj.taxAmount;
+    payment.totalAmount = draft.paymentObj.totalAmount;
+    payment.currency = draft.paymentObj.currency;
+    payment.taxType = draft.paymentObj.taxType;
+    payment.taxMode = draft.paymentObj.taxMode;
+    payment.taxPercentage = draft.paymentObj.taxPercentage;
+    payment.isLutApplied = draft.paymentObj.isLutApplied;
+    payment.taxObj = draft.paymentObj.taxObj;
+    payment.jurisdiction = draft.paymentObj.jurisdiction;
+    payment.noOfCycle = draft.noOfCycle;
+    payment.daysInCycle = draft.noOfDaysInCycle;
   }
 
   private async buildPaymentDraft(memberId: number, obj: IManageMemberPayment): Promise<{
@@ -948,110 +1025,6 @@ export class MemberPlanService {
   }
 
   /**
-   * Create a payment link with gateway selection
-   * @param memberId - Number
-   * @param payload - ICreatePaymentLinkRequest
-   * @returns Payment link details
-   */
-  public async createPaymentLink(
-    memberId: number,
-    payload: ICreatePaymentLinkRequest,
-  ): Promise<IPaymentLinkResponse> {
-    // Verify a member exists and get a franchise
-    const member = await this.memberRepository.findOne({
-      where: { memberId: memberId },
-      include: [
-        {
-          model: MstFranchise,
-          as: 'franchise',
-          required: false,
-        },
-      ],
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
-    if (!member.franchiseId) {
-      throw new BadRequestException('Member does not have an associated franchise');
-    }
-    if (payload.amount <= 0) {
-      throw new BadRequestException('Invalid amount');
-    }
-    // Use PaymentGatewayResolverService to find the gateway
-    let resolvedGateway;
-    try {
-      resolvedGateway = await this.paymentGatewayResolverService.resolve({
-        franchiseId: member.franchiseId,
-        currency: payload.currency,
-        isInternational: false, // TODO
-        amount: payload.amount,
-      });
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
-      );
-    }
-    // If a specific gateway ID was provided, validate it matches the resolved gateway
-    if (
-      payload.franchisePaymentGatewayId &&
-      resolvedGateway.franchisePaymentGatewayId !== payload.franchisePaymentGatewayId
-    ) {
-      throw new BadRequestException(
-        'Selected payment gateway is not available for the given criteria',
-      );
-    }
-    const gatewayCode = resolvedGateway.gatewayCode;
-    // Get payment gateway credentials
-    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
-    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
-      resolvedGateway.franchisePaymentGatewayId,
-      credentialMode,
-    );
-    if (!credentials) {
-      throw new BadRequestException(
-        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
-      );
-    }
-    // Decrypt credentials TODO
-    // const keyId = CryptoUtil.decryptData(credentials.apiKeyEncrypted);
-    // const keySecret = CryptoUtil.decryptData(credentials.apiSecretEncrypted);
-    const keyId = credentials.apiKeyEncrypted;
-    const keySecret = credentials.apiSecretEncrypted;
-    // Prepare customer details from member if not provided
-    const customerDetails = payload.customer || {
-      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
-      email: member.emailId || undefined,
-      contact: member.contactNumber || undefined,
-    };
-    // Prepare description
-    const paymentDescription = payload.description || `Payment for Member ID: ${memberId}`;
-    // Prepare notes with member ID and order type
-    const paymentNotes = {
-      memberId: memberId.toString(),
-      franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
-      type: 'plan',
-      ...payload.notes,
-    };
-    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
-    const paymentLink = await adaptor.createPaymentLink(
-      payload.amount,
-      payload.currency,
-      paymentDescription,
-      customerDetails,
-      paymentNotes,
-      {
-        keyId,
-        keySecret,
-      },
-    );
-    return <IPaymentLinkResponse>{
-      shortUrl: paymentLink.short_url,
-      id: paymentLink.id,
-      gatewayCode: gatewayCode,
-    };
-  }
-
-  /**
    * Generate invoice PDF for a member payment using the universal invoice system
    * @param memberId - Member ID
    * @param paymentId - Payment ID
@@ -1149,128 +1122,83 @@ export class MemberPlanService {
   }
 
   /**
-   * Regenerate payment link for a payment
-   * Only allowed if payment status is PENDING and payment source is not MANUAL
-   * @param memberId - Member ID
-   * @param paymentId - Payment ID
-   * @returns Updated payment with new payment link
+   * Replace a PENDING payment's link (e.g. expired): the old link is cancelled at the gateway
+   * first so it can't be paid as well, then a new one is created for the stored total.
    */
   public async regeneratePaymentLink(memberId: number, paymentId: number): Promise<IMemberPayment> {
-    // Get payment with all details
-    const payment = await this.memberPaymentRepository.scope('details').findOne({
-      where: {
-        memberPaymentId: paymentId,
-        memberId,
-        active: true,
-      },
+    const payment = await this.memberPaymentRepository.findOne({
+      where: { memberPaymentId: paymentId, memberId, active: true },
     });
     if (!payment) {
       throw new NotFoundException('Payment not found');
     }
-    // Validate payment status is PENDING
     if (payment.paymentStatusId !== PaymentStatusEnum.PENDING) {
-      throw new BadRequestException(
-        'Payment link can only be regenerated for payments with PENDING status',
-      );
+      throw new BadRequestException('Payment link can only be regenerated for payments with PENDING status');
     }
-    // Validate payment source is not MANUAL
-    if (payment.paymentSource === PaymentSourceEnum.MANUAL) {
+    if (payment.paymentSource !== PaymentSourceEnum.PAYMENT_GATEWAY) {
       throw new BadRequestException('Payment link cannot be regenerated for manual payments');
     }
-    // Get member with franchise
-    const member = await this.memberRepository.findOne({
-      where: { memberId },
-      include: [
-        {
-          model: MstFranchise,
-          as: 'franchise',
-          required: false,
-        },
-      ],
-    });
-    if (!member) {
-      throw new NotFoundException('Member not found');
-    }
-    if (!member.franchiseId) {
+    const member = await this.memberRepository.findOne({ where: { memberId } });
+    if (!member?.franchiseId) {
       throw new BadRequestException('Member does not have an associated franchise');
     }
-    // Resolve gateway to ensure it's valid
-    const currency = payment.currency;
-    let resolvedGateway;
-    try {
-      resolvedGateway = await this.paymentGatewayResolverService.resolve({
-        franchiseId: member.franchiseId,
-        currency: currency,
-        isInternational: false,
-        amount: payment.totalAmount,
+    if (payment.gatewayOrderId) {
+      const { cancelled } = await this.checkoutGatewayService.cancelGatewayPaymentLink({
+        paymentLinkId: this.checkoutGatewayService.requirePaymentLinkId(payment.gatewayOrderId),
+        gatewayProvider: payment.gatewayProvider,
+        franchisePaymentGatewayId: payment.franchisePaymentGatewayId,
       });
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
-      );
+      if (!cancelled) {
+        throw new ConflictException('The current link has already been paid; the payment will be confirmed by the gateway.');
+      }
     }
-    const gatewayCode = resolvedGateway.gatewayCode;
-    // Get payment gateway credentials
-    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
-    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
-      resolvedGateway.franchisePaymentGatewayId,
-      credentialMode,
-    );
-    if (!credentials) {
-      throw new BadRequestException(
-        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
-      );
-    }
-    // Decrypt credentials (if needed)
-    const keyId = credentials.apiKeyEncrypted;
-    const keySecret = credentials.apiSecretEncrypted;
-    // Prepare customer details from member
-    const customerDetails = {
-      name: member.firstName ? `${member.firstName} ${member.lastName || ''}`.trim() : undefined,
-      email: member.emailId || undefined,
-      contact: member.contactNumber || undefined,
-    };
-    // Prepare description
-    const programName = payment.program || '';
-    const planName = payment.programPlan || '';
-    const paymentDescription = `Payment for ${programName} - ${planName}`;
-    // Prepare notes with member ID and order type
-    const paymentNotes = {
-      memberId: memberId.toString(),
-      franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
-      paymentId: paymentId.toString(),
-      type: 'plan',
-    };
-    // Create payment link using the adapter
-    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
-    const paymentLink = await adaptor.createPaymentLink(
-      payment.totalAmount,
-      currency,
-      paymentDescription,
-      customerDetails,
-      paymentNotes,
-      {
-        keyId,
-        keySecret,
+    const link = await this.checkoutGatewayService.createGatewayPaymentLink({
+      franchiseId: member.franchiseId,
+      currency: payment.currency,
+      amount: Number(payment.totalAmount),
+      requestedGatewayId: payment.franchisePaymentGatewayId ?? undefined,
+      receipt: `plan_${payment.memberPaymentId}`,
+      description: `Payment for member ${memberId}`,
+      customer: {
+        name: `${member.firstName || ''} ${member.lastName || ''}`.trim() || undefined,
+        email: member.emailId || undefined,
+        contact: member.contactNumber || undefined,
       },
-    );
-    // Update payment with new payment link
-    payment.paymentLink = paymentLink.short_url;
-    payment.gatewayProvider = gatewayCode;
-    payment.gatewayOrderId = paymentLink.id;
-    await payment.save();
-    // Reload payment with all relationships for conversion
-    const updatedPayment = await this.memberPaymentRepository.scope('details').findOne({
-      where: {
-        memberPaymentId: paymentId,
-        memberId,
-      },
+      notes: { memberId: memberId.toString(), type: 'plan', memberPaymentId: paymentId.toString() },
     });
-    if (!updatedPayment) {
-      throw new NotFoundException('Payment not found after update');
+    await payment.update({
+      paymentLink: link.shortUrl,
+      gatewayOrderId: link.paymentLinkId,
+      gatewayProvider: link.gatewayCode,
+      franchisePaymentGatewayId: link.franchisePaymentGatewayId,
+    });
+    return this.findById(memberId, paymentId);
+  }
+
+  /** Decision 14: cancel the open link at the gateway; the payment becomes FAILED. */
+  public async cancelPaymentLink(
+    memberId: number,
+    paymentId: number,
+    requestedIp: string,
+    adminId: number,
+  ): Promise<IMemberPayment> {
+    const payment = await this.memberPaymentRepository.findOne({
+      where: { memberPaymentId: paymentId, memberId, active: true },
+    });
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
     }
-    // Convert to IMemberPayment and return
-    return this.convertToModel(updatedPayment);
+    if (payment.paymentSource !== PaymentSourceEnum.PAYMENT_GATEWAY || payment.paymentStatusId !== PaymentStatusEnum.PENDING) {
+      throw new BadRequestException('Only a pending payment-gateway payment has a link to cancel');
+    }
+    await this.checkoutGatewayService.cancelRecordPaymentLink({
+      gatewayOrderId: payment.gatewayOrderId,
+      gatewayProvider: payment.gatewayProvider,
+      franchisePaymentGatewayId: payment.franchisePaymentGatewayId,
+      requestedIp,
+      adminId,
+    });
+    return this.findById(memberId, paymentId);
   }
 
   /**

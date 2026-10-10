@@ -7,14 +7,12 @@ import {
   IAuthUser,
   IMemberProduct,
   IMemberProductMasterData,
-  IPaymentLinkResponse,
   ITableList,
 } from '@eatfit247-shared-lib';
 import {
   CalculateProductVariantTaxDto,
   CalculateProductVariantTaxResponseDto,
   CreateMemberProductDto,
-  CreatePaymentLinkDto,
 } from '../../dto';
 import { IFileModel } from '@server_1/platform';
 
@@ -64,15 +62,6 @@ export class MemberProductController {
     return await this.memberProductService.findById(id, productId);
   }
 
-  @Post('create-payment-link')
-  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberProducts)
-  async createPaymentLink(
-    @Param('id') id: number,
-    @Body() body: CreatePaymentLinkDto,
-  ): Promise<IPaymentLinkResponse> {
-    return await this.memberProductService.createPaymentLink(id, body);
-  }
-
   @Post('calculate-tax')
   @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberProducts)
   async calculateTax(
@@ -101,6 +90,17 @@ export class MemberProductController {
     @Param('productId') productId: number,
   ): Promise<IFileModel> {
     return await this.memberProductService.generateInvoicePDF(id, productId);
+  }
+
+  @Post(':productId/cancel-payment-link')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberProducts)
+  async cancelPaymentLink(
+    @Param('id') id: number,
+    @Param('productId') productId: number,
+    @CurrentUser() currentUser: IAuthUser,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IMemberProduct> {
+    return await this.memberProductService.cancelPaymentLink(id, productId, requestedIp, currentUser.adminId);
   }
 
   @Post(':productId/regenerate-payment-link')

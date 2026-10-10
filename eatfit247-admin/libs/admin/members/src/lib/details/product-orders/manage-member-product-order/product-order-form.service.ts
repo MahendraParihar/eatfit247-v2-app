@@ -3,9 +3,7 @@ import { FormGroup } from '@angular/forms';
 import {
   ICalculateTaxRequest,
   ICalculateTaxResponse,
-  ICreatePaymentLinkRequest,
   IDropdownItem,
-  IPaymentLinkResponse
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 
@@ -64,30 +62,6 @@ export class ProductOrderFormService {
       // Error is handled by the calling component
       return null;
     }
-  }
-
-  /**
-   * Create payment link
-   */
-  async createPaymentLink(
-    memberId: number,
-    totalAmount: number,
-    currencyCode: string,
-    franchisePaymentGatewayId: number,
-    productNames: string[]
-  ): Promise<IPaymentLinkResponse> {
-    const request: ICreatePaymentLinkRequest = {
-      amount: totalAmount,
-      currency: currencyCode,
-      franchisePaymentGatewayId,
-      description: `Payment for products: ${productNames.join(', ')}`,
-      notes: {
-        memberId: memberId.toString(),
-        type: 'product'
-      }
-    };
-
-    return await this.apiService.createPaymentLink(memberId, request);
   }
 
   /**

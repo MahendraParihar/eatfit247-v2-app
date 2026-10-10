@@ -55,9 +55,11 @@ Product checkout (`checkout/member/:id/product/...`) follows the same pattern.
 - **Website checkout updated** to the new flow, including a promo-code field.
 - **Read-only report** of suspicious PAID records already created through public checkout.
 
+- **Admin gateway payments (added 2026-10-10, owner decision).** The admin plan-payment and product-order dialogs follow the same order-first rule: decisions 13 and 14.
+
 **Out of scope**
 
-- Admin manual payment entry. Admins may still record PAID offline payments; they are authorised (principle 11).
+- Admin manual payment entry. Admins may still record PAID offline payments (source MANUAL); they are authorised (principle 11).
 - Refund accounting and credit notes (4.9). Refund events are logged and the refund JSON keeps being stored, but status and tax are not changed.
 - Choosing which franchise and gateway receive the payment (4.12). Checkout keeps today's gateway resolution, but the chosen `franchisePaymentGatewayId` is stored on the PENDING record and reused for verification.
 - Tax correctness (4.6) and invoice series (4.7).
@@ -79,6 +81,8 @@ Product checkout (`checkout/member/:id/product/...`) follows the same pattern.
 | 9 | **Event log:** new table `txn_payment_gateway_events` (event id unique per provider, provider, event type, gateway order and payment ids, amount and currency, signature-valid flag, raw payload JSONB, processing result enum: APPLIED / IGNORED_DUPLICATE / IGNORED_STATE / ORDER_NOT_FOUND / ERROR, message, linked record, received_at). The event is inserted first; a duplicate event id short-circuits. | Idempotency, audit trail (principle 10), reconciliation evidence. |
 | 10 | **Abandoned PENDING records** stay PENDING (their proforma is available). No cleanup job. A payment that fails becomes FAILED. | Simple. They carry no invoice number and no tax liability. |
 | 11 | **Diet-plan container.** `createIfNotExists` keeps running at record creation, as today, but the server-side "payment before diet plan" check (principle 7) must rely on PAID status. The implementer verifies this, and fixes it if the check only looks for the row's existence. | A PENDING checkout record must not unlock diet-plan work. |
+| 13 | **Admin gateway payments: save first, then link.** In the admin dialogs (plan and product), choosing "Payment Gateway" saves the PENDING record in one server call, prices it on the server (as for manual records), then creates the Razorpay payment link for the record's stored `total_amount` and stores the link id, URL, provider and `franchise_payment_gateway_id`. The link is shown for copying only after the save. If the link can't be created, the record is rolled back. The standalone admin `create-payment-link` endpoints are removed. | A link can no longer exist without a record (money captured with no record), and its amount always equals the stored total. |
+| 14 | **The gateway decides the status of gateway records.** For a PAYMENT_GATEWAY record, admins can't set the payment status, payment date, transaction id or gateway ids (create forces PENDING; update keeps the stored values). Its source can't be switched. While it isn't PAID, the plan, currency, discount and billing address can't be edited. Instead the admin uses **Cancel payment link** (the link is cancelled at Razorpay and the record goes PENDING → FAILED) and creates a new payment. **Regenerate link** cancels the old link at Razorpay before creating a new one for the stored total. Offline payments are recorded as MANUAL payments. | Only gateway-confirmed money sets PAID on gateway records (principle 11), and no old link stays payable after it has been replaced. |
 | 12 | **Suspicious-records report:** a read-only SQL file listing public-checkout PAID rows (plans and products) with any of: no `gateway_payment_id`; `discount_amount > 0` with no valid promo; total ≠ master price + tax ± 0.01; gateway order id duplicated. Accounts reviews it, and nothing is changed automatically. | Size and investigate any past abuse without touching filed data. |
 
 ## Technical Constraints

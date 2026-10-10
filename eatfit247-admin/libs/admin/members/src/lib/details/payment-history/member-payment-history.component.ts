@@ -144,6 +144,15 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         onClick: (row) => this.regeneratePaymentLink(row)
       },
       {
+        label: 'Cancel Payment Link',
+        icon: 'link_off',
+        color: 'warn',
+        visible: (row) =>
+          row.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY &&
+          row.paymentStatusId === PaymentStatusEnum.PENDING,
+        onClick: (row) => this.cancelPaymentLink(row)
+      },
+      {
         label: 'Download Invoice',
         icon: 'download',
         color: 'accent',
@@ -254,6 +263,23 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
       link.setAttribute('download', `${fileName}`);
       link.click();
       link.remove();
+    }
+  }
+
+  async cancelPaymentLink(payment: IMemberPayment): Promise<void> {
+    // Same browser confirm the shared data table uses for its confirm actions
+    const confirmed = confirm(
+      'Cancel this payment link? The member will no longer be able to pay it and the payment will be marked Failed. Create a new payment to collect again.'
+    );
+    if (!confirmed) {
+      return;
+    }
+    try {
+      await this.apiService.cancelPaymentLink(this.memberId, payment.memberPaymentId);
+      this.snackBar.open('Payment link cancelled; the payment is marked Failed', 'Close', { duration: 3000 });
+      await this.loadPayments();
+    } catch {
+      // Error toast is handled by HttpErrorInterceptor (e.g. the link was already paid)
     }
   }
 

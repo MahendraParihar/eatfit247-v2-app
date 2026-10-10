@@ -84,6 +84,17 @@ export interface PaymentGatewayAdapter {
   ): Promise<IGatewayPaymentDetails>;
 
   /**
+   * Cancel a payment link; returns the link's resulting status ('paid' if it was already paid)
+   */
+  cancelPaymentLink?(
+    paymentLinkId: string,
+    credentials: {
+      keyId: string;
+      keySecret: string;
+    },
+  ): Promise<{ status: string }>;
+
+  /**
    * Process a refund
    * @param paymentId - Payment ID from gateway
    * @param amount - Refund amount (optional, full refund if not provided)
@@ -181,6 +192,16 @@ export class RazorpayAdapter implements PaymentGatewayAdapter {
     },
   ): Promise<IGatewayPaymentDetails> {
     return await this.razorpayService.fetchPayment(paymentId, credentials.keyId, credentials.keySecret);
+  }
+
+  async cancelPaymentLink(
+    paymentLinkId: string,
+    credentials: {
+      keyId: string;
+      keySecret: string;
+    },
+  ): Promise<{ status: string }> {
+    return await this.razorpayService.cancelPaymentLink(paymentLinkId, credentials.keyId, credentials.keySecret);
   }
 }
 

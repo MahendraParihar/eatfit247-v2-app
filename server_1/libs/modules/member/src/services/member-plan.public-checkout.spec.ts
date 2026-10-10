@@ -33,7 +33,16 @@ describe('MemberPlanService public checkout', () => {
   let paymentCreate: jest.Mock;
   let paymentFindOne: jest.Mock;
   let taxCalculate: jest.Mock;
-  let checkout: { applyPromoCode: jest.Mock; createGatewayOrder: jest.Mock; verifyAndConfirm: jest.Mock };
+  let checkout: {
+    applyPromoCode: jest.Mock;
+    createGatewayOrder: jest.Mock;
+    verifyAndConfirm: jest.Mock;
+    createGatewayPaymentLink: jest.Mock;
+    cancelGatewayPaymentLink: jest.Mock;
+    cancelRecordPaymentLink: jest.Mock;
+    requirePaymentLinkId: jest.Mock;
+  };
+  let detailsFindOne: jest.Mock;
   let createIfNotExists: jest.Mock;
   let fetchPlan: jest.Mock;
 
@@ -89,7 +98,17 @@ describe('MemberPlanService public checkout', () => {
         franchisePaymentGatewayId: 7,
       }),
       verifyAndConfirm: jest.fn(),
+      createGatewayPaymentLink: jest.fn().mockResolvedValue({
+        gatewayCode: 'RAZORPAY',
+        paymentLinkId: 'plink_new',
+        shortUrl: 'https://rzp.io/l/new',
+        franchisePaymentGatewayId: 1,
+      }),
+      cancelGatewayPaymentLink: jest.fn().mockResolvedValue({ cancelled: true, status: 'cancelled' }),
+      cancelRecordPaymentLink: jest.fn().mockResolvedValue({ result: 'APPLIED' }),
+      requirePaymentLinkId: jest.fn().mockImplementation((id: string) => id),
     };
+    detailsFindOne = jest.fn().mockResolvedValue({ memberPaymentId: 900, memberId: 4945 });
     createIfNotExists = jest.fn().mockResolvedValue(undefined);
 
     const moduleRef = await Test.createTestingModule({
@@ -97,9 +116,16 @@ describe('MemberPlanService public checkout', () => {
         MemberPlanService,
         {
           provide: getModelToken(TxnMember),
-          useValue: { findOne: jest.fn().mockResolvedValue({ memberId: 4945, franchiseId: 1, firstName: 'Test', emailId: 't@e.st' }) },
+          useValue: (() => {
+            const member = { memberId: 4945, franchiseId: 1, firstName: 'Test', emailId: 't@e.st' };
+            const findOne = jest.fn().mockResolvedValue(member);
+            return { findOne, scope: () => ({ findOne }) };
+          })(),
         },
-        { provide: getModelToken(TxnMemberPayment), useValue: { create: paymentCreate, findOne: paymentFindOne } },
+        {
+          provide: getModelToken(TxnMemberPayment),
+          useValue: { create: paymentCreate, findOne: paymentFindOne, scope: () => ({ findOne: detailsFindOne }) },
+        },
         { provide: Sequelize, useValue: { transaction: jest.fn().mockResolvedValue(transaction) } },
         {
           provide: AddressService,
@@ -132,7 +158,7 @@ describe('MemberPlanService public checkout', () => {
         { provide: CountryService, useValue: { fetchById: jest.fn().mockResolvedValue({ countryCode: 'IN' }) } },
         { provide: StateService, useValue: { fetchById: jest.fn().mockResolvedValue({ code: 'MH' }) } },
         { provide: FranchiseService, useValue: { franchiseByBusinessType: jest.fn().mockResolvedValue([{ id: 1 }]) } },
-        { provide: MemberDietPlanService, useValue: { createIfNotExists } },
+        { provide: MemberDietPlanService, useValue: { createIfNotExists, updateLimitsForPayment: jest.fn() } },
         { provide: CheckoutGatewayService, useValue: checkout },
         { provide: AppConfigService, useValue: {} },
         { provide: PaymentModeService, useValue: {} },
@@ -267,5 +293,165 @@ describe('MemberPlanService public checkout', () => {
       service.verifyPublicPayment(1, { orderId: 'order_new', paymentId: 'pay_1', signature: 's' }, '127.0.0.1'),
     ).rejects.toThrow('Order not found');
     expect(checkout.verifyAndConfirm).not.toHaveBeenCalled();
+  });
+
+  describe('admin gateway payments (decisions 13–14)', () => {
+    const adminGatewayPayment = {
+      memberId: 4945,
+      programId: 1,
+      programPlanId: 3,
+      currency: 'INR',
+      addressId: 10,
+      billingAddressId: 11,
+      discountAmount: 100,
+      paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
+      // A client trying to set money state on a gateway record
+      paymentStatusId: PaymentStatusEnum.PAID,
+      paymentDate: new Date('2026-10-10'),
+      transactionId: 'cash-123',
+      gatewayOrderId: 'plink_from_browser',
+      paymentLink: 'https://evil.example',
+      franchisePaymentGatewayId: 1,
+    } as unknown as Parameters<MemberPlanService['create']>[1];
+
+    it('create saves a PENDING record (ignoring client status, date and ids), then a link for the stored total', async () => {
+      await service.create(4945, adminGatewayPayment, '127.0.0.1', 7);
+
+      expect(paymentCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          paymentStatusId: PaymentStatusEnum.PENDING,
+          paymentDate: null,
+          transactionId: null,
+          createdBy: 7,
+        }),
+        { transaction },
+      );
+      expect(paymentCreate.mock.calls[0][0]).not.toHaveProperty('gatewayOrderId');
+      expect(checkout.createGatewayPaymentLink).toHaveBeenCalledWith(
+        expect.objectContaining({ amount: 1062, currency: 'INR', requestedGatewayId: 1, franchiseId: 1 }),
+      );
+      expect(createdPayment.update).toHaveBeenCalledWith(
+        { paymentLink: 'https://rzp.io/l/new', gatewayOrderId: 'plink_new', gatewayProvider: 'RAZORPAY', franchisePaymentGatewayId: 1 },
+        { transaction },
+      );
+      expect(transaction.commit).toHaveBeenCalled();
+    });
+
+    it('create rolls the record back when the link cannot be created', async () => {
+      checkout.createGatewayPaymentLink.mockRejectedValue(new BadRequestException('gateway down'));
+
+      await expect(service.create(4945, adminGatewayPayment, '127.0.0.1', 7)).rejects.toThrow('gateway down');
+      expect(transaction.rollback).toHaveBeenCalled();
+      expect(transaction.commit).not.toHaveBeenCalled();
+    });
+
+    describe('update of a gateway record', () => {
+      const storedGateway = () => ({
+        memberPaymentId: 900,
+        memberId: 4945,
+        paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
+        paymentStatusId: PaymentStatusEnum.PENDING,
+        programPlanId: 3,
+        currency: 'INR',
+        discountAmount: '100.00',
+        billingAddressId: 11,
+        totalAmount: '1062.00',
+        paymentDate: null,
+        transactionId: null,
+        gatewayOrderId: 'plink_1',
+        noOfCycle: 4,
+        daysInCycle: 7,
+        save: jest.fn(),
+      });
+
+      it('cannot switch a gateway payment to manual', async () => {
+        paymentFindOne.mockResolvedValue(storedGateway());
+
+        await expect(
+          service.update(4945, 900, { ...adminGatewayPayment, paymentSource: PaymentSourceEnum.MANUAL }, '127.0.0.1', 7),
+        ).rejects.toThrow('cannot be changed to manual');
+      });
+
+      it('cannot change the amount while the link is open', async () => {
+        paymentFindOne.mockResolvedValue(storedGateway());
+
+        await expect(
+          service.update(4945, 900, { ...adminGatewayPayment, discountAmount: 500 }, '127.0.0.1', 7),
+        ).rejects.toThrow('open payment link');
+      });
+
+      it('keeps status, date, transaction, gateway ids and stored amounts; only non-money fields change', async () => {
+        const record = storedGateway();
+        paymentFindOne.mockResolvedValue(record);
+        jest
+          .spyOn(service as unknown as { buildPaymentDraft: () => Promise<unknown> }, 'buildPaymentDraft')
+          .mockResolvedValue({ memberAddressSnapshot: { address: null, billingAddress: null }, paymentObj: { totalAmount: 1 }, noOfCycle: 4, noOfDaysInCycle: 7 });
+
+        await service.update(4945, 900, { ...adminGatewayPayment, gstNumber: '27AAAAA0000A1Z5' }, '127.0.0.1', 7);
+
+        expect(record).toMatchObject({
+          paymentStatusId: PaymentStatusEnum.PENDING,
+          paymentDate: null,
+          transactionId: null,
+          gatewayOrderId: 'plink_1',
+          totalAmount: '1062.00',
+          gstNumber: '27AAAAA0000A1Z5',
+        });
+        expect(record.save).toHaveBeenCalled();
+      });
+
+      it('a manual payment cannot be turned into a gateway payment by editing', async () => {
+        paymentFindOne.mockResolvedValue({ ...storedGateway(), paymentSource: PaymentSourceEnum.MANUAL });
+
+        await expect(service.update(4945, 900, adminGatewayPayment, '127.0.0.1', 7)).rejects.toThrow('create a new payment');
+      });
+    });
+
+    it('cancel payment link goes through the gateway and the confirmation service', async () => {
+      paymentFindOne.mockResolvedValue({
+        memberPaymentId: 900,
+        paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
+        paymentStatusId: PaymentStatusEnum.PENDING,
+        gatewayOrderId: 'plink_1',
+        gatewayProvider: 'RAZORPAY',
+        franchisePaymentGatewayId: 1,
+      });
+      jest.spyOn(service, 'findById').mockResolvedValue({} as Awaited<ReturnType<MemberPlanService['findById']>>);
+
+      await service.cancelPaymentLink(4945, 900, '127.0.0.1', 7);
+
+      expect(checkout.cancelRecordPaymentLink).toHaveBeenCalledWith(
+        expect.objectContaining({ gatewayOrderId: 'plink_1', franchisePaymentGatewayId: 1, adminId: 7 }),
+      );
+    });
+
+    it('regenerate cancels the old link before creating the new one, and refuses if it was already paid', async () => {
+      const record = {
+        memberPaymentId: 900,
+        paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
+        paymentStatusId: PaymentStatusEnum.PENDING,
+        gatewayOrderId: 'plink_old',
+        gatewayProvider: 'RAZORPAY',
+        franchisePaymentGatewayId: 1,
+        currency: 'INR',
+        totalAmount: '1062.00',
+        update: jest.fn(),
+      };
+      paymentFindOne.mockResolvedValue(record);
+      jest.spyOn(service, 'findById').mockResolvedValue({} as Awaited<ReturnType<MemberPlanService['findById']>>);
+
+      await service.regeneratePaymentLink(4945, 900);
+
+      expect(checkout.cancelGatewayPaymentLink.mock.invocationCallOrder[0]).toBeLessThan(
+        checkout.createGatewayPaymentLink.mock.invocationCallOrder[0],
+      );
+      expect(checkout.createGatewayPaymentLink).toHaveBeenCalledWith(expect.objectContaining({ amount: 1062 }));
+      expect(record.update).toHaveBeenCalledWith(expect.objectContaining({ gatewayOrderId: 'plink_new' }));
+
+      checkout.cancelGatewayPaymentLink.mockResolvedValue({ cancelled: false, status: 'paid' });
+      checkout.createGatewayPaymentLink.mockClear();
+      await expect(service.regeneratePaymentLink(4945, 900)).rejects.toThrow('already been paid');
+      expect(checkout.createGatewayPaymentLink).not.toHaveBeenCalled();
+    });
   });
 });

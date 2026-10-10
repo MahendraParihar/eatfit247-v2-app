@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberProduct, TxnMemberProductOrderItem } from '../models';
 import {
@@ -576,62 +576,6 @@ export class MemberProductService {
   }
 
   /**
-   * Create a payment link with gateway selection
-   * @param memberId - Member ID
-   * @param payload - ICreatePaymentLinkRequest
-   * @returns Payment link details
-   */
-  public async createPaymentLink(
-    memberId: number,
-    payload: ICreatePaymentLinkRequest,
-  ): Promise<IPaymentLinkResponse> {
-    // Verify a member exists
-    const member = await this.memberService.verifyMember(memberId);
-    // Get franchise for products
-    const franchise = await this.getProductFranchise();
-    if (payload.amount <= 0) {
-      throw new BadRequestException('Invalid amount');
-    }
-    // Resolve gateway and get credentials
-    const { resolvedGateway, keyId, keySecret, gatewayCode } =
-      await this.resolveGatewayAndCredentials(
-        franchise[0].id as number,
-        payload.currency,
-        payload.amount,
-        payload.franchisePaymentGatewayId,
-      );
-    // Prepare customer details from member if not provided
-    const customerDetails = this.prepareCustomerDetails(member, payload.customer);
-    // Prepare description
-    const paymentDescription =
-      payload.description || `Product Order Payment for Member ID: ${memberId}`;
-    // Prepare notes with member ID and order type
-    const paymentNotes = {
-      memberId: memberId.toString(),
-      franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
-      type: 'product',
-      ...payload.notes,
-    };
-    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
-    const paymentLink = await adaptor.createPaymentLink(
-      payload.amount,
-      payload.currency,
-      paymentDescription,
-      customerDetails,
-      paymentNotes,
-      {
-        keyId,
-        keySecret,
-      },
-    );
-    return <IPaymentLinkResponse>{
-      shortUrl: paymentLink.short_url,
-      id: paymentLink.id,
-      gatewayCode: gatewayCode,
-    };
-  }
-
-  /**
    * Generate invoice PDF for a member product order using the universal invoice system
    * @param memberId - Member ID
    * @param productId - Product order ID
@@ -1102,11 +1046,16 @@ export class MemberProductService {
       if (adminId) {
         Object.assign(productOrderData, { createdBy: adminId, modifiedBy: adminId });
       }
-      if (obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
-        productOrderData.paymentLink = obj.paymentLink;
-        productOrderData.gatewayOrderId = obj.gatewayOrderId;
-        productOrderData.gatewayProvider = obj.gatewayProvider;
-        productOrderData.gatewayPaymentId = obj.gatewayPaymentId;
+      const isGatewayPayment = obj.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY;
+      if (isGatewayPayment) {
+        // Decision 14: only the gateway sets status, date and ids; the link comes after the save
+        Object.assign(productOrderData, {
+          paymentStatusId: PaymentStatusEnum.PENDING,
+          paymentDate: null,
+          transactionId: null,
+          paymentModeId: null,
+          paymentGatewayResponse: null,
+        });
       }
       const productOrder = await this.memberProductRepository.create(productOrderData, {
         transaction: t,
@@ -1119,8 +1068,35 @@ export class MemberProductService {
       await this.memberProductOrderItemRepository.bulkCreate(orderItemsForCreate as any, {
         transaction: t,
       });
+      if (isGatewayPayment) {
+        // Decision 13: link for exactly the stored total, after the order exists
+        await productOrder.reload({ transaction: t });
+        const link = await this.checkoutGatewayService.createGatewayPaymentLink({
+          franchiseId: franchise[0].id as number,
+          currency: productOrder.currency,
+          amount: Number(productOrder.totalAmount),
+          requestedGatewayId: obj.franchisePaymentGatewayId,
+          receipt: `product_${productOrder.memberProductId}`,
+          description: `Payment for products: ${orderItemObjs.map((item) => item.productName).join(', ')}`,
+          customer: this.prepareCustomerDetails(member),
+          notes: {
+            memberId: memberId.toString(),
+            type: 'product',
+            memberProductId: productOrder.memberProductId.toString(),
+          },
+        });
+        await productOrder.update(
+          {
+            paymentLink: link.shortUrl,
+            gatewayOrderId: link.paymentLinkId,
+            gatewayProvider: link.gatewayCode,
+            franchisePaymentGatewayId: link.franchisePaymentGatewayId,
+          },
+          { transaction: t },
+        );
+      }
       // Generate invoice number if payment status is PAID and invoiceId is not already set
-      if (obj.paymentStatusId === PaymentStatusEnum.PAID && !productOrder.invoiceId) {
+      if (productOrder.paymentStatusId === PaymentStatusEnum.PAID && !productOrder.invoiceId) {
         const franchiseDetails = await this.franchiseService.fetchById(franchise[0].id as number);
         const invoiceNumber = await this.invoiceSequenceService.generateInvoiceNumber(
           franchise[0].id as number,
@@ -1133,7 +1109,7 @@ export class MemberProductService {
         await productOrder.save({ transaction: t });
       }
       await t.commit();
-      if (obj.paymentStatusId === PaymentStatusEnum.PAID) {
+      if (productOrder.paymentStatusId === PaymentStatusEnum.PAID) {
         this.eventEmitter.emit('order.product.paid', {
           memberProductId: productOrder.memberProductId,
           createdBy: adminId ?? null,
@@ -1152,91 +1128,79 @@ export class MemberProductService {
   }
 
   /**
-   * Regenerate payment link for a product order
-   * Only allowed if payment status is not PAID and payment source is not MANUAL
-   * @param memberId - Member ID
-   * @param productId - Product order ID
-   * @returns Updated product order with new payment link
+   * Replace a PENDING order's link (e.g. expired): the old link is cancelled at the gateway
+   * first so it can't be paid as well, then a new one is created for the stored total.
    */
   public async regeneratePaymentLink(memberId: number, productId: number): Promise<IMemberProduct> {
-    // Get product order with all details
-    const productOrder = await this.memberProductRepository.scope('details').findOne({
-      where: {
-        memberProductId: productId,
-        memberId,
-        active: true,
-      },
+    const productOrder = await this.memberProductRepository.findOne({
+      where: { memberProductId: productId, memberId, active: true },
     });
     if (!productOrder) {
       throw new NotFoundException('Product order not found');
     }
-    // Validate payment status is not PAID
-    if (productOrder.paymentStatusId === PaymentStatusEnum.PAID) {
-      throw new BadRequestException(
-        'Payment link can only be regenerated for orders with non-PAID status',
-      );
+    if (productOrder.paymentStatusId !== PaymentStatusEnum.PENDING) {
+      throw new BadRequestException('Payment link can only be regenerated for orders with PENDING status');
     }
-    // Validate payment source is not MANUAL
-    if (productOrder.paymentSource === PaymentSourceEnum.MANUAL) {
+    if (productOrder.paymentSource !== PaymentSourceEnum.PAYMENT_GATEWAY) {
       throw new BadRequestException('Payment link cannot be regenerated for manual payments');
     }
-    // Get member
     const member = await this.memberService.verifyMember(memberId);
-    // Get franchise for products
-    const franchise = await this.getProductFranchise();
-    // Resolve gateway to ensure it's valid
-    const currency = productOrder.currency;
-    const { resolvedGateway, keyId, keySecret, gatewayCode } =
-      await this.resolveGatewayAndCredentials(
-        franchise[0].id as number,
-        currency,
-        productOrder.totalAmount,
-      );
-    // Prepare customer details from member
-    const customerDetails = this.prepareCustomerDetails(member);
-    // Prepare description from order items
-    const orderItems = productOrder.orderItems || [];
-    const productNames = orderItems.map((item) => item.productName).join(', ');
-    const paymentDescription = productNames
-      ? `Payment for products: ${productNames}`
-      : `Product Order Payment for Member ID: ${memberId}`;
-    // Prepare notes with member ID and product order ID
-    const paymentNotes = {
-      memberId: memberId.toString(),
-      franchisePaymentGatewayId: resolvedGateway.franchisePaymentGatewayId.toString(),
-      productOrderId: productId.toString(),
-      type: 'product',
-    };
-    // Create payment link using the adapter
-    const adaptor = this.paymentGatewayFactory.getAdapter(gatewayCode);
-    const paymentLink = await adaptor.createPaymentLink(
-      productOrder.totalAmount,
-      currency,
-      paymentDescription,
-      customerDetails,
-      paymentNotes,
-      {
-        keyId,
-        keySecret,
-      },
-    );
-    // Update product order with new payment link
-    productOrder.paymentLink = paymentLink.short_url;
-    productOrder.gatewayProvider = gatewayCode;
-    productOrder.gatewayOrderId = paymentLink.id;
-    await productOrder.save();
-    // Reload product order with all relationships for conversion
-    const updatedProductOrder = await this.memberProductRepository.scope('details').findOne({
-      where: {
-        memberProductId: productId,
-        memberId,
-      },
-    });
-    if (!updatedProductOrder) {
-      throw new NotFoundException('Product order not found after update');
+    if (productOrder.gatewayOrderId) {
+      const { cancelled } = await this.checkoutGatewayService.cancelGatewayPaymentLink({
+        paymentLinkId: this.checkoutGatewayService.requirePaymentLinkId(productOrder.gatewayOrderId),
+        gatewayProvider: productOrder.gatewayProvider,
+        franchisePaymentGatewayId: productOrder.franchisePaymentGatewayId,
+      });
+      if (!cancelled) {
+        throw new ConflictException('The current link has already been paid; the payment will be confirmed by the gateway.');
+      }
     }
-    // Convert to IMemberProduct and return
-    return this.convertToModel(updatedProductOrder, []);
+    const link = await this.checkoutGatewayService.createGatewayPaymentLink({
+      franchiseId: productOrder.franchiseId,
+      currency: productOrder.currency,
+      amount: Number(productOrder.totalAmount),
+      requestedGatewayId: productOrder.franchisePaymentGatewayId ?? undefined,
+      receipt: `product_${productId}`,
+      description: `Product Order Payment for Member ID: ${memberId}`,
+      customer: this.prepareCustomerDetails(member),
+      notes: { memberId: memberId.toString(), type: 'product', memberProductId: productId.toString() },
+    });
+    await productOrder.update({
+      paymentLink: link.shortUrl,
+      gatewayOrderId: link.paymentLinkId,
+      gatewayProvider: link.gatewayCode,
+      franchisePaymentGatewayId: link.franchisePaymentGatewayId,
+    });
+    return this.findById(memberId, productId);
+  }
+
+  /** Decision 14: cancel the open link at the gateway; the order becomes FAILED. */
+  public async cancelPaymentLink(
+    memberId: number,
+    productId: number,
+    requestedIp: string,
+    adminId: number,
+  ): Promise<IMemberProduct> {
+    const productOrder = await this.memberProductRepository.findOne({
+      where: { memberProductId: productId, memberId, active: true },
+    });
+    if (!productOrder) {
+      throw new NotFoundException('Product order not found');
+    }
+    if (
+      productOrder.paymentSource !== PaymentSourceEnum.PAYMENT_GATEWAY ||
+      productOrder.paymentStatusId !== PaymentStatusEnum.PENDING
+    ) {
+      throw new BadRequestException('Only a pending payment-gateway order has a link to cancel');
+    }
+    await this.checkoutGatewayService.cancelRecordPaymentLink({
+      gatewayOrderId: productOrder.gatewayOrderId,
+      gatewayProvider: productOrder.gatewayProvider,
+      franchisePaymentGatewayId: productOrder.franchisePaymentGatewayId,
+      requestedIp,
+      adminId,
+    });
+    return this.findById(memberId, productId);
   }
 
   /**

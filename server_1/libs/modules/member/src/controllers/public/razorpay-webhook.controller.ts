@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   Headers,
   HttpCode,
@@ -6,14 +7,12 @@ import {
   Logger,
   Post,
   Req,
-  Body,
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Public, RequestedIp, AppConfigService } from '@server_1/core';
 import { PaymentGatewayCredentialService } from '@server_1/modules/payment';
 import { ConfigParam, RazorpayWebhookPayload } from '@eatfit247-shared-lib';
-import { RazorpayWebhookDto } from '../../dto/razorpay-webhook.dto';
 import { IRazorpayWebhookResult, RazorpayWebhookService } from '../../services/razorpay-webhook.service';
 import * as crypto from 'crypto';
 
@@ -31,8 +30,9 @@ export class RazorpayWebhookController {
   @Post()
   @HttpCode(HttpStatus.OK)
   async handleWebhook(
-    @Req() req: any,
-    @Body() payload: RazorpayWebhookDto, // DTO validation via ValidationPipe
+    // The signed raw body is the payload. It is deliberately not validated against a field
+    // whitelist: Razorpay adds fields over time, and a strict DTO turned real events into 400s.
+    @Req() req: { rawBody?: string | null },
     @Headers('x-razorpay-signature') signature: string,
     @RequestedIp() requestedIp: string,
     @Headers('x-razorpay-event-id') eventIdHeader?: string,
@@ -48,7 +48,8 @@ export class RazorpayWebhookController {
       this.logger.warn('Webhook request missing signature header');
       throw new UnauthorizedException('Razorpay signature header missing');
     }
-    // Payload is already validated by ValidationPipe via DTO
+    // Parsed before verification only to find the gateway (its secret checks the signature)
+    const payload = this.parsePayload(rawBody);
     // The franchise payment gateway id in the notes selects the webhook secret
     const notes = this.extractNotes(payload);
     const franchisePaymentGatewayId = this.extractFranchisePaymentGatewayId(notes);
@@ -87,9 +88,7 @@ export class RazorpayWebhookController {
       });
       throw new UnauthorizedException('Invalid webhook signature');
     }
-    // Signature covers the raw body, so the stored and routed payload is that body,
-    // not the DTO-transformed copy.
-    const verifiedPayload = JSON.parse(rawBody) as RazorpayWebhookPayload;
+    const verifiedPayload = payload;
     // Razorpay sends a stable id per event across retries; hash the body if it is missing.
     const eventId =
       eventIdHeader || crypto.createHash('sha256').update(rawBody).digest('hex');
@@ -113,10 +112,25 @@ export class RazorpayWebhookController {
     }
   }
 
+  /** Minimal shape check of the raw body (event name and payload object). */
+  private parsePayload(rawBody: string): RazorpayWebhookPayload {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(rawBody);
+    } catch {
+      throw new BadRequestException('Webhook body is not valid JSON');
+    }
+    const candidate = parsed as Partial<RazorpayWebhookPayload> | null;
+    if (!candidate || typeof candidate.event !== 'string' || typeof candidate.payload !== 'object' || !candidate.payload) {
+      throw new BadRequestException('Webhook body is not a Razorpay event');
+    }
+    return candidate as RazorpayWebhookPayload;
+  }
+
   /**
    * Extract notes from webhook payload
    */
-  private extractNotes(payload: RazorpayWebhookDto): Record<string, any> {
+  private extractNotes(payload: RazorpayWebhookPayload): Record<string, unknown> {
     return (
       payload.payload.payment?.entity?.notes ||
       payload.payload.payment_link?.entity?.notes ||
@@ -128,7 +142,7 @@ export class RazorpayWebhookController {
   /**
    * Extract franchise payment gateway ID from notes
    */
-  private extractFranchisePaymentGatewayId(notes: Record<string, any>): number | null {
+  private extractFranchisePaymentGatewayId(notes: Record<string, unknown>): number | null {
     const id = notes['franchisePaymentGatewayId'];
     if (!id) return null;
     const parsed = parseInt(String(id), 10);

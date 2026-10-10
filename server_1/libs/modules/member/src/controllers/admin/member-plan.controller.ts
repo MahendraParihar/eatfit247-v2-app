@@ -8,14 +8,12 @@ import {
   IMemberPayment,
   IMemberPaymentMasterData,
   IMemberPaymentUpdatePreview,
-  IPaymentLinkResponse,
   IProgramPlan,
   ITableList,
 } from '@eatfit247-shared-lib';
 import {
   CalculateTaxResponseDto,
   CreateMemberPaymentDto,
-  CreatePaymentLinkDto,
   PlanTaxCalculationRequestDto,
   PreviewMemberPaymentUpdateDto,
   UpdateMemberPaymentDto,
@@ -131,13 +129,15 @@ export class MemberPlanController {
     return await this.memberPaymentService.calculateTax(id, body);
   }
 
-  @Post('create-payment-link')
-  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberPayment)
-  async createPaymentLink(
+  @Post(':paymentId/cancel-payment-link')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberPayment)
+  async cancelPaymentLink(
     @Param('id') id: number,
-    @Body() body: CreatePaymentLinkDto,
-  ): Promise<IPaymentLinkResponse> {
-    return await this.memberPaymentService.createPaymentLink(id, body);
+    @Param('paymentId') paymentId: number,
+    @CurrentUser() currentUser: IAuthUser,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IMemberPayment> {
+    return await this.memberPaymentService.cancelPaymentLink(id, paymentId, requestedIp, currentUser.adminId);
   }
 
   @Post(':paymentId/regenerate-payment-link')

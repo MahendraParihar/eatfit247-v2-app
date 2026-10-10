@@ -338,41 +338,32 @@
                       <shared-ui-input-error [control]="formGroup.get('franchisePaymentGatewayId')"></shared-ui-input-error>
                     </mat-form-field>
 
-                    @if (formGroup.get('franchisePaymentGatewayId')?.value) {
-                      <div class="payment-link-section">
-                        @if (!paymentLink()) {
-                          <button
-                            mat-raised-button
-                            color="primary"
-                            (click)="createPaymentLinkIfNeeded()"
-                            [disabled]="creatingPaymentLink() || totalAmount <= 0">
-                            @if (creatingPaymentLink()) {
-                              <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px"></mat-spinner>
-                            }
-                            Generate Payment Link
-                          </button>
-                        } @else {
-                          <div class="payment-link-display">
-                            <h4>Payment Link Generated</h4>
-                            <div class="link-container">
-                              <input 
-                                matInput 
-                                [value]="paymentLink()" 
-                                readonly 
-                                class="link-input"
-                              />
-                              <button mat-icon-button (click)="copyPaymentLink()" matTooltip="Copy link">
-                                <mat-icon>content_copy</mat-icon>
-                              </button>
-                              <button mat-icon-button (click)="sharePaymentLink()" matTooltip="Share link">
-                                <mat-icon>share</mat-icon>
-                              </button>
-                            </div>
-                            <p class="link-hint">Share this link with the member to complete payment</p>
+                    <div class="payment-link-section">
+                      @if (paymentLink()) {
+                        <div class="payment-link-display">
+                          <h4>{{ linkCreatedOnSave() ? 'Payment saved — link created' : 'Payment Link' }}</h4>
+                          <div class="link-container">
+                            <input matInput [value]="paymentLink()" readonly class="link-input" />
+                            <button mat-icon-button (click)="copyPaymentLink()" matTooltip="Copy link">
+                              <mat-icon>content_copy</mat-icon>
+                            </button>
+                            <button mat-icon-button (click)="sharePaymentLink()" matTooltip="Share link">
+                              <mat-icon>share</mat-icon>
+                            </button>
                           </div>
-                        }
-                      </div>
-                    }
+                          <p class="link-hint">Share this link with the member. The payment becomes Paid when the gateway confirms it.</p>
+                        </div>
+                      } @else if (!isEditMode) {
+                        <p class="link-hint">
+                          The payment link is created when you save, for the saved total. Status and payment date are set by the gateway.
+                        </p>
+                      }
+                      @if (isGatewayPaymentEdit() && data.payment?.paymentStatusId !== PaymentStatusEnum.PAID) {
+                        <p class="link-hint">
+                          The plan, currency, discount and billing address are locked while this link is open. To change them, cancel the link from the payment history and create a new payment.
+                        </p>
+                      }
+                    </div>
                   }
                 </div>
               }
@@ -380,17 +371,173 @@
               <div class="step-actions">
                 <button mat-button (click)="stepper.previous()">Previous</button>
                 <button mat-button (click)="onCancel()">Cancel</button>
-                <button
-                  mat-raised-button
-                  color="primary"
-                  (click)="onSubmit()"
-                  [disabled]="submitting() || formGroup.invalid || (isManualPaymentSource() && !canProceedToStep3()) || !isPaymentLinkRequiredAndGenerated()"
-                >
-                  @if (submitting()) {
-                    <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px"></mat-spinner>
-                  }
-                  {{ isEditMode ? 'Update' : 'Create' }} Payment
+                <button 
+                  mat-raised-button 
+                  color="primary" 
+                  (click)="stepper.next()" 
+                  [disabled]="!canProceedToStep3()">
+                  Next
                 </button>
+              </div>
+            </div>
+          </mat-step>
+
+          <!-- Step 3: Payment Method -->
+          <mat-step>
+            <ng-template matStepLabel>Payment Method</ng-template>
+            <div class="step-content">
+              <h3 class="step-title">Select Payment Method</h3>
+              
+              <div class="form-section">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Payment Source*</mat-label>
+                  <mat-select formControlName="paymentSource">
+                    @for (source of paymentSourceOptions; track source.id) {
+                      <mat-option [value]="source.id">{{ source.label }}</mat-option>
+                    }
+                  </mat-select>
+                  <shared-ui-input-error [control]="formGroup.get('paymentSource')"></shared-ui-input-error>
+                </mat-form-field>
+              </div>
+
+              <!-- Manual Payment Fields -->
+              @if (isManualPaymentSource()) {
+                <div class="form-section">
+                  <h4>Manual Payment Details</h4>
+                  <div class="form-row">
+                    <mat-form-field appearance="outline" class="half-width">
+                      <mat-label>Payment Mode*</mat-label>
+                      <mat-select formControlName="paymentModeId">
+                        <mat-option [value]="null">Select Payment Mode</mat-option>
+                        @for (mode of paymentModeOptions; track mode.id) {
+                          <mat-option [value]="mode.id">{{ mode.label }}</mat-option>
+                        }
+                      </mat-select>
+                      <shared-ui-input-error [control]="formGroup.get('paymentModeId')"></shared-ui-input-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="half-width">
+                      <mat-label>Payment Date*</mat-label>
+                      <input matInput [matDatepicker]="picker" formControlName="paymentDate" />
+                      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                      <mat-datepicker #picker></mat-datepicker>
+                      <shared-ui-input-error [control]="formGroup.get('paymentDate')"></shared-ui-input-error>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="form-row">
+                    <mat-form-field appearance="outline" class="half-width">
+                      <mat-label>Payment Status*</mat-label>
+                      <mat-select formControlName="paymentStatusId">
+                        <mat-option [value]="null">Select Status</mat-option>
+                        @for (status of paymentStatusOptions; track status.id) {
+                          <mat-option [value]="status.id">{{ status.label }}</mat-option>
+                        }
+                      </mat-select>
+                      <shared-ui-input-error [control]="formGroup.get('paymentStatusId')"></shared-ui-input-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="half-width">
+                      <mat-label>Transaction ID*</mat-label>
+                      <input
+                        matInput
+                        formControlName="transactionId"
+                        [maxlength]="InputLengthEnum.CHAR_250"
+                        placeholder="Enter transaction ID"
+                      />
+                      <mat-hint align="end"
+                        >{{ formGroup.get('transactionId')?.value?.length || 0 }}/{{ InputLengthEnum.CHAR_250 }}</mat-hint
+                      >
+                      <shared-ui-input-error [control]="formGroup.get('transactionId')"></shared-ui-input-error>
+                    </mat-form-field>
+                  </div>
+                </div>
+              }
+
+              <!-- Gateway Payment Fields -->
+              @if (!isManualPaymentSource()) {
+                <div class="form-section">
+                  <h4>Payment Gateway Selection</h4>
+                  @if (loadingGateways()) {
+                    <div class="loading-container">
+                      <mat-spinner diameter="30"></mat-spinner>
+                      <p>Loading payment gateways...</p>
+                    </div>
+                  } @else if (supportedGateways().length === 0) {
+                    <div class="info-message">
+                      <p>No payment gateways available for the selected currency.</p>
+                    </div>
+                  } @else {
+                    <mat-form-field appearance="outline" class="full-width">
+                      <mat-label>Select Payment Gateway*</mat-label>
+                      <mat-select 
+                        formControlName="franchisePaymentGatewayId"
+                        (selectionChange)="onGatewaySelectionChange($event.value)">
+                        <mat-option [value]="null">Select Gateway</mat-option>
+                        @for (gateway of supportedGateways(); track gateway.franchisePaymentGatewayId) {
+                          <mat-option [value]="gateway.franchisePaymentGatewayId">
+                            {{ gateway.gatewayName }} 
+                            @if (gateway.isPrimary) {
+                              <span class="primary-badge">(Primary)</span>
+                            }
+                          </mat-option>
+                        }
+                      </mat-select>
+                      <shared-ui-input-error [control]="formGroup.get('franchisePaymentGatewayId')"></shared-ui-input-error>
+                    </mat-form-field>
+
+                    <div class="payment-link-section">
+                      @if (paymentLink()) {
+                        <div class="payment-link-display">
+                          <h4>{{ linkCreatedOnSave() ? 'Payment saved — link created' : 'Payment Link' }}</h4>
+                          <div class="link-container">
+                            <input matInput [value]="paymentLink()" readonly class="link-input" />
+                            <button mat-icon-button (click)="copyPaymentLink()" matTooltip="Copy link">
+                              <mat-icon>content_copy</mat-icon>
+                            </button>
+                            <button mat-icon-button (click)="sharePaymentLink()" matTooltip="Share link">
+                              <mat-icon>share</mat-icon>
+                            </button>
+                          </div>
+                          <p class="link-hint">Share this link with the member. The payment becomes Paid when the gateway confirms it.</p>
+                        </div>
+                      } @else if (!isEditMode) {
+                        <p class="link-hint">
+                          The payment link is created when you save, for the saved total. Status and payment date are set by the gateway.
+                        </p>
+                      }
+                      @if (isGatewayPaymentEdit() && data.payment?.paymentStatusId !== PaymentStatusEnum.PAID) {
+                        <p class="link-hint">
+                          The plan, currency, discount and billing address are locked while this link is open. To change them, cancel the link from the payment history and create a new payment.
+                        </p>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="step-actions">
+                <button mat-button (click)="stepper.previous()">Previous</button>
+                <button mat-button (click)="onCancel()">Cancel</button>
+                @if (linkCreatedOnSave()) {
+                  <button mat-raised-button color="primary" (click)="dialogRef.close(true)">Done</button>
+                } @else {
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="onSubmit()"
+                    [disabled]="submitting() || formGroup.invalid || (isManualPaymentSource() && !canProceedToStep3()) || !isPaymentLinkRequiredAndGenerated()"
+                  >
+                    @if (submitting()) {
+                      <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px"></mat-spinner>
+                    }
+                    @if (!isEditMode && !isManualPaymentSource()) {
+                      Save &amp; Create Payment Link
+                    } @else {
+                      {{ isEditMode ? 'Update' : 'Create' }} Payment
+                    }
+                  </button>
+                }
               </div>
             </div>
           </mat-step>

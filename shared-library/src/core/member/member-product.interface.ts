@@ -104,6 +104,8 @@ export interface IManageMemberProduct {
   paymentLink?: string;
   gatewayProvider?: string;
   gatewayOrderId?: string;
+  /** Admin's gateway choice for a PAYMENT_GATEWAY record; the server creates the link after saving. */
+  franchisePaymentGatewayId?: number;
   gatewayPaymentId?: string;
   orderItems: IMemberProductOrderItemBasic[];
 }

@@ -77,10 +77,10 @@ export class ManageMemberPaymentComponent implements OnInit {
   loading = signal(false);
   submitting = signal(false);
   calculatingTax = signal(false);
-  creatingPaymentLink = signal(false);
   isEditMode = false;
   selectedIndex = signal(0);
   InputLengthEnum = InputLengthEnum;
+  PaymentStatusEnum = PaymentStatusEnum;
   availableCurrencies = signal<IDropdownItem[]>([]);
   taxCalculationResult = signal<ICalculateTaxResponse | null>(null);
   paymentLink = signal<string | null>(null);
@@ -99,6 +99,8 @@ export class ManageMemberPaymentComponent implements OnInit {
   >([]);
   loadingGateways = signal(false);
   selectedGatewayId = signal<number | null>(null);
+  /** The gateway payment was saved and its link created (shown for copying). */
+  linkCreatedOnSave = signal(false);
 
   constructor() {
     this.initializeForm();
@@ -404,9 +406,9 @@ export class ManageMemberPaymentComponent implements OnInit {
     const isPaymentGateway =
       paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY ||
       paymentSource === 'PAYMENT_GATEWAY';
-    // If payment source is PAYMENT_GATEWAY, payment link must be generated
-    if (isPaymentGateway) {
-      return !!this.paymentLink() && this.paymentLink()!.trim().length > 0;
+    // New gateway payment: a gateway must be chosen (the link is created when saving)
+    if (isPaymentGateway && !this.isEditMode) {
+      return !!this.formGroup.get('franchisePaymentGatewayId')?.value;
     }
     // For other payment sources, payment link is not required
     return true;
@@ -440,70 +442,6 @@ export class ManageMemberPaymentComponent implements OnInit {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loadingGateways.set(false);
-    }
-  }
-
-  async createPaymentLinkIfNeeded(): Promise<void> {
-    if (this.paymentLink()) {
-      return;
-    }
-    const totalAmount = this.totalAmount;
-    if (totalAmount <= 0) {
-      this.snackBar.open('Invalid amount for payment link', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-    const selectedGatewayId =
-      this.formGroup.get('franchisePaymentGatewayId')?.value ||
-      this.selectedGatewayId();
-    if (!selectedGatewayId) {
-      this.snackBar.open('Please select a payment gateway', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-    this.creatingPaymentLink.set(true);
-    try {
-      const currencyCode =
-        this.step1FormGroup?.get('currencyCode')?.value ||
-        this.formGroup.get('currencyCode')?.value ||
-        'INR';
-      const programId =
-        this.step1FormGroup?.get('programId')?.value ||
-        this.formGroup.get('programId')?.value;
-      const programPlanId =
-        this.step1FormGroup?.get('programPlanId')?.value ||
-        this.formGroup.get('programPlanId')?.value;
-      const programName =
-        this.programOptions.find((p) => p.id === programId)?.label || '';
-      const planName =
-        this.programPlanOptions.find((p) => p.id === programPlanId)?.label ||
-        '';
-      const result = await this.paymentFormService.createPaymentLink(
-        this.data.memberId,
-        totalAmount,
-        currencyCode,
-        selectedGatewayId,
-        programId,
-        programPlanId,
-        programName,
-        planName
-      );
-      this.paymentLink.set(result.shortUrl);
-      this.paymentLinkId.set(result.id);
-      this.formGroup.patchValue({
-        paymentLink: result.shortUrl,
-        gatewayProvider: result.gatewayCode,
-        gatewayOrderId: result.id,
-        paymentStatusId: PaymentStatusEnum.PENDING,
-      });
-    } catch (error) {
-      this.snackBar.open('Failed to create payment link', 'Close', {
-        duration: 3000,
-      });
-    } finally {
-      this.creatingPaymentLink.set(false);
     }
   }
 
@@ -596,6 +534,28 @@ export class ManageMemberPaymentComponent implements OnInit {
       if (formValues.gatewayOrderId) {
         this.paymentLinkId.set(formValues.gatewayOrderId);
       }
+      this.lockGatewayPaymentFields();
+    }
+  }
+
+  /** Editing a gateway payment (decision 14) */
+  isGatewayPaymentEdit(): boolean {
+    return this.isEditMode && this.data.payment?.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY;
+  }
+
+  /**
+   * Decision 14: a gateway payment's source can't change, and while its link is open the
+   * amount it charges can't change either (cancel the link and create a new payment instead).
+   */
+  private lockGatewayPaymentFields(): void {
+    if (!this.isGatewayPaymentEdit()) {
+      return;
+    }
+    this.formGroup.get('paymentSource')?.disable({ emitEvent: false });
+    if (this.data.payment?.paymentStatusId !== PaymentStatusEnum.PAID) {
+      for (const key of ['programId', 'programPlanId', 'currencyCode', 'discountAmount', 'billingAddressId']) {
+        this.step1FormGroup.get(key)?.disable({ emitEvent: false });
+      }
     }
   }
 
@@ -604,20 +564,9 @@ export class ManageMemberPaymentComponent implements OnInit {
     if (this.formGroup.valid && this.step1FormGroup?.valid) {
       this.submitting.set(true);
       try {
-        if (!this.isManualPaymentSource()) {
-          if (
-            !this.formGroup.value.paymentLink ||
-            this.formGroup.value.paymentLink.length === 0
-          ) {
-            this.snackBar.open(
-              'Payment link not generated, order can not be placed',
-              'Close',
-              {
-                duration: 3000,
-              }
-            );
-            return;
-          }
+        if (!this.isManualPaymentSource() && !this.isEditMode && !this.formGroup.get('franchisePaymentGatewayId')?.value) {
+          this.snackBar.open('Please select a payment gateway', 'Close', { duration: 3000 });
+          return;
         }
         const formValue = this.paymentFormService.transformFormToPaymentPayload(
           this.data.memberId,
@@ -645,7 +594,14 @@ export class ManageMemberPaymentComponent implements OnInit {
           }
           await this.apiService.updatePayment(this.data.memberId, paymentId, formValue);
         } else {
-          await this.apiService.createPayment(this.data.memberId, formValue);
+          const created = await this.apiService.createPayment(this.data.memberId, formValue);
+          if (!this.isManualPaymentSource() && created?.paymentLink) {
+            // Saved; show the server-created link to copy, then "Done" closes the dialog
+            this.paymentLink.set(created.paymentLink);
+            this.paymentLinkId.set(created.gatewayOrderId || null);
+            this.linkCreatedOnSave.set(true);
+            return;
+          }
         }
         this.dialogRef.close(true);
       } catch (error) {

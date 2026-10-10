@@ -231,6 +231,47 @@ A second independent review of `06fa02e7..` found no Critical or High issue and 
 - Logged: `member/create` doesn't change an existing member, so a returning customer keeps their old franchise and country (and with them the gateway and supplier address). Tell Accounts. The token can still add addresses to an existing member; ownership checks (OTP) are a separate auth item.
 - Checks: member jest passes (125 tests); both apps pass type checks and build. Live: session binding, redaction, hidden-plan preview.
 
+## Group 11: Admin gateway payments (decisions 13–14, owner decision 2026-10-10)
+
+The admin dialogs (`manage-member-payment`, `place-product-order`) created the Razorpay link **before** saving the record, for an amount sent by the browser. They also let admins set status, date, transaction and gateway ids on gateway records. One group at a time; test, then commit.
+
+- [x] 11.1 Spec: requirements decisions 13–14 (done with this group).
+- [x] 11.2 Shared library: `IManageMemberPayment` and `IManageMemberProduct` get `franchisePaymentGatewayId?` (the admin's gateway choice). This is the only admin contract change.
+- [x] 11.3 Platform: `RazorpayService.cancelPaymentLink` (and the adapter's `cancelPaymentLink?`), with an "already paid" result.
+- [x] 11.4 `CheckoutGatewayService.createGatewayPaymentLink` (resolve the gateway for the record's franchise, accept the admin's choice only if it is the resolved gateway, Razorpay only) and `cancelGatewayPaymentLink`.
+- [x] 11.5 Plan admin:
+  - `create` with PAYMENT_GATEWAY forces PENDING, NULL payment date and no transaction id, ignores client gateway fields, and creates the link for the stored total inside the transaction.
+  - `update` on a gateway record keeps the stored status, date, transaction and gateway fields and the source; while not PAID, a changed plan, currency, discount or billing address returns 400.
+  - New `cancel-payment-link` endpoint; `regenerate-payment-link` cancels the old link first.
+  - Remove the `create-payment-link` endpoint.
+- [x] 11.6 Product admin: the same create rules, `cancel-payment-link`, regenerate cancels the old link, and remove `create-payment-link`.
+- [x] 11.7 Admin UI:
+  - Gateway source: step 3 shows the gateway choice and "Save & create payment link"; after saving, the dialog shows the link to copy. Status, date and transaction fields are hidden for the gateway source. Editing a gateway record locks status, source and (while not PAID) the financial fields.
+  - Payment history and product orders get "Cancel payment link" for PENDING gateway records.
+- [x] 11.8 Unit tests and a live run in the admin (member 4945): create, link, cancel and regenerate, plus a simulated `payment_link.paid` webhook → PAID.
+- **As built (group 11):**
+  - Server:
+    - Admin `create` (plan and product) with PAYMENT_GATEWAY forces PENDING, NULL date and no transaction id or payment mode, then `CheckoutGatewayService.createGatewayPaymentLink` creates the link for the stored total (the member's franchise for plans, the product franchise for products) inside the transaction; a link failure rolls back.
+    - Plan `update` on a gateway record: the source is locked (gateway ↔ manual returns 400). While not PAID, a changed plan, currency, discount or billing address returns 400 and the stored amounts stay as they are. Status, date, transaction and gateway ids are never taken from the client.
+    - New `POST …/cancel-payment-link` (plan and product): `cancelRecordPaymentLink` checks the link at Razorpay (`paymentLink.fetch`/`cancel`) and then `markGatewayPaymentFailed`; an already-paid link returns 409.
+    - `regenerate-payment-link` cancels the old link first (409 if it was paid) and only accepts `plink_` records.
+    - `create-payment-link` (plan and product) and `CreatePaymentLinkDto` are removed.
+  - **Two more problems found by the live test, both fixed:**
+    - The admin create DTOs required `paymentDate`/`paymentStatusId` and didn't allow `franchisePaymentGatewayId`, so every gateway save failed with 400. Those two fields are now required only for MANUAL (`@ValidateIf`), and the gateway field is allowed.
+    - **The webhook DTO would have rejected real `payment_link.paid` events with 400.** The real link entity has fields the whitelist doesn't list (`allow_full_payment`, `payment_plan`, `payments`), lacks a required `entity`, and its customer fields can be empty. With the public-api pipe's `forbidNonWhitelisted`, such events always fail, Razorpay retries forever, and the payment never confirms. The controller now parses the signed raw body with a minimal shape check (`parsePayload`), and the 600-line `razorpay-webhook.dto.ts` was removed. The HMAC signature is the authenticity check.
+  - Admin UI:
+    - Plan and product dialogs: the gateway source shows the gateway choice and a hint; the button reads "Save & Create Payment Link" / "Place Order & Create Payment Link"; after the save the dialog shows the server link with copy and share, then "Done". The payload sends `franchisePaymentGatewayId` but no status, date or transaction.
+    - Editing a gateway payment disables source and (while not PAID) programme, plan, currency, discount and billing address, and shows a hint.
+    - Payment history and product orders have **Cancel Payment Link** (with a confirm prompt) for PENDING gateway records; "Generate/Regenerate" is shown only for PENDING gateway records.
+  - Tests: member jest passes (13 suites, 138 tests); the admin and public apps build and the admin UI builds.
+  - Live (member 4945, Razorpay TEST):
+    - In Chrome: the admin dialog saved PENDING payment 5115 and showed `plink_…` for ₹1,180, and the edit dialog locks the right fields.
+    - Regenerate: the old link is `cancelled` at Razorpay and the new one is for 118000 paise.
+    - A real-shaped `payment_link.paid` webhook → 200 APPLIED, PAID with invoice `…/S/000006`; cancel and regenerate after PAID are refused.
+    - Cancel: the link is `cancelled` at Razorpay and the record FAILED.
+    - Product: order 47 PENDING with its link for the stored ₹1,200, then cancelled → FAILED (not paid, so no shipment).
+    - Test rows were soft-deleted and their test links cancelled.
+
 ## Group 7: Close-out
 
 - [x] 7.1 Every check in `validation.md` that can run before merge passes: 16 of 18 criteria ✅, and A16/A17 are partial with their remaining parts listed under "Post-ship".

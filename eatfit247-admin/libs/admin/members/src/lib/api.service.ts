@@ -618,15 +618,13 @@ export class MembersApiService {
     }>;
   }
 
-  async createPaymentLink(
-    memberId: number,
-    data: ICreatePaymentLinkRequest
-  ): Promise<IPaymentLinkResponse> {
-    const res = await this.httpService.post<IResponse<IPaymentLinkResponse>>(
-      `${this.endpoint}/${memberId}/payment-history/create-payment-link`,
-      data
+
+  /** Cancel the open payment link at the gateway; the payment becomes FAILED (decision 14). */
+  async cancelPaymentLink(memberId: number, paymentId: number): Promise<IMemberPayment> {
+    const res = await this.httpService.post<IResponse<IMemberPayment>>(
+      `${this.endpoint}/${memberId}/payment-history/${paymentId}/cancel-payment-link`
     );
-    return res.data as IPaymentLinkResponse;
+    return res.data as IMemberPayment;
   }
 
   async regeneratePaymentLink(
@@ -912,15 +910,13 @@ export class MembersApiService {
     return res.data as { buffer: string; fileName: string };
   }
 
-  async createProductPaymentLink(
-    memberId: number,
-    data: ICreatePaymentLinkRequest
-  ): Promise<IPaymentLinkResponse> {
-    const res = await this.httpService.post<IResponse<IPaymentLinkResponse>>(
-      `${this.endpoint}/${memberId}/product/create-payment-link`,
-      data
+
+  /** Cancel the open payment link at the gateway; the order becomes FAILED (decision 14). */
+  async cancelProductPaymentLink(memberId: number, productId: number): Promise<IMemberProduct> {
+    const res = await this.httpService.post<IResponse<IMemberProduct>>(
+      `${this.endpoint}/${memberId}/product/${productId}/cancel-payment-link`
     );
-    return res.data as IPaymentLinkResponse;
+    return res.data as IMemberProduct;
   }
 
   async regenerateProductPaymentLink(
