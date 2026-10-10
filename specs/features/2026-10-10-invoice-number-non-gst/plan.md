@@ -113,7 +113,7 @@
 
 ## Group 6: Data migration (FY 2026-27, Q2 onwards)
 
-- [ ] 6.1 `scripts/invoice-renumber/preview_fy2026_27_q2.sql` (read-only). For every row in the window it outputs:
+- [x] 6.1 `scripts/invoice-renumber/preview_fy2026_27_q2.sql` (read-only). For every row in the window it outputs:
   - table, pk, franchise_code, type, member name
   - payment_date, active, status
   - billing country (as resolved), `tax_amount`, stored `tax_mode`
@@ -121,7 +121,7 @@
   - old invoice_id → new invoice_id
 
   It must use the same CTEs as 138, copied verbatim.
-- [ ] 6.2 `db_changes/138_fy2026_27_q2_invoice_renumber.sql`, in one transaction:
+- [x] 6.2 `db_changes/138_fy2026_27_q2_invoice_renumber.sql`, in one transaction:
   - **Guards (abort if any fails):**
     - EFMUM and MEMUM exist
     - 137 has been applied
@@ -148,14 +148,20 @@
     - each series is contiguous and has no duplicates
     - Q1 count and checksum are unchanged
     - no `TMP138/` values remain
-- [ ] 6.3 Header comment with a rollback snippet: restore `invoice_id` from the backup, null out the new columns, restore the counters. Not executed.
-- [ ] 6.4 Rehearse on a copy of production:
+- [x] 6.3 Header comment with a rollback snippet: restore `invoice_id` from the backup, null out the new columns, restore the counters. Not executed.
+- [x] 6.4 Rehearse on a copy of production:
   1. preview
   2. run 138
   3. run the helper SQL
   4. issue one domestic and one export invoice through the app
   5. re-run 138 and confirm it aborts
-- [ ] 6.5 Export the preview to CSV for Accounts' sign-off. Commit.
+- [ ] 6.5 Export the preview to CSV for Accounts' sign-off. **Owner step on production** (local data has no real Q2 invoices). Commit.
+
+> **As built (group 6):**
+> - `138` runs in one transaction: pre-guards (franchises, 137 applied, not already applied), `LOCK TABLE … SHARE ROW EXCLUSIVE`, a classification query between `BEGIN/END CLASSIFICATION` markers, data guards (FY 2026-27 invoice without a payment date; unresolvable billing country in the window; an `/EXP/` number before July), Q1 checksum, Q1 base, mapping, backups (`bkp_138_invoice_renumber` with the old series and date, `bkp_138_invoice_counters`), two-phase update (`TMP138/…` then final), counter upserts, post-asserts (Q1 unchanged, no `TMP138/`, each series contiguous from base+1 / 1, rows match the mapping, counters equal the highest number). Rollback snippet in the header.
+> - Window detail: rows already numbered by the 4.7 code (`{code}/EXP/2026-27/…`) are included, so a series stays contiguous even if the code ran before 138. Product dates are taken in the franchise's timezone. Rows issued by the 4.7 code keep their `invoice_date`; others get the payment date.
+> - The preview (`scripts/invoice-renumber/preview_fy2026_27_q2.sql`, read-only) embeds the classification block **generated from 138** (copied between the markers), so the two can't drift.
+> - Rehearsal on local clones: preview = run; 5125/5128 (US, no tax) → `EFMUM/EXP/2026-27/S/000001/2`; domestic counter 9 → 7 (contiguous); second run aborts ("already applied"). Synthetic clone with Q1 rows: Q1 untouched (a US client dated June keeps its filed domestic number), Q2 domestic continues from the Q1 maximum (9–12), name-only billing country resolves, unresolvable billing aborts and names the row. App on the renumbered clone then issues `EXP/…/000004` and `S/000008` (no gaps). Clones dropped.
 
 ## Group 7: Release
 
