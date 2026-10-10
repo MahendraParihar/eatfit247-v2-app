@@ -356,6 +356,14 @@ function buildBuyerInfo(
 
 export const PROFORMA_TITLE = 'PROFORMA INVOICE';
 
+/** How each exchange-rate source is named on the invoice. */
+const FX_SOURCE_LABELS: Record<string, string> = {
+  FBIL: 'FBIL reference rate',
+  CBUAE_PEG: 'UAE Central Bank peg',
+  CBIC_CUSTOMS: 'CBIC customs rate',
+  MANUAL: 'manual entry',
+};
+
 /** Functional-currency equivalents saved at issue; absent for same-currency invoices or while FX is pending. */
 function fxSectionOf(record: {
   currency: string;
@@ -373,7 +381,7 @@ function fxSectionOf(record: {
     // Readable on the PDF: six decimals for the rate
     rate: Math.round(Number(record.fxRate) * 1e6) / 1e6,
     rateDate: String(record.fxRateDate),
-    source: record.fxSource || '',
+    source: FX_SOURCE_LABELS[record.fxSource || ''] ?? record.fxSource ?? '',
     fromCurrency: record.currency,
     currency: record.functionalCurrency,
     totalAmount: Number(record.functionalTotalAmount || 0),

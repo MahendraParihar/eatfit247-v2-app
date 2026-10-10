@@ -323,7 +323,7 @@ describe('invoice mapper: proforma and invoice date', () => {
     expect(withFx.fx).toEqual({
       rate: 95.9927,
       rateDate: '2026-10-01',
-      source: 'FBIL',
+      source: 'FBIL reference rate',
       fromCurrency: 'USD',
       currency: 'INR',
       totalAmount: 9599.27,
