@@ -97,7 +97,7 @@ export interface IManageMemberPayment {
   paymentGatewayResponse?: object | null;
   discountAmount: number;
   currency?: string;
-  /** Manual payments only: how the money arrived (decides export vs IGST for foreign clients) */
+  /** Set by the server from the payment mode (decision 11); ignored when sent */
   paymentRoute?: PaymentRouteEnum | null;
   remittanceReference?: string | null;
 }
@@ -120,6 +120,8 @@ export interface IPlanTaxCalculationRequest {
   billingAddressId?: number;
   /** Admin preview: the route only applies to manual payments; gateway routes follow the currency */
   paymentSource?: PaymentSourceEnum;
+  /** Manual payments: the payment mode decides the route (decision 11) */
+  paymentModeId?: number | null;
   paymentRoute?: PaymentRouteEnum | null;
   /** Date of supply (manual payment date) for the LUT check; defaults to today */
   paymentDate?: Date | string | null;

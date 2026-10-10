@@ -25,7 +25,6 @@ import {
   IMemberPayment,
   IMemberPaymentMasterData,
   InputLengthEnum,
-  PaymentRouteEnum,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TaxMode
@@ -171,9 +170,6 @@ export class ManageMemberPaymentComponent implements OnInit {
       gatewayPaymentId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
       paymentLink: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
       franchisePaymentGatewayId: [null],
-      // Manual payments: how the money arrived (decides export vs IGST for foreign clients)
-      paymentRoute: [PaymentRouteEnum.DOMESTIC],
-      remittanceReference: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
     });
     // Subscribe to changes to calculate tax and total from backend with debouncing
     this.formGroup
@@ -248,9 +244,9 @@ export class ManageMemberPaymentComponent implements OnInit {
         this.calculateTaxFromBackend();
       });
     // Subscribe to payment source changes to update field validators
-    // The route and date of a manual payment change its tax (export vs IGST, LUT validity)
+    // The payment mode (its route) and date of a manual payment change its tax (export vs IGST, LUT)
     this.formGroup
-      .get('paymentRoute')
+      .get('paymentModeId')
       ?.valueChanges.pipe(distinctUntilChanged())
       .subscribe(() => this.calculateTaxFromBackend());
     this.formGroup
@@ -347,7 +343,6 @@ export class ManageMemberPaymentComponent implements OnInit {
   }
 
   async calculateTaxFromBackend(): Promise<void> {
-    this.syncHiddenRouteFields();
     const formData = this.paymentFormService.getPaymentFormData(
       this.formGroup,
       this.step1FormGroup
@@ -719,22 +714,14 @@ export class ManageMemberPaymentComponent implements OnInit {
     }
   }
 
-  readonly paymentRouteOptions: { value: PaymentRouteEnum; label: string }[] = [
-    { value: PaymentRouteEnum.DOMESTIC, label: 'Indian payment (UPI, Indian card or bank, NRO)' },
-    { value: PaymentRouteEnum.FOREIGN_REMITTANCE, label: 'Foreign remittance (SWIFT, FIRC)' },
-    { value: PaymentRouteEnum.INTERNATIONAL_CARD_GATEWAY, label: 'International card / gateway (e-FIRA)' },
-    { value: PaymentRouteEnum.NRE_FCNR_ACCOUNT, label: "Client's NRE / FCNR account" },
-    { value: PaymentRouteEnum.RUPEE_VOSTRO, label: 'Special Rupee Vostro account' },
-  ];
-
   /** Billing address of the form, from the member's addresses. */
   private get selectedBillingAddress(): IAddress | null {
     const id = this.step1FormGroup?.get('billingAddressId')?.value || this.formGroup.get('billingAddressId')?.value;
     return (this.masterData()?.addresses || []).find((a) => a.addressId === id) || null;
   }
 
-  /** Route fields matter only for a manual payment billed outside India. */
-  showPaymentRouteFields(): boolean {
+  /** A manual payment billed outside India (its payment mode decides export vs IGST). */
+  private isForeignManualPayment(): boolean {
     const billing = this.selectedBillingAddress;
     if (!this.isManualPaymentSource() || !billing) {
       return false;
@@ -742,23 +729,6 @@ export class ManageMemberPaymentComponent implements OnInit {
     const code = (billing.countryCode || '').trim().toUpperCase();
     const name = (billing.country || '').trim().toLowerCase();
     return code ? code !== 'IN' : !!name && name !== 'india';
-  }
-
-  /**
-   * When the route fields are hidden (Indian billing), keep the route and reference the payment
-   * already has, so an edit doesn't look like a route change.
-   */
-  private syncHiddenRouteFields(): void {
-    if (this.showPaymentRouteFields()) {
-      return;
-    }
-    this.formGroup.patchValue(
-      {
-        paymentRoute: this.data.payment?.paymentRoute || PaymentRouteEnum.DOMESTIC,
-        remittanceReference: this.data.payment?.remittanceReference || '',
-      },
-      { emitEvent: false },
-    );
   }
 
   /** Why the server taxed it this way (shown under the tax summary). */
@@ -777,11 +747,8 @@ export class ManageMemberPaymentComponent implements OnInit {
     if (isExport && !result.isLutApplied) {
       warnings.push('No valid LUT for this date: the export is charged IGST. Add the LUT in the franchise LUT register.');
     }
-    if (result.taxMode === TaxMode.DOMESTIC_GST && this.showPaymentRouteFields()) {
-      warnings.push('INR received over Indian payment methods from a client outside India is not an export, so IGST applies. Choose the route the money actually came by.');
-    }
-    if (isExport && this.isManualPaymentSource() && !this.formGroup.get('remittanceReference')?.value?.trim()) {
-      warnings.push('Add the FIRC / e-FIRA reference that proves the money came from abroad.');
+    if (result.taxMode === TaxMode.DOMESTIC_GST && this.isForeignManualPayment()) {
+      warnings.push('INR received over Indian payment methods from a client outside India is not an export, so IGST applies. If the money came from abroad, pick the matching payment mode (SWIFT, international card, NRE/FCNR, Vostro, PayPal).');
     }
     return warnings;
   }

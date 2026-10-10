@@ -179,7 +179,12 @@ export class MemberPlanService {
       { orderAmount: Number(fee.fees), discountAmount: payload.discountAmount, currencyCode: payload.currency },
       billingAddress,
       franchiseAddress,
-      this.taxOptions(member.franchiseId, payload.paymentSource, payload.paymentRoute, payload.paymentDate),
+      this.taxOptions(
+        member.franchiseId,
+        payload.paymentSource,
+        payload.paymentSource === PaymentSourceEnum.MANUAL ? await this.paymentModeService.routeOf(payload.paymentModeId) : null,
+        payload.paymentDate,
+      ),
     );
     return { ...result, taxableAmount: Number(fee.fees) - (result.discountAmount || 0) };
   }
@@ -255,6 +260,7 @@ export class MemberPlanService {
     requestedIp: string,
     adminId: number = null,
   ): Promise<IMemberPayment> {
+    obj = await this.withModeRoute(obj);
     // Verify member exists with the franchise
     const member = await this.memberRepository.scope('details').findOne({
       where: { memberId },
@@ -486,6 +492,7 @@ export class MemberPlanService {
     paymentId: number,
     obj: IManageMemberPayment,
   ): Promise<IMemberPaymentUpdatePreview> {
+    obj = await this.withModeRoute(obj);
     const payment = await this.memberPaymentRepository.scope('details').findOne({
       where: {
         memberPaymentId: paymentId,
@@ -552,6 +559,7 @@ export class MemberPlanService {
     requestedIp: string,
     adminId: number,
   ): Promise<IMemberPayment> {
+    obj = await this.withModeRoute(obj);
     const payment = await this.memberPaymentRepository.findOne({
       where: {
         memberPaymentId: paymentId,
@@ -1142,6 +1150,22 @@ export class MemberPlanService {
       paymentRoute: manual ? paymentRoute || PaymentRouteEnum.DOMESTIC : null,
       supplyDate: manual ? paymentDate ?? null : null,
     };
+  }
+
+  /**
+   * Offline payments: the route follows the chosen payment mode (decision 11), and a foreign-route
+   * payment's transaction ID is its FIRC / e-FIRA number. Gateway payments are left to the currency.
+   */
+  private async withModeRoute<T extends { paymentSource?: PaymentSourceEnum; paymentModeId?: number | null; transactionId?: string | null }>(
+    obj: T,
+  ): Promise<T & { paymentRoute: PaymentRouteEnum | null; remittanceReference: string | null }> {
+    if (obj.paymentSource !== PaymentSourceEnum.MANUAL) {
+      return { ...obj, paymentRoute: null, remittanceReference: null };
+    }
+    const paymentRoute = await this.paymentModeService.routeOf(obj.paymentModeId);
+    const remittanceReference =
+      paymentRoute !== PaymentRouteEnum.DOMESTIC ? obj.transactionId?.trim() || null : null;
+    return { ...obj, paymentRoute, remittanceReference };
   }
 
   private async findFranchiseAddress(franchiseId: number): Promise<IAddress | null> {

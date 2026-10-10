@@ -8,7 +8,6 @@ import {
   IMemberPayment,
   IPlanTaxCalculationRequest,
   PaymentSourceEnum,
-  PaymentRouteEnum,
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 
@@ -21,7 +20,7 @@ export interface PaymentFormData {
   addressId?: number;
   /** Manual payments: how the money arrived and when (tax decision, roadmap 4.6) */
   paymentSource?: PaymentSourceEnum;
-  paymentRoute?: PaymentRouteEnum | null;
+  paymentModeId?: number | null;
   paymentDate?: string | null;
 }
 
@@ -49,7 +48,7 @@ export class PaymentFormService {
       billingAddressId: formData.billingAddressId,
       addressId: formData.addressId,
       paymentSource: formData.paymentSource,
-      paymentRoute: formData.paymentSource === PaymentSourceEnum.MANUAL ? formData.paymentRoute || null : null,
+      paymentModeId: formData.paymentSource === PaymentSourceEnum.MANUAL ? formData.paymentModeId || null : null,
       paymentDate: formData.paymentSource === PaymentSourceEnum.MANUAL ? formData.paymentDate || null : null,
     };
     try {
@@ -88,8 +87,6 @@ export class PaymentFormService {
       gatewayOrderId: payment.gatewayOrderId || '',
       gatewayPaymentId: payment.gatewayPaymentId || '',
       paymentLink: payment.paymentLink || '',
-      paymentRoute: payment.paymentRoute || PaymentRouteEnum.DOMESTIC,
-      remittanceReference: payment.remittanceReference || '',
     };
   }
 
@@ -143,11 +140,7 @@ export class PaymentFormService {
     const paymentSource = formGroup.get('paymentSource')?.value;
     const isManual =
       paymentSource === PaymentSourceEnum?.MANUAL || paymentSource === 'MANUAL';
-    if (isManual) {
-      // The component keeps hidden route fields at the stored values (see showPaymentRouteFields)
-      payload.paymentRoute = formGroup.get('paymentRoute')?.value || PaymentRouteEnum.DOMESTIC;
-      payload.remittanceReference = formGroup.get('remittanceReference')?.value?.trim() || null;
-    } else {
+    if (!isManual) {
       payload.franchisePaymentGatewayId = formGroup.get('franchisePaymentGatewayId')?.value || undefined;
       delete payload.paymentStatusId;
       delete payload.paymentDate;
@@ -190,7 +183,7 @@ export class PaymentFormService {
         step1FormGroup?.get('addressId')?.value ||
         formGroup.get('addressId')?.value,
       paymentSource: formGroup.get('paymentSource')?.value,
-      paymentRoute: formGroup.get('paymentRoute')?.value || null,
+      paymentModeId: formGroup.get('paymentModeId')?.value || null,
       paymentDate: formGroup.get('paymentDate')?.value
         ? CommonUtil.formatDateForAPI(formGroup.get('paymentDate')?.value) || null
         : null,

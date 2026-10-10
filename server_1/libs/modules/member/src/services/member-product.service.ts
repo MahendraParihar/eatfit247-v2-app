@@ -1091,7 +1091,10 @@ export class MemberProductService {
         currencyCode: obj.orderItems.find((i) => i.productId === item.productId)?.currency || 'INR',
       }));
       // Calculate tax for order items
-      const route = this.orderRoute(obj.paymentSource, obj.orderItems[0]?.currency, obj.paymentRoute);
+      // Offline orders: the payment mode decides the route (decision 11)
+      const modeRoute =
+        obj.paymentSource === PaymentSourceEnum.MANUAL ? await this.paymentModeService.routeOf(obj.paymentModeId) : null;
+      const route = this.orderRoute(obj.paymentSource, obj.orderItems[0]?.currency, modeRoute);
       const orderItemObjs = await this.calculateOrderItemsTax(
         tempOrderItemsWithCurrency,
         franchise[0],
@@ -1126,8 +1129,11 @@ export class MemberProductService {
         memberAddress: memberAddressSnapshot,
         paymentSource: obj.paymentSource,
         paymentRoute: route,
+        // A foreign-route payment's transaction ID is its FIRC / e-FIRA number
         remittanceReference:
-          obj.paymentSource === PaymentSourceEnum.MANUAL ? obj.remittanceReference?.trim() || null : null,
+          obj.paymentSource === PaymentSourceEnum.MANUAL && route !== PaymentRouteEnum.DOMESTIC
+            ? obj.transactionId?.trim() || null
+            : null,
         subTotalAmount: totalOrderAmount,
         discountAmount: totalDiscount,
         taxAmount: totalTaxAmount,

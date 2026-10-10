@@ -52,7 +52,7 @@
 | A22 | ✅ | `tax-engine.spec`, `tax-master.service.spec` |
 | A23 | ✅ | rows carry source FBIL / CBUAE_PEG / CBIC_CUSTOMS / MANUAL (manual requires a note) |
 
-Automated: member jest **264/264**; `nx build admin-api` and `public-api` green; website SSR build green; admin dev build green (the production build's size-budget errors are pre-existing). Migrations 137, 138 (clones), 139, 140, 141, 142 apply cleanly and re-run without error.
+Automated: member jest **265/265**; `nx build admin-api` and `public-api` green; website SSR build green; admin dev build green (the production build's size-budget errors are pre-existing). Migrations 137, 138 (clones), 139, 140, 141, 142, 143 apply cleanly and re-run without error.
 
 ## Release runbook (4.5 + 4.7 + 4.6 ship together)
 
@@ -63,7 +63,7 @@ Automated: member jest **264/264**; `nx build admin-api` and `public-api` green;
 
 **Window**
 4. Stop public-api and admin-api. Back up the database.
-5. Apply in order: `137_invoice_series.sql`, `138_fy2026_27_q2_invoice_renumber.sql`, `139_payment_gateway_events.sql` (if 4.5 isn't live yet), `140_tax_engine_correctness.sql`, `141_exchange_rates.sql`, `142_credit_notes.sql`. Record counters before/after 138 in the 4.7 validation.
+5. Apply in order: `137_invoice_series.sql`, `138_fy2026_27_q2_invoice_renumber.sql`, `139_payment_gateway_events.sql` (if 4.5 isn't live yet), `140_tax_engine_correctness.sql`, `141_exchange_rates.sql`, `142_credit_notes.sql`, `143_payment_mode_routes.sql`. Record counters before/after 138 in the 4.7 validation.
 6. Configuration (admin or SQL, before the APIs start): Healuxe TRN in "VAT number / TRN" and its GSTIN cleared; Mahi per step 2; EFMUM's LUT for FY 2026-27 in the LUT register (and Mahi's if registered); USD fees on the plans foreign clients buy; check tax rules (EFMUM IN GST 18; HCUAE AE VAT 0% zero-rated; product rules).
 7. Build and deploy shared-library, server (both APIs), admin and website (`docker compose -f ./infra/docker-compose.yml build --no-cache && … up -d`). Start the APIs.
 

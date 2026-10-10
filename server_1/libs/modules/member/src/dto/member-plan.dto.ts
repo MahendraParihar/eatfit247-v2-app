@@ -131,6 +131,9 @@ export class PlanTaxCalculationRequestDto implements IPlanTaxCalculationRequest 
   @IsEnum(PaymentSourceEnum)
   paymentSource?: PaymentSourceEnum;
   @IsOptional()
+  @IsNumber()
+  paymentModeId?: number | null;
+  @IsOptional()
   @IsEnum(PaymentRouteEnum)
   paymentRoute?: PaymentRouteEnum | null;
   @IsOptional()

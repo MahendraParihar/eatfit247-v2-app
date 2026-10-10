@@ -450,20 +450,6 @@
                         <shared-ui-input-error [control]="step4FormGroup.get('transactionId')"></shared-ui-input-error>
                       </mat-form-field>
                     </div>
-                    <div class="form-row">
-                      <mat-form-field appearance="outline" class="half-width">
-                        <mat-label>How the money arrived</mat-label>
-                        <mat-select formControlName="paymentRoute">
-                          @for (option of paymentRouteOptions; track option.value) {
-                            <mat-option [value]="option.value">{{ option.label }}</mat-option>
-                          }
-                        </mat-select>
-                      </mat-form-field>
-                      <mat-form-field appearance="outline" class="half-width">
-                        <mat-label>FIRC / e-FIRA reference</mat-label>
-                        <input matInput formControlName="remittanceReference" [maxlength]="InputLengthEnum.CHAR_100" />
-                      </mat-form-field>
-                    </div>
                   } @else {
                     <div class="form-row">
                       <mat-form-field appearance="outline" class="half-width">

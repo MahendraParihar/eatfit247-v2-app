@@ -182,7 +182,7 @@ describe('MemberPlanService public checkout', () => {
         { provide: MemberDietPlanService, useValue: { createIfNotExists, updateLimitsForPayment: jest.fn() } },
         { provide: CheckoutGatewayService, useValue: checkout },
         { provide: AppConfigService, useValue: {} },
-        { provide: PaymentModeService, useValue: {} },
+        { provide: PaymentModeService, useValue: { routeOf: jest.fn().mockResolvedValue('DOMESTIC') } },
         { provide: PaymentStatusService, useValue: {} },
         { provide: ProgramService, useValue: {} },
         { provide: FranchisePaymentGatewayService, useValue: {} },

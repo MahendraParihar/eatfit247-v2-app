@@ -234,6 +234,15 @@
 - [x] 10b.10 Logged, not changed: a credit note against an FX-pending invoice keeps empty FX (the original is backfilled, the note isn't); status / payment-date edits on an issued manual invoice remain allowed (non-financial; invoice date is separate); GSTIN/TRN patterns may need clean-up of stored values with spaces; no GSTIN checksum yet; the LUT's FY isn't printed (ARN identifies it); product preview doesn't send the payment date; `applyFx` reads rates on a second pooled connection (pool size noted earlier).
 - [x] 10b.11 Tests: cumulative credit-note VAT, atomic upsert, lock-based series test. Member jest 264/264; admin dev and website builds green.
 
+## Group 12: Payment form simplification (owner feedback, 2026-10-10)
+
+- [x] 12.1 Remove the duplicated "Payment Method" step from the admin payment dialog (introduced by 4.5 group 11, `81d3a676`).
+- [x] 12.2 `db_changes/143_payment_mode_routes.sql`: `mst_payment_modes.payment_route` (default DOMESTIC); PayPal → INTERNATIONAL_CARD_GATEWAY; new modes for SWIFT, international card, NRE/FCNR and Rupee Vostro.
+- [x] 12.3 Server derives the manual route from the payment mode (create, update, preview, product orders); `remittance_reference` = transaction ID for foreign routes. The admin form drops the separate route and FIRC fields; the transaction ID hint covers FIRC / e-FIRA.
+- [x] 12.4 Tests + live check.
+
+> **As built (group 12):** the admin payment dialog has three steps again (Plan & Program → Tax & Payment Details → Payment Method). 143 adds `mst_payment_modes.payment_route` (PayPal and four new modes are foreign; everything else DOMESTIC). `PaymentModeService.routeOf`; `MemberPlanService.withModeRoute` derives the route and the FIRC reference (= transaction ID for foreign routes) on create, update and preview, and the admin tax preview sends `paymentModeId`; product orders do the same. The admin form no longer has "How the money arrived" / FIRC fields; the transaction ID hint mentions FIRC / e-FIRA, and the INR-from-abroad warning points to the foreign payment modes. Tests: member jest 265/265 (route from mode; issued-invoice lock via a foreign mode). Live: 4945 (US, INR) with mode "NRE / FCNR account" → `EFMUM/EXP/2026-27/S/000005`, 0% under LUT, FIRC ref = transaction ID; mode UPI → IGST 18%, `EFMUM/2026-27/S/000012`.
+
 ## Group 11: Config, live validation and close-out
 
 - [x] 11.1 Local config:

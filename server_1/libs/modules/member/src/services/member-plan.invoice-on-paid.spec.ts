@@ -146,7 +146,11 @@ describe('MemberPlanService update: invoice on PAID and series guard', () => {
         { provide: FranchiseService, useValue: {} },
         { provide: CheckoutGatewayService, useValue: {} },
         { provide: AppConfigService, useValue: {} },
-        { provide: PaymentModeService, useValue: {} },
+        {
+          provide: PaymentModeService,
+          // Mode 9 is a foreign route (e.g. "NRE / FCNR account"); every other mode is domestic
+          useValue: { routeOf: jest.fn().mockImplementation(async (id: number) => (id === 9 ? 'NRE_FCNR_ACCOUNT' : 'DOMESTIC')) },
+        },
         { provide: PaymentStatusService, useValue: {} },
         { provide: ProgramService, useValue: {} },
         { provide: FranchisePaymentGatewayService, useValue: {} },
@@ -270,9 +274,8 @@ describe('MemberPlanService update: invoice on PAID and series guard', () => {
     await expect(service.update(4945, 900, edit({ discountAmount: 100 }), '127.0.0.1', 7)).rejects.toThrow(
       'Invoice EFMUM/2026-27/S/000002 is issued',
     );
-    await expect(
-      service.update(4945, 900, edit({ paymentRoute: 'NRE_FCNR_ACCOUNT' as never }), '127.0.0.1', 7),
-    ).rejects.toThrow('credit note');
+    // A payment mode with a foreign route changes the route of an issued invoice: refused
+    await expect(service.update(4945, 900, edit({ paymentModeId: 9 }), '127.0.0.1', 7)).rejects.toThrow('credit note');
     const preview = await service.previewUpdate(4945, 900, edit({ discountAmount: 100 }));
     expect(preview).toMatchObject({ blocked: true });
     expect(record.save).not.toHaveBeenCalled();
@@ -288,4 +291,17 @@ describe('MemberPlanService update: invoice on PAID and series guard', () => {
     expect(generateInvoiceNumber.mock.calls[0][0].invoiceDate).toBe(record.invoiceDate);
     expect(generateInvoiceNumber.mock.calls[0][0].invoiceDate >= '2026-04-01').toBe(true);
   });
+
+  it('a manual payment in a foreign-route payment mode prices with that route and keeps the transaction ID as the FIRC reference', async () => {
+    const record = stored();
+    paymentFindOne.mockResolvedValue(record);
+    const draftSpy = jest.spyOn(service as unknown as { buildPaymentDraft: (...args: unknown[]) => Promise<unknown> }, 'buildPaymentDraft');
+    draftWith(US, 0);
+
+    await service.update(4945, 900, edit({ paymentModeId: 9, transactionId: 'FIRC-2026-001' }), '127.0.0.1', 7);
+
+    expect((draftSpy.mock.calls[0][1] as { paymentRoute: string }).paymentRoute).toBe('NRE_FCNR_ACCOUNT');
+    expect(record).toMatchObject({ remittanceReference: 'FIRC-2026-001' });
+  });
 });
+
