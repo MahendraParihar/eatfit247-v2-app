@@ -662,7 +662,7 @@ export class MemberPlanService {
 
       // Decision 8: the number is issued the first time the payment is PAID, here as on create or
       // by the gateway. An issued number, series and date are never changed (decision 9).
-      const invoiceFranchiseId = payment.franchiseId || draft.member.franchiseId;
+      const invoiceFranchiseId = payment.franchiseId || draft.member?.franchiseId;
       if (payment.paymentStatusId === PaymentStatusEnum.PAID && !payment.invoiceId && invoiceFranchiseId) {
         await this.invoiceIssueService.issue(payment, 'plan', invoiceFranchiseId, t);
       }
@@ -713,8 +713,11 @@ export class MemberPlanService {
     payment: TxnMemberPayment,
     draft: Awaited<ReturnType<MemberPlanService['buildPaymentDraft']>>,
   ): Promise<string | null> {
-    const franchiseId = payment.franchiseId || draft.member.franchiseId;
-    if (!payment.invoiceSeries || payment.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY || !franchiseId) {
+    if (!payment.invoiceSeries || payment.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY) {
+      return null;
+    }
+    const franchiseId = payment.franchiseId || draft.member?.franchiseId;
+    if (!franchiseId) {
       return null;
     }
     const { countryCode } = await this.invoiceIssueService.franchiseContext(franchiseId);
