@@ -555,11 +555,21 @@
         <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxableAmount }}</strong></td>
       </tr>
     {{/if}}
-    {{#if invoice.pricing.taxAmount}}
-      <tr>
-        <td><strong>Tax</strong></td>
-        <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxAmount }}</strong></td>
-      </tr>
+    {{#if isGstTaxType}}
+      {{#if invoice.pricing.taxAmount}}
+        <tr>
+          <td><strong>Tax</strong></td>
+          <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxAmount }}</strong></td>
+        </tr>
+      {{/if}}
+    {{else}}
+      {{!-- VAT and other systems: each tax line with its category and rate, shown even at 0% --}}
+      {{#each invoice.tax.rows}}
+        <tr>
+          <td><strong>{{taxRowLabel this}}</strong></td>
+          <td class="text-right"><strong>{{formatCurrency this.amount}}</strong></td>
+        </tr>
+      {{/each}}
     {{/if}}
     {{#if invoice.pricing.totalAmount}}
       <tr class="total-row">

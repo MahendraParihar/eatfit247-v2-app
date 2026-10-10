@@ -1,3 +1,4 @@
+import { InvoicePdfService } from '@server_1/platform';
 import {
   IAddress,
   IFranchise,
@@ -216,6 +217,87 @@ describe('invoice mapper: proforma and invoice date', () => {
         [],
       );
       expect(noneDoc.seller.taxId).toBeUndefined();
+    });
+  });
+
+  describe('UAE VAT invoices (roadmap 4.6 group 8)', () => {
+    const uaeSeller = { countryCode: 'AE', country: 'United Arab Emirates' } as unknown as IAddress;
+    const uaeBuyer = { countryCode: 'AE', country: 'United Arab Emirates', state: 'Dubai' } as unknown as IAddress;
+    const healuxe = { companyName: 'Healuxe Consulting FZE', vatNumber: '100000000000003' } as unknown as IFranchise;
+    const vatPayment = (overrides: Partial<IMemberPayment>) =>
+      payment({
+        invoiceId: 'HCUAE/2026/S/000004',
+        invoiceDate: '2026-10-12',
+        currency: 'AED',
+        taxType: TaxTypeEnum.VAT,
+        taxMode: TaxMode.VAT,
+        ...overrides,
+      });
+
+    it('0% zero-rated: TAX INVOICE with the TRN and a VAT (Z) line', () => {
+      const doc = mapPaymentToInvoiceDocument(
+        vatPayment({ taxAmount: 0, totalAmount: 1000, taxObj: { VAT: { amount: 0, taxPercentage: 0 } }, taxCategory: 'ZERO_RATED' as never }),
+        healuxe,
+        uaeBuyer,
+        uaeSeller,
+        [],
+      );
+      expect(doc.header.title).toBe('TAX INVOICE');
+      expect(doc.seller).toMatchObject({ taxId: '100000000000003', taxIdLabel: 'TRN' });
+      expect(doc.tax.rows).toEqual([{ label: 'VAT (Z)', amount: 0, percentage: 0 }]);
+      expect(doc.header.placeOfSupply).toBeUndefined();
+    });
+
+    it('5% standard: a VAT (S) line', () => {
+      const doc = mapPaymentToInvoiceDocument(
+        vatPayment({ taxAmount: 50, totalAmount: 1050, taxObj: { VAT: { amount: 50, taxPercentage: 5 } }, taxCategory: 'STANDARD' as never }),
+        healuxe,
+        uaeBuyer,
+        uaeSeller,
+        [],
+      );
+      expect(doc.tax.rows).toEqual([{ label: 'VAT (S)', amount: 50, percentage: 5 }]);
+    });
+
+    it('foreign client: zero-rated with the evidence note', () => {
+      const doc = mapPaymentToInvoiceDocument(
+        vatPayment({
+          currency: 'USD',
+          taxAmount: 0,
+          totalAmount: 1000,
+          taxObj: { VAT: { amount: 0, taxPercentage: 0 } },
+          taxCategory: 'ZERO_RATED' as never,
+          invoiceNote: 'Zero-rated supply of services to a recipient outside the UAE.',
+        }),
+        healuxe,
+        uaeBuyer,
+        uaeSeller,
+        [],
+      );
+      expect(doc.tax.note).toBe('Zero-rated supply of services to a recipient outside the UAE.');
+    });
+
+    it('unregistered (NONE rule): plain INVOICE, no tax line, no TRN', () => {
+      const unregistered = { companyName: 'Healuxe Consulting FZE', vatNumber: null } as unknown as IFranchise;
+      const doc = mapPaymentToInvoiceDocument(
+        vatPayment({ taxType: TaxTypeEnum.NONE, taxMode: TaxMode.NO_TAX, taxAmount: 0, taxObj: {} }),
+        unregistered,
+        uaeBuyer,
+        uaeSeller,
+        [],
+      );
+      expect(doc.header.title).toBe('INVOICE');
+      expect(doc.tax.rows).toEqual([]);
+      expect(doc.seller.taxId).toBeUndefined();
+    });
+
+    it('amount in words uses the invoice currency', () => {
+      const pdf = new InvoicePdfService();
+      const words = (amount: number, currency: string): string =>
+        (pdf as unknown as { getAmountInWords: (a: number, c: string) => string }).getAmountInWords(amount, currency);
+      expect(words(1050.5, 'AED')).toBe('Dirhams One Thousand Fifty and Fifty Fils Only');
+      expect(words(2500000, 'USD')).toBe('Dollars Two Million Five Hundred Thousand Only');
+      expect(words(150000, 'INR')).toContain('Rupees One Lakh Fifty Thousand');
     });
   });
 });

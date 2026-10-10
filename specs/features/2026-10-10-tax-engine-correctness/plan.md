@@ -163,10 +163,12 @@
 
 ## Group 8: UAE VAT invoices
 
-- [ ] 8.1 Title "TAX INVOICE" with the TRN for VAT-registered franchises (any VAT rule, including 0%); plain "INVOICE" for a `NONE` rule.
-- [ ] 8.2 VAT category (S/Z/E/O), rate and VAT amount per line; zero-rating evidence note for exports.
-- [ ] 8.3 Amount in words in the invoice currency (AED dirhams/fils, USD dollars/cents; no "Rupees/Paise").
-- [ ] 8.4 Mapper tests: AE 0% Z, AE 5% S, foreign zero-rated, unregistered.
+- [x] 8.1 Title "TAX INVOICE" with the TRN for VAT-registered franchises (any VAT rule, including 0%); plain "INVOICE" for a `NONE` rule.
+- [x] 8.2 VAT category (S/Z/E/O), rate and VAT amount per line; zero-rating evidence note for exports.
+- [x] 8.3 Amount in words in the invoice currency (AED dirhams/fils, USD dollars/cents; no "Rupees/Paise").
+- [x] 8.4 Mapper tests: AE 0% Z, AE 5% S, foreign zero-rated, unregistered.
+
+> **As built (group 8):** VAT invoices (any VAT rule, 0% included) are titled "TAX INVOICE"; `NONE` gives "INVOICE". VAT tax rows carry the category letter (`VAT (S)` / `(Z)` / `(E)` / `(O)`) from the stored `taxCategory`, and the template now prints each non-GST tax row with its rate in the summary, even at 0% (it previously hid a zero tax line). The zero-rated export evidence note comes from the stored `invoiceNote`. Amount in words follows the invoice currency: Rupees/Paise with Indian grouping for INR; Dirhams/Fils, Dollars/Cents, Euros, Pounds/Pence etc. with thousand/million grouping otherwise. Per-line VAT on product invoices stays with 4.10 (product invoices still have no tax rows). Tests: 5 more mapper cases (15). Render check: a zero-rated HCUAE invoice shows "TAX INVOICE", TRN and "VAT (Z) @ 0%: 0.00".
 
 ## Group 9: Exchange rates (fetch, store, apply at issue)
 

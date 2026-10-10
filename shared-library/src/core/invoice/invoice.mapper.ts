@@ -47,6 +47,7 @@ export function mapPaymentToInvoiceDocument(
     payment.taxObj || {},
     taxType,
     taxMode,
+    payment.taxCategory,
   );
   // An entry without an invoice number is a proforma (no tax invoice, no QR)
   const isProforma = !payment.invoiceId;
@@ -137,10 +138,19 @@ export function mapPaymentToInvoiceDocument(
 /**
  * Builds tax rows from taxObj
  */
+/** UAE VAT category letters for invoice lines (Executive Regulation Art 59). */
+const VAT_CATEGORY_CODES: Record<string, string> = {
+  STANDARD: 'S',
+  ZERO_RATED: 'Z',
+  EXEMPT: 'E',
+  OUT_OF_SCOPE: 'O',
+};
+
 export function buildTaxRows(
   taxObj: Record<string, { amount: number; taxPercentage: number }>,
   taxType: TaxTypeEnum,
   taxMode: TaxMode,
+  taxCategory?: string | null,
 ): IInvoiceTaxRow[] {
   if (taxMode === TaxMode.NO_TAX || taxMode === TaxMode.RCM_IMPORT_SERVICE) {
     return [];
@@ -179,13 +189,13 @@ export function buildTaxRows(
   }
   // For VAT
   if (taxType === TaxTypeEnum.VAT && taxMode === TaxMode.VAT) {
-    if (taxObj['VAT']) {
-      rows.push({
-        label: 'VAT',
-        amount: taxObj['VAT'].amount,
-        percentage: taxObj['VAT'].taxPercentage,
-      });
-    }
+    const code = taxCategory ? VAT_CATEGORY_CODES[taxCategory] : undefined;
+    const vat = taxObj['VAT'] ?? { amount: 0, taxPercentage: 0 };
+    rows.push({
+      label: code ? `VAT (${code})` : 'VAT',
+      amount: vat.amount,
+      percentage: vat.taxPercentage,
+    });
   }
   // For US Sales Tax
   if (taxType === TaxTypeEnum.SALES_TAX) {
@@ -374,7 +384,9 @@ function placeOfSupplyOf(
 
 function invoiceTitle(isProforma: boolean, taxType: TaxTypeEnum): string {
   if (isProforma) return PROFORMA_TITLE;
-  return taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE';
+  // GST-registered (India) and VAT-registered (UAE, incl. 0% rules) suppliers issue tax invoices;
+  // an unregistered supplier (NONE rule) issues a plain invoice
+  return taxType === TaxTypeEnum.GST || taxType === TaxTypeEnum.VAT ? 'TAX INVOICE' : 'INVOICE';
 }
 
 /**
