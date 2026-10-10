@@ -1,5 +1,5 @@
 import {IAddress, IMemberAddress} from "../location.interface";
-import {PaymentSourceEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {InvoiceSeriesEnum, PaymentSourceEnum, TaxMode, TaxTypeEnum} from "../../enum";
 import {IAdminInfo, IDropdownItem} from "../../base.interface";
 
 export interface IMemberAddressSnapshot {
@@ -16,6 +16,10 @@ export interface IBasicMemberPayment {
   transactionId?: string;
   paymentDate: Date;
   invoiceId?: string;
+  /** Series of `invoiceId`, set when the number is issued (null for Q1 FY 2026-27 and earlier) */
+  invoiceSeries?: InvoiceSeriesEnum | null;
+  /** Date of issue in the franchise's timezone (YYYY-MM-DD); the FY in the number comes from it */
+  invoiceDate?: string | null;
   paymentStatusId: number;
   promoCode?: string;
   refundObj?: object | null;
@@ -151,4 +155,7 @@ export interface IMemberPaymentUpdatePreview {
   dietPlanImpact: IMemberDietPlanLimitImpact;
   highlights: string[];
   warnings: string[];
+  /** True when the edit would move an issued invoice to the other series (save is refused) */
+  blocked: boolean;
+  blockReason?: string;
 }

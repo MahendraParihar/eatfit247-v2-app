@@ -577,6 +577,8 @@ export class MemberPlanService {
       dietPlanImpact,
       highlights,
       warnings,
+      // Series guard arrives with 4.7 group 4
+      blocked: false,
     };
   }
 

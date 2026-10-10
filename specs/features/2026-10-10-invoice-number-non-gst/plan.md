@@ -7,13 +7,20 @@
 
 ## Group 1: Shared Library
 
-- [ ] 1.1 Add `InvoiceSeriesEnum { DOMESTIC = 'DOMESTIC', EXPORT = 'EXPORT' }` next to the tax enums. Export it from the barrel.
-- [ ] 1.2 Add `invoiceSeries?` and `invoiceDate?` to the member payment and member product interfaces.
-- [ ] 1.3 In `core/invoice/invoice.mapper.ts` (payment and product mappers):
+- [x] 1.1 Add `InvoiceSeriesEnum { DOMESTIC = 'DOMESTIC', EXPORT = 'EXPORT' }` next to the tax enums. Export it from the barrel.
+- [x] 1.2 Add `invoiceSeries?` and `invoiceDate?` to the member payment and member product interfaces.
+- [x] 1.3 In `core/invoice/invoice.mapper.ts` (payment and product mappers):
   - `invoiceDate` = `invoiceDate ?? paymentDate`.
   - When `invoiceId` is empty: title `PROFORMA INVOICE`, no invoice number, and the note "This is a proforma invoice and not a tax invoice under GST."
-- [ ] 1.4 Add `blocked: boolean` and `blockReason?: string` to the payment update-preview interface.
-- [ ] 1.5 Run `cd shared-library && npm run build`, then commit.
+- [x] 1.4 Add `blocked: boolean` and `blockReason?: string` to the payment update-preview interface.
+- [x] 1.5 Run `cd shared-library && npm run build`, then commit.
+
+> **As built (group 1):**
+> - `InvoiceSeriesEnum` is in `enum/tax-type.enum.ts`. `invoiceSeries` / `invoiceDate` (YYYY-MM-DD string) are on `IBasicMemberPayment` and `IBasicMemberProduct`.
+> - The mapper sets `header.isProforma` (new optional field on `IInvoiceHeader`), an empty `invoiceNumber` (the old `INV-<id>` fallback is gone) and no QR code for a proforma. `invoice.hbs` hides the "Invoice No" row and labels the date "Date:" on a proforma.
+> - Proforma note: "…not a tax invoice under GST." for GST entries; "…not a tax invoice." for others (HCUAE is not under GST). Any existing tax note follows it.
+> - `previewUpdate` returns `blocked: false` until group 4.
+> - Tests: `server_1/libs/modules/member/src/invoice/invoice-mapper.spec.ts` (5). The platform jest config doesn't map `@eatfit247-shared-lib`, so mapper specs live in the member lib.
 
 ## Group 2: Schema migration
 
@@ -39,7 +46,6 @@
   - DOMESTIC otherwise.
   - Product orders: the order's total tax and its single billing snapshot (so mixed-item series can't happen).
   - Share the country resolution with migration 138 (decision 13) so both give the same answer. 4.6 later swaps the body to the stored tax mode.
-  - DOMESTIC if the list is empty.
 - [ ] 3.4 Wire the existing issuing paths, each storing `invoice_id`, `invoice_series` and `invoice_date`:
   - plan create (`paymentObj.taxMode`)
   - product create (the items' `taxMode`s)

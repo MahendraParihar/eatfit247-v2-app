@@ -15,6 +15,12 @@ export enum TransactionType {
   PRODUCT = 'PRODUCT',
 }
 
+/** Invoice number series. EXPORT is used only by Indian franchises. */
+export enum InvoiceSeriesEnum {
+  DOMESTIC = 'DOMESTIC',
+  EXPORT = 'EXPORT',
+}
+
 export enum TaxMode {
   DOMESTIC_GST = 'DOMESTIC_GST', // India → India (GST)
   EXPORT_OF_SERVICE = 'EXPORT_OF_SERVICE', // India → Outside India (LUT)

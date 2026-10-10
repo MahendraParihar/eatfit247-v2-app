@@ -25,6 +25,7 @@ export interface IInvoiceHeader {
   title: string; // e.g., "TAX INVOICE", "INVOICE"
   invoiceNumber: string;
   invoiceDate: string; // ISO date string
+  isProforma?: boolean; // true when no invoice number has been issued (unpaid entry)
   dueDate?: string; // ISO date string (optional)
   currency: string; // ISO currency code (INR, USD, AED, etc.)
 }

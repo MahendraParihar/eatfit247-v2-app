@@ -1,4 +1,4 @@
-import {PaymentSourceEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {InvoiceSeriesEnum, PaymentSourceEnum, TaxMode, TaxTypeEnum} from "../../enum";
 import {IAdminInfo, IDropdownItem} from "../../base.interface";
 import {IAddress} from "../location.interface";
 import {IShipment} from "../shipment.interface";
@@ -65,6 +65,10 @@ export interface IBasicMemberProduct {
   transactionId?: string;
   paymentDate: Date;
   invoiceId?: string;
+  /** Series of `invoiceId`, set when the number is issued (null for Q1 FY 2026-27 and earlier) */
+  invoiceSeries?: InvoiceSeriesEnum | null;
+  /** Date of issue in the franchise's timezone (YYYY-MM-DD); the FY in the number comes from it */
+  invoiceDate?: string | null;
   paymentStatusId: number;
   franchiseId?: number | null;
   promoCode?: string;

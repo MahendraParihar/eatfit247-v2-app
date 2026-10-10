@@ -48,8 +48,10 @@ export function mapPaymentToInvoiceDocument(
     taxType,
     taxMode,
   );
+  // An entry without an invoice number is a proforma (no tax invoice, no QR)
+  const isProforma = !payment.invoiceId;
   // Determine if QR code should be enabled
-  const qrCodeEnabled = taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST;
+  const qrCodeEnabled = !isProforma && taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST;
   // Build QR code value if enabled
   let qrCodeValue = '';
   if (qrCodeEnabled && franchise.gstNumber) {
@@ -79,13 +81,14 @@ export function mapPaymentToInvoiceDocument(
     },
   );
   // Build tax note
-  const taxNote = buildTaxNote(taxMode, payment.invoiceNote);
+  const taxNote = withProformaNote(isProforma, taxType, buildTaxNote(taxMode, payment.invoiceNote));
   return {
     header: {
       brandName: franchise.companyName,
-      title: taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
-      invoiceNumber: payment.invoiceId || `INV-${payment.memberPaymentId}`,
-      invoiceDate: payment.paymentDate?.toString() || new Date().toISOString(),
+      title: invoiceTitle(isProforma, taxType),
+      invoiceNumber: payment.invoiceId || '',
+      invoiceDate: invoiceDateOf(payment.invoiceDate, payment.paymentDate),
+      isProforma,
       currency: payment.currency,
     },
     seller,
@@ -335,6 +338,31 @@ function buildBuyerInfo(
   };
 }
 
+export const PROFORMA_TITLE = 'PROFORMA INVOICE';
+
+function invoiceTitle(isProforma: boolean, taxType: TaxTypeEnum): string {
+  if (isProforma) return PROFORMA_TITLE;
+  return taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE';
+}
+
+/**
+ * The stored date of issue wins. Rows issued before invoice_date existed fall back to the payment
+ * date (what the PDF always printed). A proforma has neither, so it shows today.
+ */
+function invoiceDateOf(invoiceDate?: string | null, paymentDate?: Date | string | null): string {
+  return invoiceDate || paymentDate?.toString() || new Date().toISOString();
+}
+
+/** A proforma creates no tax liability, and says so before any tax note. */
+function withProformaNote(isProforma: boolean, taxType: TaxTypeEnum, taxNote?: string): string | undefined {
+  if (!isProforma) return taxNote;
+  const proformaNote =
+    taxType === TaxTypeEnum.GST
+      ? 'This is a proforma invoice and not a tax invoice under GST.'
+      : 'This is a proforma invoice and not a tax invoice.';
+  return taxNote ? `${proformaNote} ${taxNote}` : proformaNote;
+}
+
 /**
  * Builds tax note based on tax mode
  */
@@ -396,8 +424,13 @@ export function mapProductOrderToInvoiceDocument(
 ): IInvoiceDocument {
   const items = buildInvoiceOrderItem(productOrder);
 
+  // An entry without an invoice number is a proforma (no tax invoice, no QR)
+  const isProforma = !productOrder.invoiceId;
   // Determine if QR code should be enabled
-  const qrCodeEnabled = productOrder.orderItems[0].taxType === TaxTypeEnum.GST && productOrder.orderItems[0].taxMode === TaxMode.DOMESTIC_GST;
+  const qrCodeEnabled =
+    !isProforma &&
+    productOrder.orderItems[0].taxType === TaxTypeEnum.GST &&
+    productOrder.orderItems[0].taxMode === TaxMode.DOMESTIC_GST;
   // Build QR code value if enabled
   let qrCodeValue = '';
   if (qrCodeEnabled && franchise.gstNumber) {
@@ -428,13 +461,18 @@ export function mapProductOrderToInvoiceDocument(
     },
   );
   // Build tax note
-  const taxNote = buildTaxNote(productOrder.orderItems[0].taxMode, productOrder.orderItems[0].invoiceNote);
+  const taxNote = withProformaNote(
+    isProforma,
+    productOrder.orderItems[0].taxType,
+    buildTaxNote(productOrder.orderItems[0].taxMode, productOrder.orderItems[0].invoiceNote),
+  );
   return {
     header: {
       brandName: franchise.companyName,
-      title: productOrder.orderItems[0].taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
-      invoiceNumber: productOrder.invoiceId || `INV-${productOrder.memberProductId}`,
-      invoiceDate: productOrder.paymentDate?.toString() || new Date().toISOString(),
+      title: invoiceTitle(isProforma, productOrder.orderItems[0].taxType),
+      invoiceNumber: productOrder.invoiceId || '',
+      invoiceDate: invoiceDateOf(productOrder.invoiceDate, productOrder.paymentDate),
+      isProforma,
       currency: productOrder.currency,
     },
     seller,

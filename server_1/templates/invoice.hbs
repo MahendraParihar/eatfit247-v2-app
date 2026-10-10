@@ -352,12 +352,14 @@
   </div>
   <div class="invoice-header-title">{{invoice.header.title}}</div>
   <div class="invoice-header-invoice-meta">
+    {{#unless invoice.header.isProforma}}
+      <div class="invoice-meta-item">
+        <span class="invoice-meta-label">Invoice No:</span>
+        <span>{{invoice.header.invoiceNumber}}</span>
+      </div>
+    {{/unless}}
     <div class="invoice-meta-item">
-      <span class="invoice-meta-label">Invoice No:</span>
-      <span>{{invoice.header.invoiceNumber}}</span>
-    </div>
-    <div class="invoice-meta-item">
-      <span class="invoice-meta-label">Invoice Date:</span>
+      <span class="invoice-meta-label">{{#if invoice.header.isProforma}}Date:{{else}}Invoice Date:{{/if}}</span>
       <span>{{formatDate invoice.header.invoiceDate}}</span>
     </div>
     {{#if invoice.header.playOfSupply}}
