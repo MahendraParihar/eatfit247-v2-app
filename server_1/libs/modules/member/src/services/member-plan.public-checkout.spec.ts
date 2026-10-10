@@ -171,6 +171,12 @@ describe('MemberPlanService public checkout', () => {
     expect(taxCalculate).toHaveBeenCalledWith(expect.objectContaining({ franchiseId: 1, supplierCountryCode: 'IN' }));
   });
 
+  it('stores the checkout session (token jti) on the record', async () => {
+    await service.createPublicCheckoutOrder(4945, order, '127.0.0.1', 'session-123');
+
+    expect(paymentCreate).toHaveBeenCalledWith(expect.objectContaining({ checkoutSessionId: 'session-123' }), { transaction });
+  });
+
   it('creates the gateway order for the stored (rounded) total and stores the gateway on the record', async () => {
     const res = await service.createPublicCheckoutOrder(4945, order, '127.0.0.1');
 

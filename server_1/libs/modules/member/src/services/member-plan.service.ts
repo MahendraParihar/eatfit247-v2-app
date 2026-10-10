@@ -58,7 +58,6 @@ import {
   PaymentGatewayResolverService,
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { MemberDietPlanService } from './member-diet-plan.service';
 import { CheckoutGatewayService } from './checkout-gateway.service';
 import { promises as fs } from 'fs';
@@ -1059,20 +1058,24 @@ export class MemberPlanService {
    * @returns File model with PDF details
    */
   /**
-   * @param createdOnOrAfter - public checkout: only records created in the token's session
+   * @param checkoutSessionId - public checkout only: the record must have been created by
+   *   this checkout session (undefined = admin, no restriction; null/empty = nothing)
    */
   public async generateInvoicePDF(
     memberId: number,
     paymentId: number,
-    createdOnOrAfter?: Date,
+    checkoutSessionId?: string | null,
   ): Promise<IFileModel> {
+    if (checkoutSessionId !== undefined && !checkoutSessionId) {
+      throw new NotFoundException('Payment not found');
+    }
     // Get payment with all details
     const payment: TxnMemberPayment = await this.memberPaymentRepository.scope('invoice').findOne({
       where: {
         memberPaymentId: paymentId,
         memberId,
         active: true,
-        ...(createdOnOrAfter ? { createdAt: { [Op.gte]: createdOnOrAfter } } : {}),
+        ...(checkoutSessionId ? { checkoutSessionId } : {}),
       },
     });
     if (!payment) {
@@ -1312,6 +1315,9 @@ export class MemberPlanService {
     payload: IPublicPlanTaxCalculationRequest,
   ): Promise<IPublicPlanTaxCalculationResponse> {
     const programPlan = await this.programPlanService.fetchById(payload.programPlanId);
+    if (!programPlan.active || !programPlan.isVisibleOnWeb) {
+      throw new BadRequestException('This plan is not available');
+    }
     const fee = this.findPlanFee(programPlan, payload.currency);
     const promo = await this.checkoutGatewayService.applyPromoCode(
       payload.promoCode,
@@ -1337,6 +1343,7 @@ export class MemberPlanService {
     memberId: number,
     obj: IPublicPlanOrderRequest,
     requestedIp: string,
+    checkoutSessionId: string | null = null,
   ): Promise<IPublicCheckoutOrderResponse> {
     const member = await this.memberRepository.findOne({ where: { memberId } });
     if (!member) {
@@ -1398,6 +1405,7 @@ export class MemberPlanService {
           gstNumber: obj.gstNumber || null,
           memberAddress: { address: primaryAddress, billingAddress },
           paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
+          checkoutSessionId,
           orderAmount: paymentObj.orderAmount,
           discountAmount: paymentObj.discountAmount,
           taxAmount: paymentObj.taxAmount,
@@ -1542,7 +1550,7 @@ export class MemberPlanService {
       throw new NotFoundException(`Order not found for gateway order ID: ${gatewayOrderId}`);
     }
     // Public, unauthenticated lookup: never expose the raw gateway entity (email, contact, card) or refunds
-    return { ...this.convertToModel(paymentOrder.get({ plain: true })), paymentGatewayResponse: null, refundObj: null };
+    return { ...this.convertToModel(paymentOrder.get({ plain: true })), paymentGatewayResponse: null, refundObj: null, gstNumber: null, createdByUser: null, updatedByUser: null };
   }
 
   private buildInvoiceItems(payment: TxnMemberPayment): IInvoiceItem[] {

@@ -241,6 +241,8 @@ export class PromoCodeService {
     if (maxDiscount && discountAmount > maxDiscount) {
       discountAmount = maxDiscount;
     }
+    // Never more than the order itself
+    discountAmount = Math.min(discountAmount, dto.orderAmount);
 
     const finalAmount = Math.max(0, dto.orderAmount - discountAmount);
 

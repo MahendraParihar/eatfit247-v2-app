@@ -24,6 +24,15 @@ describe('PromoCodeService.applyPromoCode with DECIMAL strings', () => {
     expect(result.discountAmount).toBe(900);
   });
 
+  it('never discounts more than the order (FLAT code larger than the order)', async () => {
+    const service = serviceWith({ discountType: DiscountTypeEnum.FLAT, discountValue: '5000.00', maxDiscount: null });
+
+    const result = await service.applyPromoCode({ code: 'BIG', orderAmount: 1000 });
+
+    expect(result.discountAmount).toBe(1000);
+    expect(result.finalAmount).toBe(0);
+  });
+
   it('applies the minimum order amount numerically', async () => {
     const service = serviceWith({ discountType: DiscountTypeEnum.FLAT, discountValue: '100.00', minOrderAmount: '900.00' });
 
@@ -55,6 +64,11 @@ describe('MemberProductService public pricing', () => {
     ];
 
     expect(pick(prices, 'INR')?.price).toBe(1200);
+  });
+
+  it('a price is sellable for the whole of its last day', () => {
+    const today = new Date().toLocaleDateString('en-CA');
+    expect(pick([{ currency: 'INR', price: 1200, active: true, validFrom: '2026-01-01', validTo: today }], 'INR')?.price).toBe(1200);
   });
 
   it('a removed variant (only inactive prices) has no sellable price', () => {

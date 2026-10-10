@@ -7,6 +7,7 @@ import {
   Post,
   Req,
   Body,
+  ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Public, RequestedIp, AppConfigService } from '@server_1/core';
@@ -99,6 +100,10 @@ export class RazorpayWebhookController {
         requestedIp,
       );
     } catch (error) {
+      if (error instanceof ConflictException) {
+        this.logger.warn(`Webhook event ${eventId} is still being processed; asked the gateway to retry`);
+        throw error;
+      }
       this.logger.error(`Error processing webhook event ${payload.event}`, {
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,

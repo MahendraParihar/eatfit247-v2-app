@@ -1,6 +1,5 @@
-import { Op } from 'sequelize';
 import { IAddress, IDropdownItem } from '@eatfit247-shared-lib';
-import { checkoutSessionStart } from '@server_1/core';
+import { CheckoutTokenUtil } from '@server_1/core';
 import { MemberService } from './member.service';
 import { MemberPlanService } from './member-plan.service';
 import { MemberProductService } from './member-product.service';
@@ -38,33 +37,46 @@ describe('Group 9 review fixes', () => {
     });
   });
 
-  describe('checkout invoice downloads are limited to the token session', () => {
-    it('session start is the token issue time minus 5 minutes of clock skew', () => {
-      const iat = 1_760_000_000;
-      expect(checkoutSessionStart(iat).getTime()).toBe(iat * 1000 - 5 * 60 * 1000);
-    });
-
-    it('the plan invoice lookup filters on createdAt when a session start is given', async () => {
-      const findOne = jest.fn().mockResolvedValue(null);
+  describe('checkout invoice downloads are limited to the session that created the order', () => {
+    const planServiceWith = (findOne: jest.Mock): MemberPlanService => {
       const service = Object.create(MemberPlanService.prototype) as MemberPlanService;
       Object.assign(service, { memberPaymentRepository: { scope: () => ({ findOne }) } });
-      const since = new Date('2026-10-10T05:00:00Z');
+      return service;
+    };
 
-      await expect(service.generateInvoicePDF(4945, 46, since)).rejects.toThrow('Payment not found');
-
-      const where = findOne.mock.calls[0][0].where;
-      expect(where).toMatchObject({ memberPaymentId: 46, memberId: 4945, active: true });
-      expect(where.createdAt[Op.gte]).toEqual(since);
+    it('checkout tokens carry a unique session id (jti)', () => {
+      const a = CheckoutTokenUtil.verify(CheckoutTokenUtil.sign(4945));
+      const b = CheckoutTokenUtil.verify(CheckoutTokenUtil.sign(4945));
+      expect(a?.jti).toBeTruthy();
+      expect(a?.jti).not.toBe(b?.jti);
     });
 
-    it('admin invoice downloads (no session start) are unchanged', async () => {
+    it('the public plan invoice lookup requires the same checkout session', async () => {
       const findOne = jest.fn().mockResolvedValue(null);
-      const service = Object.create(MemberPlanService.prototype) as MemberPlanService;
-      Object.assign(service, { memberPaymentRepository: { scope: () => ({ findOne }) } });
 
-      await expect(service.generateInvoicePDF(4945, 46)).rejects.toThrow('Payment not found');
+      await expect(planServiceWith(findOne).generateInvoicePDF(4945, 46, 'session-a')).rejects.toThrow('Payment not found');
 
-      expect(findOne.mock.calls[0][0].where).not.toHaveProperty('createdAt');
+      expect(findOne.mock.calls[0][0].where).toMatchObject({
+        memberPaymentId: 46,
+        memberId: 4945,
+        active: true,
+        checkoutSessionId: 'session-a',
+      });
+    });
+
+    it('a token without a session id gets nothing (fails closed)', async () => {
+      const findOne = jest.fn();
+
+      await expect(planServiceWith(findOne).generateInvoicePDF(4945, 46, null)).rejects.toThrow('Payment not found');
+      expect(findOne).not.toHaveBeenCalled();
+    });
+
+    it('admin invoice downloads (no session argument) are unchanged', async () => {
+      const findOne = jest.fn().mockResolvedValue(null);
+
+      await expect(planServiceWith(findOne).generateInvoicePDF(4945, 46)).rejects.toThrow('Payment not found');
+
+      expect(findOne.mock.calls[0][0].where).not.toHaveProperty('checkoutSessionId');
     });
   });
 

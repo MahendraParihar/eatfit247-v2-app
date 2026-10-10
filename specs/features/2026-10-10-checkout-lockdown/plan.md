@@ -199,9 +199,9 @@ The items Group 8 had only logged are now fixed, except admin payment links (4.8
 - [x] 9.2 **Hidden plans:** public plan orders require `active` **and** `isVisibleOnWeb`. All 278 plan fees are active, so the fee `active` flag is not checked (the `details` scope doesn't select it).
 - [x] 9.3 **`POST member/create` (High, already there):**
   - It no longer changes an existing member's profile (it used to overwrite name, franchise, referrer and reset `hasAnyPlan`).
-  - Checkout tokens only reach invoices of records created in their own session. `CheckoutTokenGuard` exposes the token's `iat` (`@CheckoutTokenIssuedAt()`), and the public invoice downloads pass `checkoutSessionStart(iat)` (iat minus 5 minutes) to `generateInvoicePDF`; admin calls are unchanged.
+  - Invoice downloads limited by token `iat` were replaced in 10.1 by session binding.
   - The token still lets a returning customer check out; checking ownership with OTP is left for a separate auth item.
-- [x] 9.4 **Dashboard pending amount** excludes abandoned website checkouts (`PAYMENT_GATEWAY` with no admin creator).
+- [x] 9.4 ~~Dashboard pending amount excludes abandoned website checkouts~~ **Reverted in 10.7:** those queries sum the legacy `payment_obj`, so the change did nothing.
 - [x] 9.5 **Product tax (4.6 bug):** `calculateOrderItemsTax` passed the franchise and billing addresses to `calculateTax` in swapped order; fixed for admin and public. Domestic GST results are unchanged; export and place-of-supply are now correct.
 - [x] 9.6 **Product rounding:** public product lines are rounded to the currency before summing, so the stored lines add up exactly to the charged total (live: 1 line = ₹2,288 = order total).
 - [x] 9.7 **Website rendering:** `CheckoutComponent` now calls `markForCheck()` once each async step settles (zoneless), so the summary and status render with no interaction. The NG0100 error is gone in both the browser and SSR.
@@ -212,6 +212,24 @@ The items Group 8 had only logged are now fixed, except admin payment links (4.8
   - member jest passes (11 suites, 121 tests); core still has the old AbilitiesGuard failure (1 test); both apps and the website build; web lint shows no new problems.
   - Live, in Chrome: the product checkout (₹1,200 × 2) rendered at once; promo applied, then removed; PENDING order 46 for ₹2,288. You completed the Razorpay test payment, and verify set PAID, invoice `MEMUM/2026-27/P/000005`, promo `used_count` 2 and the `verify:` event row. The success page shows Paid.
   - **Side effect:** the paid event booked a **live NimbusPost shipment** (Delhivery AWB 4152922405330, shipment 37), because local data has the production courier account. Cancel it in the admin or NimbusPost.
+
+## Group 10: Second review of groups 8–9 (2026-10-10)
+
+A second independent review of `06fa02e7..` found no Critical or High issue and no new route to PAID, an invoice or a discount. Fixes:
+
+- [x] 10.1 (Medium) **Session-bound invoices.** Limiting by `iat` still left a 24-hour window: an attacker who got a token first could download a victim's later invoices by enumerating ids.
+  - Checkout tokens now carry a unique `jti`. The public order stores it in a new `checkout_session_id` column on both tables (added to migration 139, which isn't released yet; re-running it is safe).
+  - Public invoice downloads require the same session (`@CheckoutSessionId()`). A token without a `jti` gets nothing, and admin downloads are unchanged.
+  - Live: the same token downloads its order's proforma (200, `…-proforma.pdf`); a new token for the same member gets 404 for that order; the session gets 404 for an older order.
+- [x] 10.2 (Medium) **Price dates are calendar dates.** `findSellablePrice` compares `YYYY-MM-DD` against server-local today, so a price sells through the whole of its last day. The suspicious SQL compares against `created_at::date`.
+- [x] 10.3 (Low) **Preview = charge.** The public product tax preview uses the same per-line rounding as the order (`roundOrderLines`). Each line total is now the sum of its rounded parts (base − discount + tax), so lines always add up exactly.
+- [x] 10.4 (Low) **Public lookups** by gateway order id also blank `gstNumber`, `createdByUser` and `updatedByUser`. The member name and address stay, because the success page shows them.
+- [x] 10.5 (Low) **The plan tax preview** also requires `active` and `isVisibleOnWeb` (live: hidden plan 219 → 400).
+- [x] 10.6 (Low) **A FLAT discount** is capped at the order amount in `applyPromoCode`.
+- [x] 10.7 (Low) **The dashboard change from 9.4 is reverted.** Both the member and global admin "pending amount" sums read the legacy `payment_obj` JSON, which v2 records don't set, so they are about ₹0 for v2 data. This was already wrong; it's logged for the reports owner, and abandoned web checkouts should be excluded when it's fixed.
+- [x] 10.8 (cosmetic) The guard's JSDoc is back on the class, and a 409 webhook response is logged as a warning, not an error.
+- Logged: `member/create` doesn't change an existing member, so a returning customer keeps their old franchise and country (and with them the gateway and supplier address). Tell Accounts. The token can still add addresses to an existing member; ownership checks (OTP) are a separate auth item.
+- Checks: member jest passes (125 tests); both apps pass type checks and build. Live: session binding, redaction, hidden-plan preview.
 
 ## Group 7: Close-out
 

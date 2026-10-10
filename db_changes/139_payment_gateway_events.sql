@@ -14,7 +14,12 @@
 --      The gateway chosen when the PENDING record was created, reused to verify
 --      the payment with the same credentials.
 --
---   3. txn_member_payments.payment_date accepts NULL
+--   3. checkout_session_id on txn_member_payments / txn_member_products
+--      The checkout token (jti) that created a public-checkout record. Public
+--      invoice downloads require the same session, because a checkout token can
+--      be obtained by anyone who knows a member's email or phone.
+--
+--   4. txn_member_payments.payment_date accepts NULL
 --      A public-checkout record is created PENDING before the customer pays;
 --      payment_date is set from the gateway capture time when it becomes PAID.
 --      (txn_member_products.payment_date is already nullable.)
@@ -77,6 +82,12 @@ ALTER TABLE public.txn_member_payments
 ALTER TABLE public.txn_member_products
     ADD COLUMN IF NOT EXISTS franchise_payment_gateway_id INTEGER
         REFERENCES public.mst_franchise_payment_gateway (franchise_payment_gateway_id);
+
+ALTER TABLE public.txn_member_payments
+    ADD COLUMN IF NOT EXISTS checkout_session_id VARCHAR(64);
+
+ALTER TABLE public.txn_member_products
+    ADD COLUMN IF NOT EXISTS checkout_session_id VARCHAR(64);
 
 -- The webhook and verify paths look records up by gateway order id.
 CREATE INDEX IF NOT EXISTS idx_txn_member_payments_gateway_order

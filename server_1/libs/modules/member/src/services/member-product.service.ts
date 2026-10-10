@@ -64,7 +64,6 @@ import {
   PaymentGatewayResolverService,
 } from '@server_1/modules/payment';
 import { Sequelize } from 'sequelize-typescript';
-import { Op } from 'sequelize';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { promises as fs } from 'fs';
 import { find, map, sumBy } from 'lodash';
@@ -639,20 +638,24 @@ export class MemberProductService {
    * @returns File model with PDF details
    */
   /**
-   * @param createdOnOrAfter - public checkout: only records created in the token's session
+   * @param checkoutSessionId - public checkout only: the record must have been created by
+   *   this checkout session (undefined = admin, no restriction; null/empty = nothing)
    */
   public async generateInvoicePDF(
     memberId: number,
     productId: number,
-    createdOnOrAfter?: Date,
+    checkoutSessionId?: string | null,
   ): Promise<IFileModel> {
+    if (checkoutSessionId !== undefined && !checkoutSessionId) {
+      throw new NotFoundException('Product order not found');
+    }
     // Get product order with all details
     const productOrder = await this.memberProductRepository.scope('invoice').findOne({
       where: {
         memberProductId: productId,
         memberId,
         active: true,
-        ...(createdOnOrAfter ? { createdAt: { [Op.gte]: createdOnOrAfter } } : {}),
+        ...(checkoutSessionId ? { checkoutSessionId } : {}),
       },
     });
     if (!productOrder) {
@@ -749,12 +752,16 @@ export class MemberProductService {
       currencyCode: payload.items.find((i) => i.productId === item.productId)?.currency,
     }));
     // Calculate tax for order items
-    const orderItemObjs = await this.calculateOrderItemsTax(
+    const pricedItems = await this.calculateOrderItemsTax(
       tempOrderItemsWithCurrency,
       franchise[0],
       addresses.franchiseAddress,
       memberAddressSnapshot.billingAddress,
     );
+    // The public preview must show exactly what the order will charge (same per-line rounding)
+    const orderItemObjs = publicCheckout
+      ? this.roundOrderLines(pricedItems, payload.items[0].currency)
+      : pricedItems;
     const totalOrderAmount = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
     const totalDiscount = orderItemObjs.reduce((acc, item) => acc + item.discountAmount, 0);
     const totalTaxAmount = orderItemObjs.reduce((acc, item) => acc + item.taxAmount, 0);
@@ -948,17 +955,46 @@ export class MemberProductService {
    * empty "valid to" as 1970-01-01.
    */
   private findSellablePrice(prices: IProductPrice[], currency: string): IProductPrice | undefined {
-    const now = Date.now();
+    // valid_from / valid_to are calendar dates: compare YYYY-MM-DD (server-local today), so a
+    // price is sellable for the whole of its first and last day.
+    const toDay = (value: Date | string | null | undefined): string | null =>
+      value ? new Date(value).toISOString().slice(0, 10) : null;
+    const today = new Date().toLocaleDateString('en-CA');
     return prices.find((p) => {
-      const from = p.validFrom ? new Date(p.validFrom).getTime() : null;
-      const to = p.validTo ? new Date(p.validTo).getTime() : null;
-      const openEnded = to === null || (from !== null && to < from) || to <= 0;
+      const from = toDay(p.validFrom);
+      const to = toDay(p.validTo);
+      const openEnded = to === null || to <= '1970-01-01' || (from !== null && to < from);
       return (
         (p.currency || '').toUpperCase() === currency.toUpperCase() &&
         p.active !== false &&
-        (from === null || from <= now) &&
-        (openEnded || to >= now)
+        (from === null || from <= today) &&
+        (openEnded || to >= today)
       );
+    });
+  }
+
+  /**
+   * Round each line to the currency and derive its total from the rounded parts, so the lines
+   * add up exactly to the order total that is charged (public preview and order).
+   */
+  private roundOrderLines<T extends { unitPrice: number; baseAmount: number; discountAmount: number; taxAmount: number; totalAmount: number }>(
+    items: T[],
+    currency: string,
+  ): T[] {
+    const round = (amount: number): number =>
+      CurrencyUtil.fromMinor(CurrencyUtil.toMinor(Number(amount) || 0, currency), currency);
+    return items.map((item) => {
+      const baseAmount = round(item.baseAmount);
+      const discountAmount = round(item.discountAmount);
+      const taxAmount = round(item.taxAmount);
+      return {
+        ...item,
+        unitPrice: round(item.unitPrice),
+        baseAmount,
+        discountAmount,
+        taxAmount,
+        totalAmount: round(baseAmount - discountAmount + taxAmount),
+      };
     });
   }
 
@@ -1233,6 +1269,7 @@ export class MemberProductService {
     memberId: number,
     obj: IPublicProductOrderRequest,
     requestedIp: string,
+    checkoutSessionId: string | null = null,
   ): Promise<IPublicCheckoutOrderResponse> {
     const member = await this.memberService.verifyMember(memberId);
     const franchise = await this.getProductFranchise();
@@ -1253,17 +1290,10 @@ export class MemberProductService {
       addresses.franchiseAddress,
       memberAddressSnapshot.billingAddress,
     );
-    // Round each line to the currency first, so the stored lines add up to the charged total.
+    // Round each line first, so the stored lines add up to the charged total.
+    const orderItemObjs = this.roundOrderLines(pricedItems, currency);
     const round = (amount: number): number =>
       CurrencyUtil.fromMinor(CurrencyUtil.toMinor(Number(amount) || 0, currency), currency);
-    const orderItemObjs = pricedItems.map((item) => ({
-      ...item,
-      unitPrice: round(item.unitPrice),
-      baseAmount: round(item.baseAmount),
-      discountAmount: round(item.discountAmount),
-      taxAmount: round(item.taxAmount),
-      totalAmount: round(item.totalAmount),
-    }));
 
     const t = await this.sequelize.transaction();
     try {
@@ -1285,6 +1315,7 @@ export class MemberProductService {
           gstNumber: obj.gstNumber || null,
           memberAddress: memberAddressSnapshot,
           paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
+          checkoutSessionId,
           subTotalAmount: round(sumBy(orderItemObjs, 'baseAmount')),
           discountAmount: round(sumBy(orderItemObjs, 'discountAmount')),
           taxAmount: round(sumBy(orderItemObjs, 'taxAmount')),
@@ -1409,6 +1440,6 @@ export class MemberProductService {
       throw new NotFoundException(`Order not found for gateway order ID: ${gatewayOrderId}`);
     }
     // Public, unauthenticated lookup: never expose the raw gateway entity (email, contact, card) or refunds
-    return { ...this.convertToModel(productOrder, []), paymentGatewayResponse: null, refundObj: null };
+    return { ...this.convertToModel(productOrder, []), paymentGatewayResponse: null, refundObj: null, gstNumber: null, createdByUser: null, updatedByUser: null };
   }
 }

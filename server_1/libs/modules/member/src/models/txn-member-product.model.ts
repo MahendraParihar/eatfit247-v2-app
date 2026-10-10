@@ -323,6 +323,13 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     type: DataType.INTEGER,
   })
   declare franchisePaymentGatewayId: number | null;
+  /** Checkout token (jti) that created a public-checkout record; scopes public invoice downloads. */
+  @Column({
+    allowNull: true,
+    field: 'checkout_session_id',
+    type: DataType.STRING(64),
+  })
+  declare checkoutSessionId: string | null;
 
   @Column({
     allowNull: true,
