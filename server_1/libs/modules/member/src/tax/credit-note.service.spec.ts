@@ -12,6 +12,7 @@ describe('CreditNoteService', () => {
   let transaction: { LOCK: { UPDATE: string }; commit: jest.Mock; rollback: jest.Mock };
   let invoice: Record<string, unknown> | null;
   let alreadyCredited: number;
+  let alreadyReversed: number;
   let created: Record<string, unknown> | null;
   let generateCreditNoteNumber: jest.Mock;
   let service: CreditNoteService;
@@ -34,12 +35,13 @@ describe('CreditNoteService', () => {
       fxRate: null,
     };
     alreadyCredited = 0;
+    alreadyReversed = 0;
     created = null;
     generateCreditNoteNumber = jest.fn().mockResolvedValue('HCUAE/2026/CN/000001');
     jest.spyOn(TxnCreditNoteItem, 'create').mockResolvedValue({} as TxnCreditNoteItem);
     service = new CreditNoteService(
       {
-        sum: jest.fn().mockImplementation(async () => alreadyCredited),
+        sum: jest.fn().mockImplementation(async (field: string) => (field === 'taxAmount' ? alreadyReversed : alreadyCredited)),
         create: jest.fn().mockImplementation(async (row: Record<string, unknown>) => {
           created = { creditNoteId: 9, ...row };
           return created;
@@ -105,4 +107,17 @@ describe('CreditNoteService', () => {
       service.create(5888, { recordType: 'plan', recordId: 77, amount: 10, reason: 'x', eventDate: '2026-10-05' }, { adminId: 9, franchiseIds: [1] } as never, 'ip'),
     ).rejects.toThrow('access to this franchise');
   });
+
+  it('partial credits never reverse more VAT than the invoice charged (cumulative rounding)', async () => {
+    invoice = { ...invoice, totalAmount: '105.00', taxAmount: '5.00' };
+    const vat: number[] = [];
+    for (let i = 0; i < 3; i += 1) {
+      const note = await credit({ amount: 35 });
+      vat.push(note.taxAmount);
+      alreadyCredited += 35;
+      alreadyReversed += note.taxAmount;
+    }
+    expect(vat.reduce((a, b) => a + b, 0)).toBeCloseTo(5, 2);
+  });
 });
+

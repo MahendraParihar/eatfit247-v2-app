@@ -31,7 +31,8 @@ export class CreditNoteDialogComponent {
   form = this.fb.nonNullable.group({
     amount: [Number(this.data.payment.totalAmount) || 0, [Validators.required, Validators.min(0.01), Validators.max(Number(this.data.payment.totalAmount) || 0)]],
     reason: ['', [Validators.required, Validators.maxLength(500)]],
-    eventDate: [new Date().toISOString().slice(0, 10), Validators.required],
+    // Today's local date (toISOString would give the UTC date)
+    eventDate: [new Date().toLocaleDateString('en-CA'), Validators.required],
   });
 
   async issue(): Promise<void> {

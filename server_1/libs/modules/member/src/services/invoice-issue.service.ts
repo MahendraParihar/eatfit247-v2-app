@@ -133,8 +133,9 @@ export class InvoiceIssueService {
   public async backfillPendingFx(limit = 200): Promise<number> {
     const pending = { invoiceId: { [Op.ne]: null }, functionalCurrency: { [Op.ne]: null }, fxRate: null };
     let filled = 0;
-    const plans = await TxnMemberPayment.findAll({ where: pending, limit });
-    const products = await TxnMemberProduct.findAll({ where: pending, limit });
+    // Newest first, so invoices whose pair is never published can't starve recent ones
+    const plans = await TxnMemberPayment.findAll({ where: pending, limit, order: [['memberPaymentId', 'DESC']] });
+    const products = await TxnMemberProduct.findAll({ where: pending, limit, order: [['memberProductId', 'DESC']] });
     const rows: Array<[TxnMemberPayment | TxnMemberProduct, InvoiceRecordType]> = [
       ...plans.map((row): [TxnMemberPayment, InvoiceRecordType] => [row, 'plan']),
       ...products.map((row): [TxnMemberProduct, InvoiceRecordType] => [row, 'product']),

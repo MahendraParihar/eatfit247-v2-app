@@ -259,7 +259,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((countryId) => {
         this.filterStatesByCountry(countryId);
+        this.resetSavedAddress();
       });
+    this.basicDetailsForm
+      .get('stateId')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.resetSavedAddress());
     // Set the default country after forms are initialized (if master data is already loaded)
     this.setDefaultCountry();
     // Mark forms as initialized
@@ -1089,6 +1094,19 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     this.orderAmount = fee.fees;
   }
 
+  /**
+   * The billing address decides currency and tax: once it changes after being saved, the next
+   * step saves a new address and prices a new order instead of reusing the old one.
+   */
+  private resetSavedAddress(): void {
+    if (!this.addressId) {
+      return;
+    }
+    this.addressId = null;
+    this.checkoutOrder = null;
+    this.taxCalculation = null;
+  }
+
   /** Customer-facing label for the tax the server decided. */
   get taxLabel(): string {
     const line = this.taxCalculation?.items?.[0];
@@ -1101,7 +1119,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       case TaxMode.EXPORT_OF_GOODS:
         return line.isLutApplied ? 'Export – 0% (LUT)' : `IGST ${pct}% (export)`;
       case TaxMode.VAT:
-        return line.taxCategory === TaxCategoryEnum.ZERO_RATED ? `VAT 0% (zero-rated)` : `VAT ${pct}%`;
+        if (line.taxCategory === TaxCategoryEnum.ZERO_RATED) return 'VAT 0% (zero-rated)';
+        if (line.taxCategory === TaxCategoryEnum.EXEMPT) return 'VAT exempt';
+        return `VAT ${pct}%`;
       case TaxMode.DOMESTIC_GST:
         return line.taxObj && 'IGST' in line.taxObj ? `IGST ${pct}%` : `GST ${pct}%`;
       default:

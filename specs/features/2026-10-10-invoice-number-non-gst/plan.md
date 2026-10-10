@@ -173,6 +173,8 @@
 - [x] 6b.6 `update`: the series guard runs on the row locked and re-read inside the transaction; issuing a number also sets the payment's `franchise_id` when it was empty.
 - [x] 6b.7 Re-rehearsed on clones: a normal run commits (11 rows); overlap, unclassifiable-row and FY 2027-28 scenarios each abort with the rows listed and no backup table (nothing changed). Clones dropped.
 
+> **Note (4.6 group 7b / 10b):** issued invoices are now locked against any plan / currency / discount / billing / route change, so a series change can't happen through an edit; decision 10's guard remains as a backstop for rows without an issued number.
+
 ## Group 7: Release
 
 - [x] 7.1 PR runbook: superseded by the combined 4.5 + 4.7 + 4.6 runbook in [tax-engine validation.md](../2026-10-10-tax-engine-correctness/validation.md#release-runbook-45--47--46-ship-together) (owner decision: ship together). Original steps kept for reference:

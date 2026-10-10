@@ -73,19 +73,20 @@ export class CreditNoteService {
       if (tax.taxType !== TaxTypeEnum.VAT) {
         throw new BadRequestException('Credit notes are available for VAT invoices; GST credit notes come with roadmap 4.9.');
       }
-      const credited = Number(
-        (await this.creditNoteRepository.sum('totalAmount', {
-          where: obj.recordType === 'plan' ? { memberPaymentId: obj.recordId, active: true } : { memberProductId: obj.recordId, active: true },
-          transaction: t,
-        })) || 0,
-      );
+      const priorWhere =
+        obj.recordType === 'plan' ? { memberPaymentId: obj.recordId, active: true } : { memberProductId: obj.recordId, active: true };
+      const credited = Number((await this.creditNoteRepository.sum('totalAmount', { where: priorWhere, transaction: t })) || 0);
+      const vatReversed = Number((await this.creditNoteRepository.sum('taxAmount', { where: priorWhere, transaction: t })) || 0);
       const invoiceTotal = Number(record.totalAmount || 0);
       const remaining = round2(invoiceTotal - credited);
       if (amount > remaining) {
         throw new BadRequestException(`Only ${remaining.toFixed(2)} ${record.currency} of this invoice can still be credited.`);
       }
-      // VAT reversed in proportion to the original invoice (its rate and category)
-      const taxAmount = invoiceTotal > 0 ? round2((amount * Number(record.taxAmount || 0)) / invoiceTotal) : 0;
+      // VAT reversed in proportion to the original invoice (its rate and category), rounded on the
+      // running total so partial credits never reverse more VAT than the invoice charged
+      const invoiceTax = Number(record.taxAmount || 0);
+      const taxAmount =
+        invoiceTotal > 0 ? round2(round2(((credited + amount) * invoiceTax) / invoiceTotal) - vatReversed) : 0;
       const taxableAmount = round2(amount - taxAmount);
       const context = await this.invoiceIssueService.franchiseContext(record.franchiseId as number);
       const creditNoteDate = FranchiseDateUtil.localDate(new Date(), context.timeZone);

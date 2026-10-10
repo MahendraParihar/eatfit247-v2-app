@@ -332,6 +332,22 @@
                         <shared-ui-input-error [control]="formGroup.get('remittanceReference')"></shared-ui-input-error>
                       </mat-form-field>
                     </div>
+                    <!-- The route changes the tax: show the re-priced result right here -->
+                    @if (taxCalculationResult(); as tax) {
+                      <div class="tax-reason">
+                        <mat-icon>info</mat-icon>
+                        <span>
+                          Total {{ tax.totalAmount | number: '1.2-2' }} {{ tax.currency }}
+                          (tax {{ tax.taxAmount | number: '1.2-2' }}) — {{ taxDecisionReason }}
+                        </span>
+                      </div>
+                    }
+                    @for (warning of taxWarnings; track warning) {
+                      <div class="tax-warning">
+                        <mat-icon>warning</mat-icon>
+                        <span>{{ warning }}</span>
+                      </div>
+                    }
                   }
                 </div>
               }
@@ -498,6 +514,22 @@
                         <shared-ui-input-error [control]="formGroup.get('remittanceReference')"></shared-ui-input-error>
                       </mat-form-field>
                     </div>
+                    <!-- The route changes the tax: show the re-priced result right here -->
+                    @if (taxCalculationResult(); as tax) {
+                      <div class="tax-reason">
+                        <mat-icon>info</mat-icon>
+                        <span>
+                          Total {{ tax.totalAmount | number: '1.2-2' }} {{ tax.currency }}
+                          (tax {{ tax.taxAmount | number: '1.2-2' }}) — {{ taxDecisionReason }}
+                        </span>
+                      </div>
+                    }
+                    @for (warning of taxWarnings; track warning) {
+                      <div class="tax-warning">
+                        <mat-icon>warning</mat-icon>
+                        <span>{{ warning }}</span>
+                      </div>
+                    }
                   }
                 </div>
               }

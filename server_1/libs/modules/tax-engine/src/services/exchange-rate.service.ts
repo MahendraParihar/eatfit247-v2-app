@@ -22,6 +22,7 @@ const FBIL_PRODUCTS: Record<string, { currency: string; units: number }> = {
   'INR / 1 GBP': { currency: 'GBP', units: 1 },
   'INR / 1 EUR': { currency: 'EUR', units: 1 },
   'INR / 100 JPY': { currency: 'JPY', units: 100 },
+  'INR / 1 AED': { currency: 'AED', units: 1 },
 };
 
 const FBIL_URL = 'https://www.fbil.org.in/wasdm/refrates/fetchfiltered';
@@ -122,7 +123,12 @@ export class ExchangeRateService {
       if (!product || !/^\d{4}-\d{2}-\d{2}$/.test(rateDate) || !(rate > 0)) {
         continue;
       }
-      await this.upsert({ rateDate, fromCurrency: product.currency, toCurrency: 'INR', rate, source: ExchangeRateSourceEnum.FBIL, note: row.subProdName });
+      await this.upsert(
+        { rateDate, fromCurrency: product.currency, toCurrency: 'INR', rate, source: ExchangeRateSourceEnum.FBIL, note: row.subProdName },
+        null,
+        null,
+        false,
+      );
       saved += 1;
     }
     return saved;
@@ -183,32 +189,44 @@ export class ExchangeRateService {
     await row.update({ active, modifiedBy: user.adminId, modifiedIp: ip });
   }
 
+  /**
+   * Atomic insert-or-update on (date, pair, source), safe when several processes write at once.
+   * A fetched rate keeps its `active` flag (Finance may have switched it off); a Finance entry
+   * re-activates it.
+   */
   private async upsert(
     values: Pick<MstExchangeRate, 'rateDate' | 'fromCurrency' | 'toCurrency' | 'rate' | 'source'> &
       Partial<Pick<MstExchangeRate, 'validTo' | 'note'>>,
     adminId: number | null = null,
     ip: string | null = null,
+    reactivate = true,
   ): Promise<MstExchangeRate> {
-    const existing = await this.rateRepository.findOne({
-      where: {
-        rateDate: values.rateDate,
-        fromCurrency: values.fromCurrency,
-        toCurrency: values.toCurrency,
-        source: values.source,
+    const [rows] = await this.rateRepository.sequelize!.query(
+      `INSERT INTO public.mst_exchange_rates
+         (rate_date, from_currency, to_currency, rate, source, valid_to, note, active, created_by, modified_by, created_ip, modified_ip)
+       VALUES (:rateDate, :fromCurrency, :toCurrency, :rate, :source, :validTo, :note, true, :adminId, :adminId, :ip, :ip)
+       ON CONFLICT (rate_date, from_currency, to_currency, source) DO UPDATE
+         SET rate = EXCLUDED.rate,
+             valid_to = EXCLUDED.valid_to,
+             note = EXCLUDED.note,
+             active = CASE WHEN :reactivate THEN true ELSE mst_exchange_rates.active END,
+             modified_by = EXCLUDED.modified_by,
+             modified_ip = EXCLUDED.modified_ip,
+             updated_at = now()
+       RETURNING exchange_rate_id`,
+      {
+        replacements: {
+          ...values,
+          validTo: values.validTo ?? null,
+          note: values.note ?? null,
+          adminId,
+          ip,
+          reactivate,
+        },
       },
-    });
-    if (existing) {
-      await existing.update({ ...values, active: true, modifiedBy: adminId, modifiedIp: ip });
-      return existing;
-    }
-    return this.rateRepository.create({
-      ...values,
-      active: true,
-      createdBy: adminId,
-      modifiedBy: adminId,
-      createdIp: ip,
-      modifiedIp: ip,
-    } as MstExchangeRate);
+    );
+    const id = (rows as Array<{ exchange_rate_id: number }>)[0]?.exchange_rate_id;
+    return (await this.rateRepository.findByPk(id)) as MstExchangeRate;
   }
 
   private resolved(row: MstExchangeRate): IResolvedRate {

@@ -370,7 +370,8 @@ function fxSectionOf(record: {
     return undefined;
   }
   return {
-    rate: Number(record.fxRate),
+    // Readable on the PDF: six decimals for the rate
+    rate: Math.round(Number(record.fxRate) * 1e6) / 1e6,
     rateDate: String(record.fxRateDate),
     source: record.fxSource || '',
     fromCurrency: record.currency,
@@ -544,10 +545,11 @@ export function mapProductOrderToInvoiceDocument(
       invoiceDate,
       isProforma,
       currency: productOrder.currency,
+      // Goods: the place of supply is where they are delivered (the order's shipping snapshot)
       ...placeOfSupplyOf(
         productOrder.orderItems[0].taxType,
         productOrder.orderItems[0].taxMode,
-        memberAddress,
+        (productOrder.memberAddress?.address as IAddress | undefined) ?? memberAddress,
         productOrder.orderItems[0].jurisdiction?.placeOfSupply,
       ),
     },

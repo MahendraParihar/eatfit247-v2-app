@@ -188,10 +188,8 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
       formValue.referenceId = 1;
     }
 
-    const payload: Partial<ITaxMaster> = {
-      ...this.initialData,
-      ...formValue,
-    };
+    // Only the form's fields: the API refuses server-owned ones (id, audit fields)
+    const payload: Partial<ITaxMaster> = { ...formValue };
 
     try {
       if (this.isEditMode && this.initialData?.id) {

@@ -261,6 +261,8 @@ export class ManageMemberPaymentComponent implements OnInit {
       .get('paymentSource')
       ?.valueChanges.subscribe((paymentSource) => {
         this.updatePaymentFieldValidators(paymentSource);
+        // Manual vs gateway changes the route the tax uses
+        this.calculateTaxFromBackend();
         // Clear payment link when payment source changes
         this.paymentLink.set(null);
         this.paymentLinkId.set(null);
@@ -345,6 +347,7 @@ export class ManageMemberPaymentComponent implements OnInit {
   }
 
   async calculateTaxFromBackend(): Promise<void> {
+    this.syncHiddenRouteFields();
     const formData = this.paymentFormService.getPaymentFormData(
       this.formGroup,
       this.step1FormGroup
@@ -739,6 +742,23 @@ export class ManageMemberPaymentComponent implements OnInit {
     const code = (billing.countryCode || '').trim().toUpperCase();
     const name = (billing.country || '').trim().toLowerCase();
     return code ? code !== 'IN' : !!name && name !== 'india';
+  }
+
+  /**
+   * When the route fields are hidden (Indian billing), keep the route and reference the payment
+   * already has, so an edit doesn't look like a route change.
+   */
+  private syncHiddenRouteFields(): void {
+    if (this.showPaymentRouteFields()) {
+      return;
+    }
+    this.formGroup.patchValue(
+      {
+        paymentRoute: this.data.payment?.paymentRoute || PaymentRouteEnum.DOMESTIC,
+        remittanceReference: this.data.payment?.remittanceReference || '',
+      },
+      { emitEvent: false },
+    );
   }
 
   /** Why the server taxed it this way (shown under the tax summary). */

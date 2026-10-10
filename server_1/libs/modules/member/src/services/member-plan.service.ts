@@ -529,7 +529,9 @@ export class MemberPlanService {
     }
     const blockReason = lockedChange
       ? this.lockedChangeMessage(payment, isGatewayRecord)
-      : await this.findSeriesChange(payment, draft);
+      : amountsLocked
+        ? null
+        : await this.findSeriesChange(payment, draft);
 
     return {
       memberPaymentId: paymentId,
@@ -595,8 +597,9 @@ export class MemberPlanService {
     try {
       // Lock the row and re-read it, so two concurrent saves to PAID can't both issue a number
       await payment.reload({ transaction: t, lock: t.LOCK.UPDATE });
-      // Decision 10: an issued invoice can't move to the other series (checked on the locked row)
-      const blockReason = await this.findSeriesChange(payment, draft);
+      // Decision 10: an issued invoice can't move to the other series (checked on the locked row).
+      // A locked invoice keeps its stored pricing and billing, so its series can't change.
+      const blockReason = amountsLocked ? null : await this.findSeriesChange(payment, draft);
       if (blockReason) {
         throw new BadRequestException(blockReason);
       }

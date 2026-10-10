@@ -213,14 +213,15 @@ describe('MemberPlanService update: invoice on PAID and series guard', () => {
     paymentFindOne.mockResolvedValue(record);
     draftWith(IN, 180);
 
-    await expect(service.update(4945, 900, edit(), '127.0.0.1', 7)).rejects.toThrow(
-      'This invoice is in the export series. This change would make it domestic. Issue a credit note and record a new payment instead.',
+    // Moving it to the other series needs a new billing address, which the issued-invoice lock refuses
+    await expect(service.update(4945, 900, edit({ billingAddressId: 12 }), '127.0.0.1', 7)).rejects.toThrow(
+      'Invoice EFMUM/EXP/2026-27/S/000001 is issued',
     );
     expect(record.save).not.toHaveBeenCalled();
 
-    const preview = await service.previewUpdate(4945, 900, edit());
+    const preview = await service.previewUpdate(4945, 900, edit({ billingAddressId: 12 }));
     expect(preview.blocked).toBe(true);
-    expect(preview.blockReason).toContain('export series');
+    expect(preview.blockReason).toContain('credit note');
   });
 
   it('allows a financial edit that keeps the series', async () => {

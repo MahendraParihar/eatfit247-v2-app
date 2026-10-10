@@ -80,14 +80,20 @@ describe('exchange rates', () => {
           { processRunDate: '2026-10-09 00:00:00', subProdName: 'MIBOR', rate: 6.5 },
         ],
       }) as unknown as typeof fetch;
-      const create = jest.fn().mockResolvedValue({});
-      const service = new ExchangeRateService({ findOne: jest.fn().mockResolvedValue(null), create } as unknown as typeof MstExchangeRate);
+      const query = jest.fn().mockResolvedValue([[{ exchange_rate_id: 1 }]]);
+      const service = new ExchangeRateService({
+        sequelize: { query },
+        findByPk: jest.fn().mockResolvedValue({}),
+      } as unknown as typeof MstExchangeRate);
 
       const saved = await service.fetchFbil('2026-09-30', '2026-10-10');
 
       expect(saved).toBe(2);
-      expect(create).toHaveBeenCalledWith(expect.objectContaining({ fromCurrency: 'USD', toCurrency: 'INR', rate: 83.5, source: 'FBIL', rateDate: '2026-10-09' }));
-      expect(create).toHaveBeenCalledWith(expect.objectContaining({ fromCurrency: 'JPY', rate: 0.562 }));
+      const replacements = query.mock.calls.map((call) => call[1].replacements);
+      expect(replacements[0]).toMatchObject({ fromCurrency: 'USD', toCurrency: 'INR', rate: 83.5, source: 'FBIL', rateDate: '2026-10-09', reactivate: false });
+      expect(replacements[1]).toMatchObject({ fromCurrency: 'JPY', rate: 0.562 });
+      // Atomic upsert: safe when several processes fetch at once
+      expect(query.mock.calls[0][0]).toContain('ON CONFLICT (rate_date, from_currency, to_currency, source) DO UPDATE');
     });
 
     it('Finance entries: MANUAL needs a note; customs rates are into INR', async () => {

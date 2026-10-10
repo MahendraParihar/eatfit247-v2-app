@@ -144,6 +144,7 @@ export class PaymentFormService {
     const isManual =
       paymentSource === PaymentSourceEnum?.MANUAL || paymentSource === 'MANUAL';
     if (isManual) {
+      // The component keeps hidden route fields at the stored values (see showPaymentRouteFields)
       payload.paymentRoute = formGroup.get('paymentRoute')?.value || PaymentRouteEnum.DOMESTIC;
       payload.remittanceReference = formGroup.get('remittanceReference')?.value?.trim() || null;
     } else {

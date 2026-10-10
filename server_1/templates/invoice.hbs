@@ -589,7 +589,7 @@
     <div class="fx-note">
       Exchange rate: 1 {{invoice.fx.fromCurrency}} = {{invoice.fx.rate}} {{invoice.fx.currency}}
       ({{invoice.fx.source}}, {{formatDate invoice.fx.rateDate}}) ·
-      Total {{invoice.fx.currency}} {{invoice.fx.totalAmount}} · Tax {{invoice.fx.currency}} {{invoice.fx.taxAmount}}
+      Total {{invoice.fx.currency}} {{formatCurrency invoice.fx.totalAmount}} · Tax {{invoice.fx.currency}} {{formatCurrency invoice.fx.taxAmount}}
     </div>
   {{/if}}
 </div>
