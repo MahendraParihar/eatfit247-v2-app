@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { UniqueConstraintError } from 'sequelize';
 import {
@@ -147,7 +147,8 @@ export class RazorpayWebhookService {
       const inFlight =
         existing.result === null && Date.now() - new Date(existing.createdAt).getTime() < IN_FLIGHT_MS;
       if (inFlight) {
-        return null;
+        // Not 200: if the first delivery died mid-way, the gateway must retry later
+        throw new ConflictException('This event is still being processed');
       }
       return existing;
     }

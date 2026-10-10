@@ -1,3 +1,4 @@
+import { ConflictException } from '@nestjs/common';
 import { UniqueConstraintError } from 'sequelize';
 import { GatewayEventResultEnum, RazorpayWebhookPayload } from '@eatfit247-shared-lib';
 import { TxnPaymentGatewayEvent } from '../models';
@@ -119,17 +120,17 @@ describe('RazorpayWebhookService', () => {
     expect(confirmation.confirmGatewayPayment).not.toHaveBeenCalled();
   });
 
-  it('a redelivery while the first delivery is still processing is treated as a duplicate', async () => {
+  it('a redelivery while the first delivery is still processing gets 409 so the gateway retries later', async () => {
     create.mockRejectedValue(new UniqueConstraintError({}));
     findOne.mockResolvedValue({ result: null, createdAt: new Date(), update: jest.fn() });
 
-    const res = await service.handleVerifiedEvent(
-      'evt_1',
-      event('payment.captured', { payment: { entity: paymentEntity } } as RazorpayWebhookPayload['payload']),
-      '1.2.3.4',
-    );
-
-    expect(res.result).toBe(GatewayEventResultEnum.IGNORED_DUPLICATE);
+    await expect(
+      service.handleVerifiedEvent(
+        'evt_1',
+        event('payment.captured', { payment: { entity: paymentEntity } } as RazorpayWebhookPayload['payload']),
+        '1.2.3.4',
+      ),
+    ).rejects.toBeInstanceOf(ConflictException);
     expect(confirmation.confirmGatewayPayment).not.toHaveBeenCalled();
   });
 
