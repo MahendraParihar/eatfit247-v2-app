@@ -117,17 +117,25 @@
 
 ## Group 6: Admin payment and product forms (`eatfit247-admin`)
 
-- [ ] 6.1 Manual payment form:
+- [x] 6.1 Manual payment form:
   - payment route select + remittance reference, shown when the franchise is Indian and the billing country isn't India
   - default DOMESTIC with a hint that a foreign route needs a FIRC/e-FIRA
-- [ ] 6.2 The tax preview shows the decision reason and warnings (LUT expired / expiring, INR from a foreign client → IGST, Indian client under a UAE franchise → blocked).
-- [ ] 6.3 Place-product-order dialog: the same preview reason; route for manual orders.
-- [ ] 6.4 Tax-master form:
+- [x] 6.2 The tax preview shows the decision reason and warnings (LUT expired / expiring, INR from a foreign client → IGST, Indian client under a UAE franchise → blocked).
+- [x] 6.3 Place-product-order dialog: the same preview reason; route for manual orders.
+- [x] 6.4 Tax-master form:
   - VAT category select
   - allow a `NONE` rule (unregistered)
   - allow product references for PRODUCT rules
   - remove the forced `referenceId=1` only where it's wrong for products
-- [ ] 6.5 Franchise form: GSTIN optional (format + checksum when given); `vat_number` labelled "TRN" for VAT franchises, with 15-digit validation. Tax-master save refuses rules that don't match the franchise's registration (decision 18).
+- [x] 6.5 Franchise form: GSTIN optional (format + checksum when given); `vat_number` labelled "TRN" for VAT franchises, with 15-digit validation. Tax-master save refuses rules that don't match the franchise's registration (decision 18).
+
+> **As built (group 6):**
+> - Manual plan payment form: "How the money arrived" (five routes) and "FIRC / e-FIRA reference", shown for a manual payment whose billing address is outside India; route and payment date re-run the tax preview (`IPlanTaxCalculationRequest` now carries `paymentSource` / `paymentRoute` / `paymentDate`). The tax summary shows the server's `taxDecisionReason` and warnings: no valid LUT (export charged IGST), INR over Indian methods from a foreign client (IGST, not export), missing FIRC reference on an export.
+> - Product order dialog: the decision reason above the summary, and route + FIRC reference for manual orders (stored; goods tax doesn't depend on the route).
+> - Tax master: "Tax category" select (S/Z/E/O) with a hint; the tax system list already includes NONE and product references were already supported. Server: `TaxMasterService` refuses a 0% STANDARD VAT rule, a GST rule for a franchise without a GSTIN and a VAT rule without a TRN (decision 18); `TaxMasterService` is now exported.
+> - Franchise form: "GSTIN" (optional, GSTIN format) and "VAT number / TRN" (8–20 alphanumerics; UAE 15-digit TRN hint).
+> - Deferred: member-form warning for an Indian client under the UAE franchise (spec updated; payment-time refusal covers it).
+> - Tests: `member/src/tax/tax-master.service.spec.ts` (4). Member jest 237/237; admin dev build green.
 
 ## Group 7: Invoice rendering, India (shared mapper + template)
 

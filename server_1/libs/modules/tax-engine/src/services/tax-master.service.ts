@@ -1,15 +1,18 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ITaxRuleLookup } from '../interfaces/tax.interface';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { MstTaxMaster } from '../models';
-import { IBasicSearch, ITableList, ITaxMaster, TaxCategoryEnum } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
+import { IBasicSearch, ITableList, ITaxMaster, TaxCategoryEnum, TaxTypeEnum } from '@eatfit247-shared-lib';
+import { CommonFunctionsUtil, MstFranchise, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { CreateTaxMasterDto } from '../dto/tax-master.dto';
 
 @Injectable()
 export class TaxMasterService {
-  constructor(@InjectModel(MstTaxMaster) private readonly mstTaxMaster: typeof MstTaxMaster) {}
+  constructor(
+    @InjectModel(MstTaxMaster) private readonly mstTaxMaster: typeof MstTaxMaster,
+    @InjectModel(MstFranchise) private readonly franchiseRepository: typeof MstFranchise,
+  ) {}
 
   /**
    * The active rule for (franchise, reference, transaction type, country) effective on the date,
@@ -28,6 +31,29 @@ export class TaxMasterService {
       },
       order: [['effectiveFrom', 'DESC']],
     });
+  }
+
+  /**
+   * A rule must match its franchise's registration (decision 18): GST needs the franchise's GSTIN,
+   * VAT its TRN; a 0% VAT rule must be zero-rated or exempt (decision 7).
+   */
+  private async assertConsistentRule(obj: CreateTaxMasterDto): Promise<void> {
+    const category = obj.taxCategory || TaxCategoryEnum.STANDARD;
+    if (obj.taxSystem === TaxTypeEnum.VAT && Number(obj.taxPercent || 0) === 0 && category === TaxCategoryEnum.STANDARD) {
+      throw new BadRequestException('A 0% VAT rule must be zero-rated or exempt.');
+    }
+    if (obj.taxSystem !== TaxTypeEnum.GST && obj.taxSystem !== TaxTypeEnum.VAT) {
+      return;
+    }
+    const franchise = await this.franchiseRepository.findByPk(obj.franchiseId, {
+      attributes: ['franchiseId', 'gstNumber', 'vatNumber'],
+    });
+    if (obj.taxSystem === TaxTypeEnum.GST && !franchise?.gstNumber?.trim()) {
+      throw new BadRequestException('Add the franchise GSTIN before creating a GST rule (or use tax system NONE if it is not registered).');
+    }
+    if (obj.taxSystem === TaxTypeEnum.VAT && !franchise?.vatNumber?.trim()) {
+      throw new BadRequestException('Add the franchise TRN before creating a VAT rule (or use tax system NONE if it is not registered).');
+    }
   }
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<ITaxMaster>> {
@@ -111,6 +137,7 @@ export class TaxMasterService {
   }
 
   public async create(obj: CreateTaxMasterDto, cIp: string, adminId: number): Promise<void> {
+    await this.assertConsistentRule(obj);
     // Set default values if not provided
     const franchiseId = obj.franchiseId
     const referenceId = obj.referenceId
@@ -143,6 +170,11 @@ export class TaxMasterService {
     if (!find) {
       throw new NotFoundException('Tax master not found');
     }
+    await this.assertConsistentRule({
+      ...obj,
+      franchiseId: obj.franchiseId ?? find.franchiseId,
+      taxCategory: obj.taxCategory ?? find.taxCategory,
+    } as CreateTaxMasterDto);
     // Only update if provided, otherwise keep existing values
     const updateObj: any = {};
     if (obj.franchiseId !== undefined) updateObj.franchiseId = obj.franchiseId;

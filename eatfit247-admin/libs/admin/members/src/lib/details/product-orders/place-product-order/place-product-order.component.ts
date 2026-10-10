@@ -32,7 +32,8 @@ import {
   IProductPrice,
   IProductVariant,
   PaymentSourceEnum,
-  PaymentStatusEnum
+  PaymentStatusEnum,
+  PaymentRouteEnum,
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { InputErrorComponent } from '@shared';
@@ -101,6 +102,18 @@ export class PlaceProductOrderComponent implements OnInit {
   loading = signal(false);
   submitting = signal(false);
   calculatingTax = signal(false);
+  readonly paymentRouteOptions: { value: PaymentRouteEnum; label: string }[] = [
+    { value: PaymentRouteEnum.DOMESTIC, label: 'Indian payment (UPI, Indian card or bank, NRO)' },
+    { value: PaymentRouteEnum.FOREIGN_REMITTANCE, label: 'Foreign remittance (SWIFT, FIRC)' },
+    { value: PaymentRouteEnum.INTERNATIONAL_CARD_GATEWAY, label: 'International card / gateway (e-FIRA)' },
+    { value: PaymentRouteEnum.NRE_FCNR_ACCOUNT, label: "Client's NRE / FCNR account" },
+    { value: PaymentRouteEnum.RUPEE_VOSTRO, label: 'Special Rupee Vostro account' },
+  ];
+
+  /** Why the server taxed the order this way (first line; lines share one address). */
+  get taxDecisionReason(): string | null {
+    return this.taxCalculationResult()?.items?.[0]?.taxDecisionReason || null;
+  }
   isEditMode = false;
   selectedIndex = signal(0);
   InputLengthEnum = InputLengthEnum;
@@ -203,6 +216,9 @@ export class PlaceProductOrderComponent implements OnInit {
       gatewayPaymentId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
       paymentLink: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
       franchisePaymentGatewayId: [null],
+      // Manual orders: how the money arrived (stored with the order)
+      paymentRoute: [PaymentRouteEnum.DOMESTIC],
+      remittanceReference: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
     });
     // Main form group
     this.formGroup = this.fb.group({
@@ -671,6 +687,12 @@ export class PlaceProductOrderComponent implements OnInit {
       franchisePaymentGatewayId: this.isManualPaymentSource()
         ? undefined
         : this.step4FormGroup.get('franchisePaymentGatewayId')?.value || undefined,
+      paymentRoute: this.isManualPaymentSource()
+        ? this.step4FormGroup.get('paymentRoute')?.value || PaymentRouteEnum.DOMESTIC
+        : undefined,
+      remittanceReference: this.isManualPaymentSource()
+        ? this.step4FormGroup.get('remittanceReference')?.value?.trim() || null
+        : undefined,
       orderItems: this.cartItems().map(
         (item) =>
           <IMemberProductOrderItemBasic>{

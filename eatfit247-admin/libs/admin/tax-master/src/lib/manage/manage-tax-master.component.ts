@@ -13,7 +13,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { InputErrorComponent, ValidationUtil } from '@shared';
-import { IDropdownItem, ITaxMaster, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
+import { IDropdownItem, ITaxMaster, TaxCategoryEnum, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
 import { Subject, takeUntil } from 'rxjs';
 import { TaxMasterApiService } from '../api.service';
 import { FranchiseApiService } from 'franchise';
@@ -58,6 +58,13 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
 
   transactionTypes = Object.values(TransactionType);
   taxSystems = Object.values(TaxTypeEnum);
+  /** VAT category of the rule (UAE S / Z / E / O); a 0% VAT rule must be zero-rated or exempt */
+  readonly taxCategories: { value: TaxCategoryEnum; label: string }[] = [
+    { value: TaxCategoryEnum.STANDARD, label: 'Standard (S)' },
+    { value: TaxCategoryEnum.ZERO_RATED, label: 'Zero-rated (Z)' },
+    { value: TaxCategoryEnum.EXEMPT, label: 'Exempt (E)' },
+    { value: TaxCategoryEnum.OUT_OF_SCOPE, label: 'Out of scope (O)' },
+  ];
   franchiseOptions: IDropdownItem[] = [];
   countryOptions: IDropdownItem[] = [];
   productOptions: IDropdownItem[] = [];
@@ -87,6 +94,7 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
       taxPercent: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
       applyOn: ['SALE', [Validators.required, Validators.maxLength(20)]],
       isTaxInclusive: [false],
+      taxCategory: [TaxCategoryEnum.STANDARD, Validators.required],
       effectiveFrom: [null, Validators.required],
       effectiveTo: [null],
     });
@@ -157,6 +165,7 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
         taxPercent: this.initialData.taxPercent,
         applyOn: this.initialData.applyOn,
         isTaxInclusive: this.initialData.isTaxInclusive,
+        taxCategory: this.initialData.taxCategory || TaxCategoryEnum.STANDARD,
         effectiveFrom: this.initialData.effectiveFrom ? new Date(this.initialData.effectiveFrom) : null,
         effectiveTo: this.initialData.effectiveTo ? new Date(this.initialData.effectiveTo) : null,
       });

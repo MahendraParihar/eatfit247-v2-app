@@ -19,13 +19,16 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { InputErrorComponent } from '@shared';
 import {
+  IAddress,
   ICalculateTaxResponse,
   IDropdownItem,
   IMemberPayment,
   IMemberPaymentMasterData,
   InputLengthEnum,
+  PaymentRouteEnum,
   PaymentSourceEnum,
-  PaymentStatusEnum
+  PaymentStatusEnum,
+  TaxMode
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { PaymentFormService } from './payment-form.service';
@@ -168,6 +171,9 @@ export class ManageMemberPaymentComponent implements OnInit {
       gatewayPaymentId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
       paymentLink: ['', [Validators.maxLength(InputLengthEnum.CHAR_500)]],
       franchisePaymentGatewayId: [null],
+      // Manual payments: how the money arrived (decides export vs IGST for foreign clients)
+      paymentRoute: [PaymentRouteEnum.DOMESTIC],
+      remittanceReference: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
     });
     // Subscribe to changes to calculate tax and total from backend with debouncing
     this.formGroup
@@ -242,6 +248,15 @@ export class ManageMemberPaymentComponent implements OnInit {
         this.calculateTaxFromBackend();
       });
     // Subscribe to payment source changes to update field validators
+    // The route and date of a manual payment change its tax (export vs IGST, LUT validity)
+    this.formGroup
+      .get('paymentRoute')
+      ?.valueChanges.pipe(distinctUntilChanged())
+      .subscribe(() => this.calculateTaxFromBackend());
+    this.formGroup
+      .get('paymentDate')
+      ?.valueChanges.pipe(debounceTime(300))
+      .subscribe(() => this.calculateTaxFromBackend());
     this.formGroup
       .get('paymentSource')
       ?.valueChanges.subscribe((paymentSource) => {
@@ -699,6 +714,56 @@ export class ManageMemberPaymentComponent implements OnInit {
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
     }
+  }
+
+  readonly paymentRouteOptions: { value: PaymentRouteEnum; label: string }[] = [
+    { value: PaymentRouteEnum.DOMESTIC, label: 'Indian payment (UPI, Indian card or bank, NRO)' },
+    { value: PaymentRouteEnum.FOREIGN_REMITTANCE, label: 'Foreign remittance (SWIFT, FIRC)' },
+    { value: PaymentRouteEnum.INTERNATIONAL_CARD_GATEWAY, label: 'International card / gateway (e-FIRA)' },
+    { value: PaymentRouteEnum.NRE_FCNR_ACCOUNT, label: "Client's NRE / FCNR account" },
+    { value: PaymentRouteEnum.RUPEE_VOSTRO, label: 'Special Rupee Vostro account' },
+  ];
+
+  /** Billing address of the form, from the member's addresses. */
+  private get selectedBillingAddress(): IAddress | null {
+    const id = this.step1FormGroup?.get('billingAddressId')?.value || this.formGroup.get('billingAddressId')?.value;
+    return (this.masterData()?.addresses || []).find((a) => a.addressId === id) || null;
+  }
+
+  /** Route fields matter only for a manual payment billed outside India. */
+  showPaymentRouteFields(): boolean {
+    const billing = this.selectedBillingAddress;
+    if (!this.isManualPaymentSource() || !billing) {
+      return false;
+    }
+    const code = (billing.countryCode || '').trim().toUpperCase();
+    const name = (billing.country || '').trim().toLowerCase();
+    return code ? code !== 'IN' : !!name && name !== 'india';
+  }
+
+  /** Why the server taxed it this way (shown under the tax summary). */
+  get taxDecisionReason(): string | null {
+    return this.taxCalculationResult()?.taxDecisionReason || null;
+  }
+
+  /** Warnings an admin should see before saving (roadmap 4.6). */
+  get taxWarnings(): string[] {
+    const result = this.taxCalculationResult();
+    if (!result) {
+      return [];
+    }
+    const warnings: string[] = [];
+    const isExport = result.taxMode === TaxMode.EXPORT_OF_SERVICE || result.taxMode === TaxMode.EXPORT_OF_GOODS;
+    if (isExport && !result.isLutApplied) {
+      warnings.push('No valid LUT for this date: the export is charged IGST. Add the LUT in the franchise LUT register.');
+    }
+    if (result.taxMode === TaxMode.DOMESTIC_GST && this.showPaymentRouteFields()) {
+      warnings.push('INR received over Indian payment methods from a client outside India is not an export, so IGST applies. Choose the route the money actually came by.');
+    }
+    if (isExport && this.isManualPaymentSource() && !this.formGroup.get('remittanceReference')?.value?.trim()) {
+      warnings.push('Add the FIRC / e-FIRA reference that proves the money came from abroad.');
+    }
+    return warnings;
   }
 
   get taxableAmount(): number {

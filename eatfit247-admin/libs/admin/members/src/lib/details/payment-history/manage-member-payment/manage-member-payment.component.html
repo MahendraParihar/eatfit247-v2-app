@@ -217,6 +217,18 @@
                       <p><strong>Note:</strong> {{ invoiceNote }}</p>
                     </div>
                   }
+                  @if (taxDecisionReason) {
+                    <div class="tax-reason">
+                      <mat-icon>info</mat-icon>
+                      <span>{{ taxDecisionReason }}</span>
+                    </div>
+                  }
+                  @for (warning of taxWarnings; track warning) {
+                    <div class="tax-warning">
+                      <mat-icon>warning</mat-icon>
+                      <span>{{ warning }}</span>
+                    </div>
+                  }
                 </div>
               }
 
@@ -303,6 +315,24 @@
                       <shared-ui-input-error [control]="formGroup.get('transactionId')"></shared-ui-input-error>
                     </mat-form-field>
                   </div>
+                  @if (showPaymentRouteFields()) {
+                    <div class="form-row">
+                      <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>How the money arrived</mat-label>
+                        <mat-select formControlName="paymentRoute">
+                          @for (option of paymentRouteOptions; track option.value) {
+                            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                          }
+                        </mat-select>
+                        <mat-hint>Decides export (0%) vs IGST for a client outside India</mat-hint>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>FIRC / e-FIRA reference</mat-label>
+                        <input matInput formControlName="remittanceReference" [maxlength]="InputLengthEnum.CHAR_100" />
+                        <shared-ui-input-error [control]="formGroup.get('remittanceReference')"></shared-ui-input-error>
+                      </mat-form-field>
+                    </div>
+                  }
                 </div>
               }
 
@@ -451,6 +481,24 @@
                       <shared-ui-input-error [control]="formGroup.get('transactionId')"></shared-ui-input-error>
                     </mat-form-field>
                   </div>
+                  @if (showPaymentRouteFields()) {
+                    <div class="form-row">
+                      <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>How the money arrived</mat-label>
+                        <mat-select formControlName="paymentRoute">
+                          @for (option of paymentRouteOptions; track option.value) {
+                            <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                          }
+                        </mat-select>
+                        <mat-hint>Decides export (0%) vs IGST for a client outside India</mat-hint>
+                      </mat-form-field>
+                      <mat-form-field appearance="outline" class="half-width">
+                        <mat-label>FIRC / e-FIRA reference</mat-label>
+                        <input matInput formControlName="remittanceReference" [maxlength]="InputLengthEnum.CHAR_100" />
+                        <shared-ui-input-error [control]="formGroup.get('remittanceReference')"></shared-ui-input-error>
+                      </mat-form-field>
+                    </div>
+                  }
                 </div>
               }
 
