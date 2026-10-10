@@ -31,6 +31,7 @@ import {
   PaymentSourceEnum,
   TaxMode,
   TaxTypeEnum,
+  InvoiceSeriesEnum,
 } from '@eatfit247-shared-lib';
 
 @Table({
@@ -299,6 +300,18 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.STRING(100),
   })
   declare invoiceId: string;
+  @Column({
+    allowNull: true,
+    field: 'invoice_series',
+    type: DataType.STRING(10),
+  })
+  declare invoiceSeries: InvoiceSeriesEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'invoice_date',
+    type: DataType.DATEONLY,
+  })
+  declare invoiceDate: string | null;
   @Column({
     allowNull: false,
     field: 'payment_status_id',

@@ -1,4 +1,5 @@
-import { BelongsTo, Column, DataType, Model, Table } from 'sequelize-typescript';
+import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import { InvoiceSeriesEnum } from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -8,8 +9,8 @@ import { BelongsTo, Column, DataType, Model, Table } from 'sequelize-typescript'
   indexes: [
     {
       unique: true,
-      fields: ['franchise_id', 'invoice_type', 'financial_year'],
-      name: 'uq_mst_invoice_sequences_franchise_type_year',
+      fields: ['franchise_id', 'invoice_type', 'financial_year', 'series'],
+      name: 'uq_mst_invoice_sequences_franchise_type_year_series',
     },
   ],
 })
@@ -39,6 +40,13 @@ export class InvoiceSequenceModel extends Model<InvoiceSequenceModel> {
     type: DataType.STRING(10),
   })
   declare financialYear: string;
+  @Column({
+    allowNull: false,
+    defaultValue: InvoiceSeriesEnum.DOMESTIC,
+    field: 'series',
+    type: DataType.STRING(10),
+  })
+  declare series: InvoiceSeriesEnum;
   @Column({
     allowNull: false,
     defaultValue: 0,

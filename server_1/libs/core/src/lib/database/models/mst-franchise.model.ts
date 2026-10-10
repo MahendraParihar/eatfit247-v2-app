@@ -120,6 +120,13 @@ export class MstFranchise extends Model<MstFranchise> {
   })
   declare lutNumber: string;
   @Column({
+    allowNull: false,
+    defaultValue: 'Asia/Kolkata',
+    field: 'time_zone',
+    type: DataType.STRING(50),
+  })
+  declare timeZone: string;
+  @Column({
     allowNull: true,
     field: 'international_tax_mode',
     type: DataType.ENUM('EXPORT_OF_SERVICE', 'LOCAL_FOREIGN_TAX'),

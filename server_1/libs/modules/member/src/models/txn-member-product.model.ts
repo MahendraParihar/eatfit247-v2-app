@@ -17,7 +17,7 @@ import {
 } from '@server_1/core';
 import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { TxnMember } from './txn-member.model';
-import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import { InputLengthEnum, InvoiceSeriesEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
 import { TxnMemberProductOrderItem } from './txn-member-product-order-item.model';
 import { MstProduct } from '@server_1/models/product';
 
@@ -237,6 +237,18 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     type: DataType.STRING(100),
   })
   declare invoiceId: string;
+  @Column({
+    allowNull: true,
+    field: 'invoice_series',
+    type: DataType.STRING(10),
+  })
+  declare invoiceSeries: InvoiceSeriesEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'invoice_date',
+    type: DataType.DATEONLY,
+  })
+  declare invoiceDate: string | null;
 
   @Column({
     allowNull: false,

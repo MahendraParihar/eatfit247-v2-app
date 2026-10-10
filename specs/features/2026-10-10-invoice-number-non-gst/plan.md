@@ -24,14 +24,16 @@
 
 ## Group 2: Schema migration
 
-- [ ] 2.1 `db_changes/137_invoice_series.sql`, in one transaction:
+- [x] 2.1 `db_changes/137_invoice_series.sql`, in one transaction:
   - `mst_invoice_sequences`:
     - add `series VARCHAR(10) NOT NULL DEFAULT 'DOMESTIC' CHECK (series IN ('DOMESTIC','EXPORT'))`.
     - Look up the real name of the existing `(franchise_id, invoice_type, financial_year)` unique constraint (108 created it inline). Drop it, then add `uq_mst_invoice_sequences_franchise_type_year_series`.
   - `txn_member_payments` and `txn_member_products`: add `invoice_series VARCHAR(10) NULL` (same CHECK) and `invoice_date DATE NULL`.
   - `mst_franchises`: add `time_zone VARCHAR(50) NOT NULL DEFAULT 'Asia/Kolkata'`, then `UPDATE … SET time_zone='Asia/Dubai' WHERE franchise_code='HCUAE'`.
-- [ ] 2.2 Update the models to match: `InvoiceSequenceModel`, `TxnMemberPayment`, `TxnMemberProduct`, `MstFranchise`.
-- [ ] 2.3 Apply locally and check with `\d`. Commit.
+- [x] 2.2 Update the models to match: `InvoiceSequenceModel`, `TxnMemberPayment`, `TxnMemberProduct`, `MstFranchise`.
+- [x] 2.3 Apply locally and check with `\d`. Commit.
+
+> **As built (group 2):** 137 finds the old 3-column unique key by its columns (the generated name was `mst_invoice_sequences_franchise_id_invoice_type_financial_y_key` locally) and replaces it with `uq_mst_invoice_sequences_franchise_type_year_series`. CHECK constraints are named `chk_*_invoice_series` / `chk_mst_invoice_sequences_series`. Applied twice locally without error. Models: `InvoiceSequenceModel.series`, `invoiceSeries` / `invoiceDate` (DATEONLY string) on `TxnMemberPayment` and `TxnMemberProduct`, `MstFranchise.timeZone`. Member jest 161/161.
 
 ## Group 3: Backend numbering (`server_1`)
 
