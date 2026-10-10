@@ -34,24 +34,24 @@ Build in this order: each item depends on the ones above it. Audit finding IDs a
   - Razorpay webhook statuses only move forward (a late "failed" can't overwrite PAID), and the payment row is locked before an invoice number is issued.
   - [C1, H7, M5]
   - Owner steps after merge (validation.md "Post-ship"): migration 139 on production, the suspicious-records run with Razorpay reconciliation for Accounts, and Safari, mobile and foreign-currency checks.
-- 📋 **4.6 Tax-engine correctness (P0).**
+- 🚧 **4.6 Tax-engine correctness (P0).** Built 2026-10-10 on `feature/tax-engine-correctness`, release pending ([spec](../features/2026-10-10-tax-engine-correctness/requirements.md), [runbook](../features/2026-10-10-tax-engine-correctness/validation.md#release-runbook-45--47--46-ship-together)). Also delivers 8.0 (UAE VAT, Tax Credit Notes) and the exchange rates of 4.10.
   - Export vs domestic is decided by supplier country vs customer country, and the export branch actually runs.
   - ~~Fix the swapped supplier/customer arguments in product tax~~ (done in 4.5, plan 9.5); add an export-of-goods tax mode.
   - Rule for foreign clients who pay in INR.
   - LUT register with validity dates.
   - Required billing address (country and state) before tax is calculated; tax rule looked up by date and active flag.
   - [C2, C3, H10 rule, M2, M4 LUT]
-- 📋 **4.7 Invoice series and proforma.** Was 4.1. Spec: [specs/features/2026-10-10-invoice-number-non-gst](../features/2026-10-10-invoice-number-non-gst/).
+- 🚧 **4.7 Invoice series and proforma.** Was 4.1. Built 2026-10-10, ships together with 4.6 (release pending). Spec: [specs/features/2026-10-10-invoice-number-non-gst](../features/2026-10-10-invoice-number-non-gst/).
   - Separate export series; the invoice number is issued when the payment becomes PAID and is never removed.
   - Edits that would move an invoice between series are blocked.
   - Proforma PDF for unpaid entries.
   - Invoice date and financial year taken from the franchise's local date.
   - Renumber invoices from July 2026 (FY 2026-27 Q2) onward.
-  - Depends on 4.6.
+  - Shipped together with 4.6 (it was built first; its interim series rule is replaced by 4.6's stored tax mode).
 - 📋 **4.8 Invoice immutability.** Store a frozen copy of each invoice when it is issued, keep an append-only change log, and allow only non-financial edits after issue. [C4]
-- 📋 **4.9 Credit/debit notes and receipt/refund vouchers.** Each in its own numbering series, linked to the original invoice; refunds and RTO trigger them. [C5]
+- 📋 **4.9 Credit/debit notes and receipt/refund vouchers.** Each in its own numbering series, linked to the original invoice; refunds and RTO trigger them. Reuses the credit-note engine built in 4.6 (UAE Tax Credit Notes) and enables it for GST. [C5]
 - 📋 **4.10 Invoice particulars and FX.**
-  - Exchange rate and INR/AED equivalents stored on each transaction.
+  - ~~Exchange rate and INR/AED equivalents stored on each transaction~~ (done in 4.6).
   - Invoice shows place of supply, LUT number and export wording, reverse-charge line, amount in words and per-line tax.
   - [H1, H9, L3, M6]
 - 📋 **4.11 Rate and classification master.** SAC/HSN codes and tax rates with effective dates, and a recheck of invoices issued since 22 Sep 2025. **Blocked on the CA's decision.** [H5, M3]
@@ -84,7 +84,7 @@ Goal: every later feature ships with automated backend integration and e2e tests
 
 ## Phase 8: Online Payments for Partner Franchises 📋
 
-- 📋 **8.0 UAE VAT compliance for HCUAE** (before 8.1).
+- 🚧 **8.0 UAE VAT compliance for HCUAE** (before 8.1). Merged into 4.6 (owner, 2026-10-10): zero-rated category, Tax Invoice + TRN, AED equivalents and Tax Credit Notes are built there; e-invoicing readiness stays here.
   - Zero-rated (0%) category for clients outside the UAE, with evidence of where they live.
   - "Tax Invoice" title with the TRN, and AED amounts.
   - Tax Credit Notes.

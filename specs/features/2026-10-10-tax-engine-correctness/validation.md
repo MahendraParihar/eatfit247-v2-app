@@ -31,6 +31,45 @@
 | A23 | Given a fetched rate, then its source is FBIL or CBUAE (official sites only), or MANUAL with a note when entered by Finance | unit + DB check | ☐ |
 | A21 | Issued payments 5125–5128 (and all production history) are unchanged after migrations 140–142 | DB before/after diff | ☐ |
 
+### Results (2026-10-10, local)
+
+| # | Status | Evidence |
+|---|--------|----------|
+| A1, A2 | ✅ | `tax-engine.spec`; live 5133 (India) CGST+SGST |
+| A3, A4 | ✅ | `tax-engine.spec`; live US+USD with LUT → 0% `AD270326000001T`; without LUT → IGST export |
+| A5, A6, A7 | ✅ | `tax-engine.spec` (INR domestic → IGST; foreign routes incl. NRE/FCNR → export); live 5131 / 5132 |
+| A8 | ✅ unit | export of goods by delivery country; live preview to a US address → EXPORT_OF_GOODS (no live product payment: live courier) |
+| A9, A10 | ✅ | `tax-engine.spec`, mapper specs; live 5134 (HCUAE) VAT 0% Z, TAX INVOICE + TRN PDF |
+| A11 | ✅ | engine refusal (spec + live 5889); member-form warning deferred (spec updated) |
+| A12 | ✅ unit | missing / inactive / wrong-type rule → 400 |
+| A13 | ✅ | `lut.service.spec`; live create, overlap refused, Dubai-scoped admin refused; admin tab builds (browser check pending restart) |
+| A14 | ⏳ browser | currency choice + label built (SSR build green); needs API restart and a USD plan fee |
+| A15 | ✅ | mapper specs (GSTIN / TRN / none; place of supply; words in AED / USD / INR) |
+| A16, A17 | ✅ | `exchange-rate.spec`; live FBIL fetch (8 rates), USD→INR resolves to FBIL; pending + backfill path |
+| A18 | ✅ | goods without a customs rate → pending (live); customs entry screen built |
+| A19, A20 | ✅ | `credit-note.service.spec`; live two concurrent notes `HCUAE/2026/CN/000001–000002`, over-credit refused, PDF checked |
+| A21 | ✅ | 140–142 only add columns/tables; issued payments 5125–5128 unchanged (an edit to 5128 keeps NO_TAX / 5085) |
+| A22 | ✅ | `tax-engine.spec`, `tax-master.service.spec` |
+| A23 | ✅ | rows carry source FBIL / CBUAE_PEG / CBIC_CUSTOMS / MANUAL (manual requires a note) |
+
+Automated: member jest **263/263**; `nx build admin-api` and `public-api` green; website SSR build green; admin dev build green (the production build's size-budget errors are pre-existing). Migrations 137, 138 (clones), 139, 140, 141, 142 apply cleanly and re-run without error.
+
+## Release runbook (4.5 + 4.7 + 4.6 ship together)
+
+**Before the window (owner)**
+1. Accounts signs off `scripts/invoice-renumber/preview_fy2026_27_q2.sql` run on a production copy (CSV: `psql -X -q --csv`); no row may show `blocks_138`, part 2 must be empty. Resolve any listed rows with Accounts / CA first.
+2. CA answer on **Mahi's GST registration** (requirements Open Questions). Registered → GSTIN + LUT; not registered → clear its GSTIN and set its tax rule to `NONE` (exports are then refused).
+3. Healuxe's real **TRN** ready; every production **product** has its own tax rule; every franchise address has country and state.
+
+**Window**
+4. Stop public-api and admin-api. Back up the database.
+5. Apply in order: `137_invoice_series.sql`, `138_fy2026_27_q2_invoice_renumber.sql`, `139_payment_gateway_events.sql` (if 4.5 isn't live yet), `140_tax_engine_correctness.sql`, `141_exchange_rates.sql`, `142_credit_notes.sql`. Record counters before/after 138 in the 4.7 validation.
+6. Configuration (admin or SQL, before the APIs start): Healuxe TRN in "VAT number / TRN" and its GSTIN cleared; Mahi per step 2; EFMUM's LUT for FY 2026-27 in the LUT register (and Mahi's if registered); USD fees on the plans foreign clients buy; check tax rules (EFMUM IN GST 18; HCUAE AE VAT 0% zero-rated; product rules).
+7. Build and deploy shared-library, server (both APIs), admin and website (`docker compose -f ./infra/docker-compose.yml build --no-cache && … up -d`). Start the APIs.
+
+**Smoke test**
+8. One domestic and one export plan invoice (manual), one proforma download, one HCUAE payment (TAX INVOICE + TRN), one credit note; a real Razorpay payment confirmed by webhook (row in `txn_payment_gateway_events`); Exchange rates screen shows today's FBIL rates after 14:15 IST.
+
 ## Automated Checks
 
 - [ ] `cd shared-library && npm run build`

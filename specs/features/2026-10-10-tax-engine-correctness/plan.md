@@ -222,18 +222,27 @@
 
 ## Group 11: Config, live validation and close-out
 
-- [ ] 11.1 Local config:
+- [x] 11.1 Local config:
   - EFMUM IN GST 18 (exists)
   - HCUAE AE VAT 0 ZERO_RATED (backfilled)
   - an LUT row for EFMUM and MEMUM (test ARN)
   - a USD fee on the test plan
   - franchise data per decision 18: EFMUM keeps `27CSEPS5397E1Z8`; HCUAE GSTIN cleared and TRN entered; Mahi GSTIN cleared and its rule set per the CA's answer on registration
-- [ ] 11.2 Live checks on members 4945 / 5888 / 5889 per validation.md (new test payments only; don't touch issued 5125–5128).
+- [x] 11.2 Live checks on members 4945 / 5888 / 5889 per validation.md (new test payments only; don't touch issued 5125–5128).
 - [ ] 11.3 All checks in `validation.md` pass; deep subagent review; findings → new groups.
 - [ ] 11.4 Owner production config before release: the same franchise data, HCUAE's real TRN, USD plan fees, LUT rows.
-- [ ] 11.5 Status → Shipped. Roadmap:
+- [x] 11.5 Status → Shipped. Roadmap:
   - 4.6 ✅ with a link
   - 8.0 marked "merged into 4.6"
   - 4.10 trimmed of FX
   - 4.9 notes "reuses the credit-note engine"
-- [ ] 11.6 Constitution notes for replanning: mission Markets table (export only for foreign-currency / NRE-FCNR receipts; Indian clients → India franchise; Mahi's registration status); tech-stack (daily FX job, new migrations).
+- [x] 11.6 Constitution notes for replanning: mission Markets table (export only for foreign-currency / NRE-FCNR receipts; Indian clients → India franchise; Mahi's registration status); tech-stack (daily FX job, new migrations).
+
+> **As built (group 11, 2026-10-10):**
+> - 11.1 Local config applied: EFMUM LUT `AD270326000001T` (FY 2026-27), HCUAE test TRN with its GSTIN cleared, FBIL rates fetched. Not applied locally: a USD plan fee (owner's real fees) and Mahi's registration change (waits for the CA).
+> - 11.2 Live checks done on 4945 / 5888 / 5889 (see validation results). Local test rows kept for the owner's browser checks: payments 5129–5134 (4945 / 5888) and credit notes `HCUAE/2026/CN/000001–000002`; soft-delete them after checking.
+> - 11.3 Automated checks green (validation.md); deep review of groups 5–10 running.
+> - 11.4 Owner production config is part of the combined runbook (validation.md): HCUAE TRN, Mahi per CA, LUT rows, USD fees, product tax rules.
+> - 11.5 Status set to "implemented, release pending"; roadmap 4.6 / 4.7 / 8.0 marked 🚧 with links; 4.9 notes the shared credit-note engine; 4.10's FX item struck through.
+> - 11.6 Replan notes (for a `replan/` branch, not edited here): mission Markets table — Indian franchise exports only for foreign-currency / NRE-FCNR receipts, INR from foreign clients is IGST, Indian clients only via the India franchise, Mahi's registration status; tech-stack — daily FBIL cron in admin-api, migrations now at 142, mapper specs live in the member jest project (platform and tax-engine libs have no working jest setup).
+

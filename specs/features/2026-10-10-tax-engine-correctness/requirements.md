@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved, **implementation deferred** (owner, 2026-10-10): starts after the invoice-number spec ([2026-10-10-invoice-number-non-gst](../2026-10-10-invoice-number-non-gst/), roadmap 4.7) is merged and closed. All pending work is in [plan.md](./plan.md) groups 1–11 |
+| Status | **Implemented 2026-10-10, release pending** (ships with 4.5 and 4.7; see the runbook in [validation.md](./validation.md)). Owner decision changed the order: 4.7 and 4.6 were built back to back and ship together |
 | Branch | `feature/tax-engine-correctness` (stacked on `feature/10-10-2026-checkout-lockdown`; retarget to `m3-cms-update` once 4.5 is merged) |
 | Roadmap | Phase 4: **4.6** Tax-engine correctness (P0). **Absorbs 8.0** (UAE VAT for HCUAE) and the exchange-rate part of **4.10**, by owner decision 2026-10-10 |
 | References | [Accounting audit](../../backlog/2026-10-10-accounting-audit.md) C2, C3 (done in 4.5), H6, H9, H10, M2, M4, part of H1; IGST Act s.2(6), s.7(5)(a), s.13, s.14, s.16; CGST Rules 34, 46, 96A; CBIC Circular 202/14/2023; UAE VAT Decree-Law Art 69, ER Art 31, 41, 59, 60 |

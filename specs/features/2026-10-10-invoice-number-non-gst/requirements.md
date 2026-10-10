@@ -2,8 +2,8 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft (revised 2026-10-10 after the [accounting audit](../../backlog/2026-10-10-accounting-audit.md), option A) |
-| Branch | `feature/10-10-2026-invoice-number-non-gst`; PR into `m3-cms-update` |
+| Status | **Implemented 2026-10-10, release pending** (ships with 4.5 and 4.6; runbook in [the 4.6 validation](../2026-10-10-tax-engine-correctness/validation.md#release-runbook-45--47--46-ship-together)) |
+| Branch | built on `feature/tax-engine-correctness` (stacked on 4.5); PR into `m3-cms-update` |
 | Roadmap | Phase 4: **4.7** Invoice series and proforma (was 4.1). **Ships before 4.6** (owner, 2026-10-10: needed for the Q2 FY 2026-27 filing). Until 4.6 ships, new invoices use the billing-country rule of decision 1 |
 | References | Accounts department change request (2026-10-10); [mission.md](../../product/mission.md) principles 1, 2, 10, 11; audit findings C2, C3, C6, M1; CGST Act s.13, s.34; CGST Rules 46, 96A; GSTR-1 Table 13 |
 | Apps touched | server_1 / shared-library / eatfit247-admin / db_changes |

@@ -32,6 +32,24 @@
 | A21 | Given migration 138 ran, when the next domestic and export invoices are issued, then each takes counter max + 1, with no gap or collision | manual + SQL | ☐ |
 | A22 | Accounts reviewed and signed off the preview before production | sign-off below | ☐ |
 
+### Results (2026-10-10, local; Q2 data on production still to rehearse)
+
+| # | Status | Evidence |
+|---|--------|----------|
+| A1, A2, A2b | ✅ | `invoice-numbering.spec`, `payment-confirmation.service.spec`; live: 5128 → `EFMUM/EXP/2026-27/S/000001`, 5124 → domestic (rolled back); 5131 (US, INR, IGST) → `S/000010`, 5132 (US, NRE) → `EXP/000002` |
+| A3 | ✅ unit | series from all lines' export mode (`invoice-numbering.spec`); no live product payment (live courier) |
+| A4 | ✅ unit | mixed line modes refused (`invoice-numbering.spec`) |
+| A5 | ✅ unit / ⏳ Razorpay | confirmation spec (domestic, export, product, replay); a Razorpay test-mode payment after restart is pending |
+| A6 | ✅ | HCUAE keeps one series (`HCUAE/2026/S/000004`, 5134); 138 excludes HCUAE (rehearsal) |
+| A7 | ✅ | counter row lock (unit); concurrent credit notes consecutive (live) — same mechanism |
+| A8, A9 | ✅ | `member-plan.invoice-on-paid.spec`; live 5129 PENDING → PAID → `EXP/000001`, back to PENDING keeps it |
+| A10, A11, A12 | ✅ | series guard + issued-invoice lock (4.6 group 7b): financial/route changes on any issued invoice are refused, others save without re-pricing (spec + live on 5128) |
+| A13 | ✅ unit | FY boundary and IST/UTC midnight (`invoice-numbering.spec`); backdated payment keeps today's invoice date |
+| A14, A15 | ✅ render | proforma 5130, export 5129/5132, domestic 4744 PDFs checked; ⏳ browser click-through after API restart |
+| A16 | ✅ code | ZIP exports filter `invoice_id` (payment + both product exports) |
+| A17–A21 | ✅ rehearsal | clones: normal run; Q1 untouched; contiguous from Q1 max; EXP from 000001; backup + counters; re-run aborts; overlap / unclassifiable / FY 2027-28 guards abort with rows listed; app issues next numbers without gaps |
+| A22 | ⏳ owner | Accounts signs off the production preview CSV |
+
 ## Automated Checks
 
 - [ ] `cd shared-library && npm run build`

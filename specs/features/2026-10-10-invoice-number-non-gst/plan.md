@@ -175,19 +175,19 @@
 
 ## Group 7: Release
 
-- [ ] 7.1 PR runbook:
+- [x] 7.1 PR runbook: superseded by the combined 4.5 + 4.7 + 4.6 runbook in [tax-engine validation.md](../2026-10-10-tax-engine-correctness/validation.md#release-runbook-45--47--46-ship-together) (owner decision: ship together). Original steps kept for reference:
   1. Confirm 4.5 is live (migration 139 applied).
   2. Stop public-api and admin-api.
   3. Apply 137, then 138.
   4. Deploy the server, shared-library and admin builds.
   5. Start the APIs.
   6. Smoke test: one domestic invoice, one export invoice, one proforma.
-- [ ] 7.2 Record the go-live timestamp and the counters before and after in `validation.md`.
+- [ ] 7.2 (owner, at release) Record the go-live timestamp and the counters before and after in `validation.md`.
 
 ## Group 8: Close-out
 
 - [ ] 8.1 Every check in `validation.md` passes.
-- [ ] 8.2 Set `requirements.md` status to Shipped. Mark roadmap 4.7 ✅ with a link to this folder.
+- [x] 8.2 Status set to "implemented, release pending" (Shipped after the production release). Mark roadmap 4.7 ✅ with a link to this folder.
 - [ ] 8.3 Replan notes:
   - If the CA agrees, give 4.10 the job of printing the LUT endorsement keyed on `invoice_series` for historical EXP rows.
   - Confirm the 16-character format item stays under "Later".
