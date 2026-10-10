@@ -206,7 +206,7 @@ export class PromoCodeService {
     }
 
     // Check minimum order amount
-    if (promoCode.minOrderAmount && dto.orderAmount < promoCode.minOrderAmount) {
+    if (promoCode.minOrderAmount && dto.orderAmount < Number(promoCode.minOrderAmount)) {
       return {
         valid: false,
         discountAmount: 0,
@@ -225,17 +225,21 @@ export class PromoCodeService {
       };
     }
 
+    // DECIMAL columns arrive as strings; compare as numbers (e.g. "500.00" > "1000.00" is true as text)
+    const discountValue = Number(promoCode.discountValue) || 0;
+    const maxDiscount = promoCode.maxDiscount === null ? null : Number(promoCode.maxDiscount);
+
     // Calculate discount
     let discountAmount = 0;
     if (promoCode.discountType === DiscountTypeEnum.FLAT) {
-      discountAmount = promoCode.discountValue;
+      discountAmount = discountValue;
     } else if (promoCode.discountType === DiscountTypeEnum.PERCENT) {
-      discountAmount = (dto.orderAmount * promoCode.discountValue) / 100;
+      discountAmount = (dto.orderAmount * discountValue) / 100;
     }
 
     // Apply max discount limit if set
-    if (promoCode.maxDiscount && discountAmount > promoCode.maxDiscount) {
-      discountAmount = promoCode.maxDiscount;
+    if (maxDiscount && discountAmount > maxDiscount) {
+      discountAmount = maxDiscount;
     }
 
     const finalAmount = Math.max(0, dto.orderAmount - discountAmount);

@@ -713,6 +713,7 @@ export class MemberProductService {
   public async calculateProductTax(
     memberId: number,
     payload: ICalculateProductVariantTaxRequest,
+    publicCheckout = false,
   ): Promise<ICalculateProductVariantTaxResponse> {
     // Verify member exists
     await this.memberService.verifyMember(memberId);
@@ -726,7 +727,11 @@ export class MemberProductService {
       payload.billingAddressId,
     );
     const memberAddressSnapshot = addresses.memberAddressSnapshot;
-    const tempOrderItems = await this.buildOrderItem(payload.items, payload.discountAmount || 0);
+    const tempOrderItems = await this.buildOrderItem(
+      payload.items,
+      payload.discountAmount || 0,
+      publicCheckout,
+    );
     // Add currencyCode to tempOrderItems for tax calculation
     const tempOrderItemsWithCurrency = tempOrderItems.map((item) => ({
       ...item,
@@ -875,7 +880,15 @@ export class MemberProductService {
     };
   }
 
-  private async buildOrderItem(orderItems: IMemberProductOrderItemBasic[], discountAmount: number) {
+  /**
+   * @param publicCheckout - the website may only buy active products at an active price
+   *   valid today; admin orders keep the previous behaviour.
+   */
+  private async buildOrderItem(
+    orderItems: IMemberProductOrderItemBasic[],
+    discountAmount: number,
+    publicCheckout = false,
+  ) {
     const orderItemObjs = [];
     // calculate order item level tax calculation
     if (orderItems) {
@@ -889,7 +902,12 @@ export class MemberProductService {
             `Variant ${item.productVariantId} not found for product ${item.productId}`,
           );
         }
-        const variantFees: IProductPrice = find(variant.prices, { currency: item.currency });
+        if (publicCheckout && !product.active) {
+          throw new BadRequestException(`${product.name} is not available`);
+        }
+        const variantFees: IProductPrice | undefined = publicCheckout
+          ? this.findSellablePrice(variant.prices || [], item.currency)
+          : find(variant.prices, { currency: item.currency });
         if (!variantFees) {
           throw new BadRequestException(
             `${product.name} (${variant.quantityValue} ${variant.quantityUnit}) is not available in ${item.currency}`,
@@ -911,6 +929,18 @@ export class MemberProductService {
     }
     this.allocateDiscount(orderItemObjs, discountAmount);
     return orderItemObjs;
+  }
+
+  /** The active price for the currency that is valid now (variants that were removed have no active price). */
+  private findSellablePrice(prices: IProductPrice[], currency: string): IProductPrice | undefined {
+    const now = Date.now();
+    return prices.find(
+      (p) =>
+        (p.currency || '').toUpperCase() === currency.toUpperCase() &&
+        p.active !== false &&
+        (!p.validFrom || new Date(p.validFrom).getTime() <= now) &&
+        (!p.validTo || new Date(p.validTo).getTime() >= now),
+    );
   }
 
   /** Spread an order-level discount over the lines in proportion to their value. */
@@ -1163,14 +1193,14 @@ export class MemberProductService {
   ): Promise<IPublicProductTaxCalculationResponse> {
     const currency = payload.currency.toUpperCase();
     const items = payload.items.map((item) => ({ ...item, currency }));
-    const subtotal = sumBy(await this.buildOrderItem(items, 0), 'baseAmount');
+    const subtotal = sumBy(await this.buildOrderItem(items, 0, true), 'baseAmount');
     const promo = await this.checkoutGatewayService.applyPromoCode(payload.promoCode, subtotal, currency);
     const tax = await this.calculateProductTax(memberId, {
       items,
       addressId: payload.addressId,
       billingAddressId: payload.billingAddressId,
       discountAmount: promo.discountAmount,
-    });
+    }, true);
     return { ...tax, promoCode: promo.promoCode, promoMessage: promo.message };
   }
 
@@ -1194,7 +1224,7 @@ export class MemberProductService {
     }
     const currency = obj.currency.toUpperCase();
     const items = obj.items.map((item) => ({ ...item, currency }));
-    const tempOrderItems = await this.buildOrderItem(items, 0);
+    const tempOrderItems = await this.buildOrderItem(items, 0, true);
     const subtotal = sumBy(tempOrderItems, 'baseAmount');
     const promo = await this.checkoutGatewayService.applyPromoCode(obj.promoCode, subtotal, currency);
     this.allocateDiscount(tempOrderItems, promo.discountAmount);
@@ -1348,6 +1378,7 @@ export class MemberProductService {
     if (!productOrder) {
       throw new NotFoundException(`Order not found for gateway order ID: ${gatewayOrderId}`);
     }
-    return this.convertToModel(productOrder, []);
+    // Public, unauthenticated lookup: never expose the raw gateway entity (email, contact, card) or refunds
+    return { ...this.convertToModel(productOrder, []), paymentGatewayResponse: null, refundObj: null };
   }
 }

@@ -43,6 +43,9 @@ const LOG_ONLY_EVENTS = new Set([
 ]);
 const REFUND_EVENTS = new Set(['payment.refunded', 'refund.created']);
 
+/** A NULL-result row younger than this is still being processed by another delivery. */
+const IN_FLIGHT_MS = 5 * 60 * 1000;
+
 /** Results after which a redelivered event is not processed again. */
 const FINAL_RESULTS: ReadonlySet<string> = new Set([
   GatewayEventResultEnum.APPLIED,
@@ -139,6 +142,11 @@ export class RazorpayWebhookService {
       }
       const existing = await this.gatewayEventRepository.findOne({ where: { provider, eventId } });
       if (!existing || (existing.result && FINAL_RESULTS.has(existing.result))) {
+        return null;
+      }
+      const inFlight =
+        existing.result === null && Date.now() - new Date(existing.createdAt).getTime() < IN_FLIGHT_MS;
+      if (inFlight) {
         return null;
       }
       return existing;

@@ -1531,7 +1531,8 @@ export class MemberPlanService {
     if (!paymentOrder) {
       throw new NotFoundException(`Order not found for gateway order ID: ${gatewayOrderId}`);
     }
-    return this.convertToModel(paymentOrder.get({ plain: true }));
+    // Public, unauthenticated lookup: never expose the raw gateway entity (email, contact, card) or refunds
+    return { ...this.convertToModel(paymentOrder.get({ plain: true })), paymentGatewayResponse: null, refundObj: null };
   }
 
   private buildInvoiceItems(payment: TxnMemberPayment): IInvoiceItem[] {

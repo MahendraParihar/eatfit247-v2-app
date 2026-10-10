@@ -223,9 +223,20 @@ export class PaymentConfirmationService {
         return locked;
       }
       const { recordType, record } = locked;
+      const amountRefunded = CurrencyUtil.fromMinor(input.amountRefundedMinor, input.currency);
+      const storedRefunded = Number((record.refundObj as { amountRefunded?: number } | null)?.amountRefunded ?? 0);
+      // Refunds only grow; an older event (e.g. a replayed body) must not overwrite a later one.
+      if (amountRefunded < storedRefunded) {
+        await transaction.rollback();
+        return {
+          ...this.baseResult(recordType, record),
+          result: GatewayEventResultEnum.IGNORED_STATE,
+          message: `Refund ${amountRefunded} is below the stored ${storedRefunded}; ignored`,
+        };
+      }
       record.refundObj = {
         refundStatus: input.refundStatus,
-        amountRefunded: CurrencyUtil.fromMinor(input.amountRefundedMinor, input.currency),
+        amountRefunded,
         refundedAt: new Date(),
       };
       record.modifiedIp = input.requestedIp;

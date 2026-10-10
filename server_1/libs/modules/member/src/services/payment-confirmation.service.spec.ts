@@ -303,6 +303,26 @@ describe('PaymentConfirmationService', () => {
     expect(emit).not.toHaveBeenCalled();
   });
 
+  it('ignores a refund event older than the stored one (refunds only grow)', async () => {
+    const record = makeRecord({
+      paymentStatusId: PaymentStatusEnum.PAID,
+      refundObj: { refundStatus: 'full', amountRefunded: 1180 },
+    });
+    givenRecords([record]);
+
+    const outcome = await service.recordGatewayRefund({
+      gatewayOrderId: 'order_1',
+      refundStatus: 'partial',
+      amountRefundedMinor: 50000,
+      currency: 'INR',
+      requestedIp: '127.0.0.1',
+    });
+
+    expect(outcome.result).toBe(GatewayEventResultEnum.IGNORED_STATE);
+    expect(record.refundObj).toMatchObject({ amountRefunded: 1180 });
+    expect(record.save).not.toHaveBeenCalled();
+  });
+
   it('stores the refund in major units without changing status', async () => {
     const record = makeRecord({ paymentStatusId: PaymentStatusEnum.PAID });
     givenRecords([record]);

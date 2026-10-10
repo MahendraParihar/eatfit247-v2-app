@@ -119,6 +119,34 @@ describe('RazorpayWebhookService', () => {
     expect(confirmation.confirmGatewayPayment).not.toHaveBeenCalled();
   });
 
+  it('a redelivery while the first delivery is still processing is treated as a duplicate', async () => {
+    create.mockRejectedValue(new UniqueConstraintError({}));
+    findOne.mockResolvedValue({ result: null, createdAt: new Date(), update: jest.fn() });
+
+    const res = await service.handleVerifiedEvent(
+      'evt_1',
+      event('payment.captured', { payment: { entity: paymentEntity } } as RazorpayWebhookPayload['payload']),
+      '1.2.3.4',
+    );
+
+    expect(res.result).toBe(GatewayEventResultEnum.IGNORED_DUPLICATE);
+    expect(confirmation.confirmGatewayPayment).not.toHaveBeenCalled();
+  });
+
+  it('an event left unfinished for over 5 minutes is processed again', async () => {
+    const stale = { result: null, createdAt: new Date(Date.now() - 6 * 60 * 1000), update: jest.fn() };
+    create.mockRejectedValue(new UniqueConstraintError({}));
+    findOne.mockResolvedValue(stale);
+
+    await service.handleVerifiedEvent(
+      'evt_1',
+      event('payment.captured', { payment: { entity: paymentEntity } } as RazorpayWebhookPayload['payload']),
+      '1.2.3.4',
+    );
+
+    expect(confirmation.confirmGatewayPayment).toHaveBeenCalledTimes(1);
+  });
+
   it('a redelivered event that previously errored is processed again on the same row', async () => {
     const existing = { result: GatewayEventResultEnum.ERROR, update: jest.fn() };
     create.mockRejectedValue(new UniqueConstraintError({}));

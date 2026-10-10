@@ -28,6 +28,12 @@
 --   DUPLICATE_GATEWAY_ORDER      the gateway order id is on more than one
 --                                active plan/product record.
 --
+-- Not detectable here: before 4.5 the client could also send gateway_order_id /
+-- gateway_payment_id / transaction_id, so a forged PAID row with plausible fake
+-- ids passes every check above (only reuse shows as DUPLICATE_GATEWAY_ORDER).
+-- Before treating rows as clean, reconcile gateway_payment_id against the
+-- Razorpay settlement / payments export for the same period.
+--
 -- Known false positives: plan fees have no price history, so a fee changed
 -- after the sale shows PRICE_NOT_MASTER; product prices are matched within
 -- valid_from/valid_to where set.

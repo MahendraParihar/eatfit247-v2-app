@@ -7,7 +7,9 @@ import {
 } from '@server_1/modules/payment';
 import { PromoCodeService } from '@server_1/modules/promo-code';
 import { GatewayEventResultEnum } from '@eatfit247-shared-lib';
+import { UniqueConstraintError } from 'sequelize';
 import { CheckoutGatewayService } from './checkout-gateway.service';
+import { TxnPaymentGatewayEvent } from '../models';
 import { PaymentConfirmationService } from './payment-confirmation.service';
 
 describe('CheckoutGatewayService', () => {
@@ -16,6 +18,7 @@ describe('CheckoutGatewayService', () => {
   let resolve: jest.Mock;
   let adaptor: { createOrder: jest.Mock; verifyPayment: jest.Mock; fetchPayment: jest.Mock };
   let confirmGatewayPayment: jest.Mock;
+  let eventCreate: jest.Mock;
 
   beforeEach(() => {
     applyPromoCode = jest.fn();
@@ -38,7 +41,13 @@ describe('CheckoutGatewayService', () => {
         raw: { id: 'pay_1' },
       }),
     };
-    confirmGatewayPayment = jest.fn().mockResolvedValue({ result: GatewayEventResultEnum.APPLIED });
+    confirmGatewayPayment = jest.fn().mockResolvedValue({
+      result: GatewayEventResultEnum.APPLIED,
+      memberPaymentId: 900,
+      memberProductId: null,
+      promoOverLimit: false,
+    });
+    eventCreate = jest.fn().mockResolvedValue({});
     service = new CheckoutGatewayService(
       { getString: jest.fn().mockReturnValue('TEST') } as unknown as AppConfigService,
       { resolve } as unknown as PaymentGatewayResolverService,
@@ -48,6 +57,7 @@ describe('CheckoutGatewayService', () => {
       { getAdapter: jest.fn().mockReturnValue(adaptor) } as unknown as PaymentGatewayFactory,
       { applyPromoCode } as unknown as PromoCodeService,
       { confirmGatewayPayment } as unknown as PaymentConfirmationService,
+      { create: eventCreate } as unknown as typeof TxnPaymentGatewayEvent,
     );
   });
 
@@ -136,6 +146,35 @@ describe('CheckoutGatewayService', () => {
       expect(confirmGatewayPayment).toHaveBeenCalledWith(
         expect.objectContaining({ gatewayOrderId: 'order_1', gatewayPaymentId: 'pay_1', amountMinor: 118000, currency: 'INR' }),
       );
+    });
+
+    it('logs the verify outcome once per payment, keeping the over-limit promo flag', async () => {
+      confirmGatewayPayment.mockResolvedValue({
+        result: GatewayEventResultEnum.APPLIED,
+        memberPaymentId: 900,
+        memberProductId: null,
+        promoOverLimit: true,
+      });
+
+      await service.verifyAndConfirm(input);
+
+      expect(eventCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          provider: 'RAZORPAY',
+          eventId: 'verify:pay_1',
+          eventType: 'checkout.verify',
+          result: GatewayEventResultEnum.APPLIED,
+          promoOverLimit: true,
+          memberPaymentId: 900,
+          amount: 1180,
+        }),
+      );
+    });
+
+    it('a repeated verify for the same payment does not fail on the existing log row', async () => {
+      eventCreate.mockRejectedValue(new UniqueConstraintError({}));
+
+      await expect(service.verifyAndConfirm(input)).resolves.toMatchObject({ captured: true });
     });
 
     it('a forged signature is not verified and nothing is confirmed or fetched', async () => {

@@ -170,6 +170,27 @@
     - A rolled-back test with one crafted row per reason code flagged every case and left the clean control unflagged.
 - [ ] 6.2 Run it on a production copy and share the CSV with the owner and Accounts. **This is the owner's step:** there is no production copy locally. The command is in the file header (`psql … -A -F ',' -f scripts/audit/public_checkout_suspicious_paid.sql > suspicious_paid.csv`). Open question: should the owner see it before Accounts?
 
+## Group 8: Review fixes (deep review, 2026-10-10)
+
+An independent subagent reviewed the whole diff (`5e9cb61a..06fa02e7`) for payment bypass, races, idempotency, leakage and conventions. It found **no Critical issue**: every public path to PAID, an invoice, a discount or the diet plan goes through `confirmGatewayPayment` after a gateway-confirmed capture. Findings and outcomes:
+
+- [x] 8.1 (Medium) **The promo cap compared strings.** DECIMAL columns arrive as strings, so a FLAT code's `discountAmount > maxDiscount` compared text: `"500.00" > "1000.00"` is true, which **raised** the discount to the cap. This was already in the code and is now reachable from the website. `applyPromoCode` now converts `discountValue`, `maxDiscount` and `minOrderAmount` with `Number()`. The test fails on the old code; live, FLAT 500 with a 1000 cap on a ₹1,000 plan → ₹500 off.
+- [x] 8.2 (Medium) **Public product pricing took the first price row**, including inactive or expired ones (removed variants keep their row with inactive prices). The public order and tax preview now use only an active product and an active price valid today (`findSellablePrice`). Admin orders are unchanged.
+- [x] 8.3 (Medium) **The over-limit promo flag was lost when verify won the race.** The webhook then saw IGNORED_STATE with no flag. Verify now writes a `txn_payment_gateway_events` row (`event_id = verify:<paymentId>`, `event_type = checkout.verify`) with the result and `promo_over_limit`; a repeat verify hits the unique index and is skipped.
+- [x] 8.4 (Low) **Concurrent redelivery ran twice.** A NULL-result row younger than 5 minutes now counts as in flight (IGNORED_DUPLICATE), so it no longer overwrites APPLIED or resets the flag. Older NULL rows are still reprocessed.
+- [x] 8.5 (Low) **The event-id header is not signed**, so a signed body could be replayed under a new id. The state matrix already contains this for PAID/FAILED. Refunds now only grow: an older or replayed refund body can't overwrite a larger stored `refundObj`.
+- [x] 8.6 (PII) **The unguarded public lookups by gateway order id returned the whole record**, now including the raw Razorpay entity (email, contact, card). The public `findByGatewayOrderId` (plan and product) now returns `paymentGatewayResponse` and `refundObj` as null; the website doesn't use them.
+- [x] 8.7 (Medium) **Admin payment links can get stuck at PENDING.** The admin UI sends the link amount; if it differs from the stored total, the capture is ERROR (200, so no retry). Behaviour matches the old code (which threw and retried forever without success). Added the read-only `scripts/audit/payment_gateway_event_exceptions.sql` (ERROR, ORDER_NOT_FOUND, over-limit promo, unfinished events) for a daily check. Creating admin links from the stored record total is logged for 4.8.
+- [x] 8.8 (Medium) **The suspicious report can't catch forged ids.** Before 4.5 the client could post plausible fake gateway ids. The report header now says to reconcile `gateway_payment_id` against the Razorpay settlement/payments export before treating rows as clean (part of 6.2).
+- Logged, not fixed in 4.5 (owner decisions or other roadmap items):
+  - **Promo codes have no currency.** A FLAT INR code would apply as-is to a USD/AED order, and so would `min_order_amount`/`max_discount`. Only INR gateways are active today, so nothing is exposed yet. Decide before enabling foreign-currency checkout: restrict promos to the default currency, or add a currency column. (Joins the promo-eligibility open question.)
+  - Hidden or offline plans can be bought by id (`active` is checked, `isVisibleOnWeb` isn't). The website lists only visible plans.
+  - `payment_date` is the payment's `created_at`; Razorpay sends no separate capture time. Usually the same day; the franchise-local date comes with 4.7.
+  - The product header total is the rounded sum of unrounded line totals, so it can differ by a few paise (no `roundingAdjustment`). Belongs to 4.6.
+  - Abandoned public PENDING records count in the admin dashboard's "pending amount" and each has an empty diet-plan container (accepted under decision 10). Tell Accounts.
+  - **(High, already there, outside 4.5) `POST member/create` gives a checkout token to anyone who knows an existing member's email or phone**, and overwrites that profile (including `hasAnyPlan=false`). That token can download the member's invoices. Not a payment bypass, but it needs its own roadmap item.
+- Checks: member jest passes (9 suites, 113 tests); both apps pass type checks. Live: promo math, public lookup redaction.
+
 ## Group 7: Close-out
 
 - [ ] 7.1 Every check in `validation.md` passes.

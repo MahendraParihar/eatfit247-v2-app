@@ -1,4 +1,6 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
+import { UniqueConstraintError } from 'sequelize';
 import { AppConfigService } from '@server_1/core';
 import {
   PaymentGatewayCredentialService,
@@ -17,6 +19,7 @@ import {
   IGatewayConfirmationResult,
   PaymentConfirmationService,
 } from './payment-confirmation.service';
+import { TxnPaymentGatewayEvent } from '../models';
 
 export interface IAppliedPromo {
   promoCode: string | null;
@@ -76,6 +79,8 @@ export class CheckoutGatewayService {
     private readonly paymentGatewayFactory: PaymentGatewayFactory,
     private readonly promoCodeService: PromoCodeService,
     private readonly paymentConfirmationService: PaymentConfirmationService,
+    @InjectModel(TxnPaymentGatewayEvent)
+    private readonly gatewayEventRepository: typeof TxnPaymentGatewayEvent,
   ) {}
 
   /** Validates the code for this order amount; an invalid code is a 400 with the service's message. */
@@ -198,7 +203,49 @@ export class CheckoutGatewayService {
       gatewayResponse: payment.raw,
       requestedIp: input.requestedIp,
     });
+    await this.logVerifyConfirmation(gatewayCode, payment, confirmation, input.requestedIp);
     return { captured: true, gatewayStatus: payment.status, message: confirmation.message, confirmation };
+  }
+
+  /**
+   * Verify usually beats the webhook, so its outcome (incl. an over-limit promo) is logged
+   * in the gateway event log too, once per payment (`verify:<paymentId>`).
+   */
+  private async logVerifyConfirmation(
+    provider: string,
+    payment: { id: string; orderId: string | null; amountMinor: number; currency: string; raw: Record<string, unknown> },
+    confirmation: IGatewayConfirmationResult,
+    requestedIp: string,
+  ): Promise<void> {
+    try {
+      await this.gatewayEventRepository.create({
+        provider,
+        eventId: `verify:${payment.id}`,
+        eventType: 'checkout.verify',
+        gatewayOrderId: payment.orderId,
+        gatewayPaymentId: payment.id,
+        amount: CurrencyUtil.fromMinor(payment.amountMinor, payment.currency),
+        currency: payment.currency.toUpperCase(),
+        signatureValid: true,
+        payload: payment.raw,
+        result: confirmation.result,
+        message: confirmation.message ?? null,
+        promoOverLimit: confirmation.promoOverLimit,
+        memberPaymentId: confirmation.memberPaymentId,
+        memberProductId: confirmation.memberProductId,
+        receivedAt: new Date(),
+        createdIp: requestedIp,
+        modifiedIp: requestedIp,
+      } as Partial<TxnPaymentGatewayEvent> as TxnPaymentGatewayEvent);
+    } catch (error) {
+      // A repeated verify for the same payment is already logged
+      if (!(error instanceof UniqueConstraintError)) {
+        this.logger.error('Could not log checkout verification', {
+          gatewayPaymentId: payment.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
   }
 
   private async getCredentials(franchisePaymentGatewayId: number): Promise<{ keyId: string; keySecret: string }> {
