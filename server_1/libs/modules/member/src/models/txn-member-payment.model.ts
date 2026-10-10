@@ -314,6 +314,18 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.DATEONLY,
   })
   declare invoiceDate: string | null;
+  @Column({ allowNull: true, field: 'fx_rate', type: DataType.DECIMAL(18, 8) })
+  declare fxRate: number | null;
+  @Column({ allowNull: true, field: 'fx_rate_date', type: DataType.DATEONLY })
+  declare fxRateDate: string | null;
+  @Column({ allowNull: true, field: 'fx_source', type: DataType.STRING(20) })
+  declare fxSource: string | null;
+  @Column({ allowNull: true, field: 'functional_currency', type: DataType.STRING(3) })
+  declare functionalCurrency: string | null;
+  @Column({ allowNull: true, field: 'functional_total_amount', type: DataType.DECIMAL(14, 3) })
+  declare functionalTotalAmount: number | null;
+  @Column({ allowNull: true, field: 'functional_tax_amount', type: DataType.DECIMAL(14, 3) })
+  declare functionalTaxAmount: number | null;
   @Column({
     allowNull: false,
     field: 'payment_status_id',

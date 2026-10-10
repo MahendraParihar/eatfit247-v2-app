@@ -1,3 +1,4 @@
+import { ExchangeRateService } from '@server_1/modules/tax-engine';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Sequelize } from 'sequelize-typescript';
 import { AddressService, CountryService, FranchiseDateUtil, InvoiceSequenceService } from '@server_1/platform';
@@ -112,6 +113,7 @@ describe('PaymentConfirmationService', () => {
         } as unknown as FranchiseService,
         { filterByTableIdAndPk: jest.fn().mockResolvedValue([{ countryId: 101 }]) } as unknown as AddressService,
         { fetchById: jest.fn().mockResolvedValue({ countryCode: 'IN' }) } as unknown as CountryService,
+      { findRate: jest.fn().mockResolvedValue(null) } as unknown as ExchangeRateService,
       ),
       { recordUsage } as unknown as PromoCodeService,
       { emit } as unknown as EventEmitter2,

@@ -1,13 +1,14 @@
 import {IAddress, IMemberAddress} from "../location.interface";
 import {InvoiceSeriesEnum, PaymentRouteEnum, PaymentSourceEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum} from "../../enum";
 import {IAdminInfo, IDropdownItem} from "../../base.interface";
+import {IInvoiceFx} from "../tax-master.interface";
 
 export interface IMemberAddressSnapshot {
   address: IMemberAddress | null;
   billingAddress: IMemberAddress | null;
 }
 
-export interface IBasicMemberPayment {
+export interface IBasicMemberPayment extends IInvoiceFx {
   memberId: number;
   paymentModeId: number;
   programPlanId: number;

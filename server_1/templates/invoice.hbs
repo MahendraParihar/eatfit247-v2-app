@@ -52,6 +52,13 @@
       object-fit: contain;
     }
 
+    .fx-note {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #555;
+      text-align: right;
+    }
+
     .invoice-header-title {
       flex: 1;
       text-align: center;
@@ -578,6 +585,13 @@
       </tr>
     {{/if}}
   </table>
+  {{#if invoice.fx}}
+    <div class="fx-note">
+      Exchange rate: 1 {{invoice.fx.fromCurrency}} = {{invoice.fx.rate}} {{invoice.fx.currency}}
+      ({{invoice.fx.source}}, {{formatDate invoice.fx.rateDate}}) ·
+      Total {{invoice.fx.currency}} {{invoice.fx.totalAmount}} · Tax {{invoice.fx.currency}} {{invoice.fx.taxAmount}}
+    </div>
+  {{/if}}
 </div>
 
 <!-- Three Column Section: Terms, QR Code, Notes -->

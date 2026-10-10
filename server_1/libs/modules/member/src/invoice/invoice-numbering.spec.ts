@@ -1,3 +1,4 @@
+import { ExchangeRateService } from '@server_1/modules/tax-engine';
 import { Transaction } from 'sequelize';
 import {
   AddressService,
@@ -208,6 +209,7 @@ describe('InvoiceIssueService', () => {
       } as unknown as FranchiseService,
       { filterByTableIdAndPk: jest.fn().mockResolvedValue([{ countryId: 101 }]) } as unknown as AddressService,
       { fetchById: countryFetchById, findAll: countryFindAll } as unknown as CountryService,
+      { findRate: jest.fn().mockResolvedValue(null) } as unknown as ExchangeRateService,
     );
   });
 

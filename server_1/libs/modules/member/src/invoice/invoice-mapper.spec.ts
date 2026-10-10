@@ -300,4 +300,42 @@ describe('invoice mapper: proforma and invoice date', () => {
       expect(words(150000, 'INR')).toContain('Rupees One Lakh Fifty Thousand');
     });
   });
+
+  it('A16 a foreign-currency invoice carries its functional-currency equivalents; FX pending shows none', () => {
+    const withFx = mapPaymentToInvoiceDocument(
+      payment({
+        invoiceId: 'EFMUM/EXP/2026-27/S/000003',
+        currency: 'USD',
+        totalAmount: 100,
+        taxAmount: 0,
+        fxRate: 95.9927,
+        fxRateDate: '2026-10-01',
+        fxSource: 'FBIL',
+        functionalCurrency: 'INR',
+        functionalTotalAmount: 9599.27,
+        functionalTaxAmount: 0,
+      }),
+      franchise,
+      address,
+      address,
+      [],
+    );
+    expect(withFx.fx).toEqual({
+      rate: 95.9927,
+      rateDate: '2026-10-01',
+      source: 'FBIL',
+      fromCurrency: 'USD',
+      currency: 'INR',
+      totalAmount: 9599.27,
+      taxAmount: 0,
+    });
+    const pending = mapPaymentToInvoiceDocument(
+      payment({ invoiceId: 'EFMUM/EXP/2026-27/S/000004', currency: 'USD', functionalCurrency: 'INR', fxRate: null }),
+      franchise,
+      address,
+      address,
+      [],
+    );
+    expect(pending.fx).toBeUndefined();
+  });
 });

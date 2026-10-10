@@ -206,6 +206,10 @@ export class TaxMasterComponent implements OnInit {
     this.router.navigate(['/tax-master/edit', item.id], { relativeTo: this.route.root });
   }
 
+  openExchangeRates(): void {
+    this.router.navigate(['/tax-master/exchange-rates'], { relativeTo: this.route.root });
+  }
+
   createItem(): void {
     this.router.navigate(['/tax-master/new'], { relativeTo: this.route.root });
   }

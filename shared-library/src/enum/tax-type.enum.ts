@@ -54,3 +54,11 @@ export enum PaymentRouteEnum {
   RUPEE_VOSTRO = 'RUPEE_VOSTRO',
   NRE_FCNR_ACCOUNT = 'NRE_FCNR_ACCOUNT',
 }
+
+/** Where an exchange rate comes from (roadmap 4.6, decision 19). */
+export enum ExchangeRateSourceEnum {
+  FBIL = 'FBIL',
+  CBUAE_PEG = 'CBUAE_PEG',
+  CBIC_CUSTOMS = 'CBIC_CUSTOMS',
+  MANUAL = 'MANUAL',
+}

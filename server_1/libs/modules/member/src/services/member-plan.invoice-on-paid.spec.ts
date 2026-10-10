@@ -1,3 +1,4 @@
+import { ExchangeRateService } from '@server_1/modules/tax-engine';
 import { Test } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
@@ -114,6 +115,7 @@ describe('MemberPlanService update: invoice on PAID and series guard', () => {
       } as unknown as FranchiseService,
       { filterByTableIdAndPk: jest.fn().mockResolvedValue([{ countryId: 101 }]) } as unknown as AddressService,
       { fetchById: jest.fn().mockResolvedValue({ countryCode: 'IN' }) } as unknown as CountryService,
+      { findRate: jest.fn().mockResolvedValue(null) } as unknown as ExchangeRateService,
     );
 
     const moduleRef = await Test.createTestingModule({

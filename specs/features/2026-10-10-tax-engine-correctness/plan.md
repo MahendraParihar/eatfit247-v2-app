@@ -172,19 +172,28 @@
 
 ## Group 9: Exchange rates (fetch, store, apply at issue)
 
-- [ ] 9.1 Spike: confirm how to fetch from the official publishers only, FBIL (fbil.org.in) and the UAE Central Bank (centralbank.ae): format, publish time, holidays, currencies covered. No third-party aggregators (decision 19). Record the result and any cross-rate rule in requirements.md before coding.
-- [ ] 9.2 `db_changes/141_exchange_rates.sql`:
+- [x] 9.1 Spike: confirm how to fetch from the official publishers only, FBIL (fbil.org.in) and the UAE Central Bank (centralbank.ae): format, publish time, holidays, currencies covered. No third-party aggregators (decision 19). Record the result and any cross-rate rule in requirements.md before coding.
+- [x] 9.2 `db_changes/141_exchange_rates.sql`:
   - `mst_exchange_rates` (rate_date, from_currency, to_currency, rate, source, audit columns, active; unique per date + pair + source)
   - FX columns on payments and products: `fx_rate`, `fx_rate_date`, `fx_source`, `functional_currency`, `functional_total_amount`, `functional_tax_amount`
   - mark `mst_currency_configs` deprecated (no data change)
-- [ ] 9.3 Shared enum `ExchangeRateSourceEnum` and an interface; model + service. `findRate(from, to, onOrBefore, purpose)`: goods → CBIC_CUSTOMS; services → FBIL for INR, CBUAE for AED; a MANUAL override for that day wins.
-- [ ] 9.4 Daily `@nestjs/schedule` job:
+- [x] 9.3 Shared enum `ExchangeRateSourceEnum` and an interface; model + service. `findRate(from, to, onOrBefore, purpose)`: goods → CBIC_CUSTOMS; services → FBIL for INR, CBUAE for AED; a MANUAL override for that day wins.
+- [x] 9.4 Daily `@nestjs/schedule` job:
   - fetch FBIL + CBUAE with upserts and timeouts
   - backfill "FX pending" invoices
   - log and alert on failure; never called from payment paths
-- [ ] 9.5 At invoice issue (the PAID transition for plans and products, in `PaymentConfirmationService` and the admin/manual paths): save the FX fields when the invoice currency ≠ the franchise's functional currency (INR for IN, AED for AE). No rate → leave null (FX pending).
-- [ ] 9.6 Admin endpoints + UI "Exchange rates": list by date and pair, manual entry/override, CBIC customs rate entry (fortnightly validity). RBAC-seeded.
-- [ ] 9.7 Invoice shows the INR (Indian export) or AED (UAE) equivalents and the rate line. Tests for rate selection (weekend/holiday fallback, override, goods vs services) and backfill.
+- [x] 9.5 At invoice issue (the PAID transition for plans and products, in `PaymentConfirmationService` and the admin/manual paths): save the FX fields when the invoice currency ≠ the franchise's functional currency (INR for IN, AED for AE). No rate → leave null (FX pending).
+- [x] 9.6 Admin endpoints + UI "Exchange rates": list by date and pair, manual entry/override, CBIC customs rate entry (fortnightly validity). RBAC-seeded.
+- [x] 9.7 Invoice shows the INR (Indian export) or AED (UAE) equivalents and the rate line. Tests for rate selection (weekend/holiday fallback, override, goods vs services) and backfill.
+
+> **As built (group 9):**
+> - Spike (recorded in requirements): FBIL's public JSON API gives INR per USD / GBP / EUR / 100 JPY (13:00 IST, business days). The UAE Central Bank site is behind a Cloudflare bot challenge, so it isn't fetched (no bypass); USD↔AED uses the Central Bank's official peg 3.6725 (`CBUAE_PEG`, seeded in 141), other AED pairs are MANUAL.
+> - 141: `mst_exchange_rates` (unique per date + pair + source; `valid_to` for customs periods; note), FX columns on payments and products, partial "FX pending" indexes, RBAC subject `ExchangeRate` (global).
+> - `ExchangeRateService.findRate(from, to, date, purpose)`: a MANUAL rate for that day wins; goods into INR use the CBIC customs rate covering the date (none → pending); otherwise the latest FBIL / peg / MANUAL rate on or before the date, at most 10 days old (the peg never ages); inverse pairs are used when needed. `fetchFbil` upserts (JPY divided by 100).
+> - At issue, `InvoiceIssueService.applyFx` saves rate, date, source, functional currency (INR for IN, AED for AE) and the total / tax in it when the invoice currency differs; no rate → functional currency set, rate empty ("FX pending"); lookup errors never block issuing. `InvoiceFxCron` (14:15 and 20:15 IST, admin-api only, where ScheduleModule is loaded) fetches the last 10 days from FBIL and backfills pending invoices.
+> - Admin: Tax Master → "Exchange rates" (add CBIC customs / manual rates with a note, list, activate/deactivate; the peg can't be deactivated). API `GET/POST /exchange-rates`, `PATCH /exchange-rates/:id/status`.
+> - Invoice: the mapper's `fx` section and a template line "Exchange rate: 1 USD = … INR (FBIL, date) · Total INR … · Tax INR …".
+> - Tests: `member/src/tax/exchange-rate.spec.ts` (6) + 1 mapper case. Member jest 258/258; admin dev build green. Live: FBIL fetch saved 8 rows (2 business days × 4 currencies); USD→INR on 2026-10-10 resolves to FBIL 2026-10-01 (95.9927); USD→AED and AED→USD use the peg; goods USD→INR without a customs rate and a date beyond the 10-day window return pending.
 
 ## Group 10: UAE Tax Credit Notes
 

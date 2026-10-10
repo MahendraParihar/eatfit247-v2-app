@@ -49,6 +49,7 @@ export enum AdminSubjectEnum {
     Dashboard        = 'Dashboard',
     TaxMaster        = 'TaxMaster',
     FranchiseLut     = 'FranchiseLut',
+    ExchangeRate     = 'ExchangeRate',
     LovMaster        = 'LovMaster',
     Referrer         = 'Referrer',
     PocketGuide      = 'PocketGuide',

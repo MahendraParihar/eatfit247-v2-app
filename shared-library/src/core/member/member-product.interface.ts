@@ -4,6 +4,7 @@ import {IAddress} from "../location.interface";
 import {IShipment} from "../shipment.interface";
 import {IProduct} from "../product.interface";
 import {ICalculateTaxResponse} from "../tax-calculation.interface";
+import {IInvoiceFx} from "../tax-master.interface";
 
 export interface ICalculateProductVariantTaxRequest {
   items: IMemberProductOrderItemBasic[];
@@ -61,7 +62,7 @@ export interface IMemberProductOrderItem {
   taxDecisionReason?: string | null;
 }
 
-export interface IBasicMemberProduct {
+export interface IBasicMemberProduct extends IInvoiceFx {
   memberId: number;
   paymentModeId?: number | null;
   addressId?: number | null;

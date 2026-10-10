@@ -44,3 +44,39 @@ export interface IManageFranchiseLut {
   validTo: string;
   active?: boolean;
 }
+
+/** An exchange rate: `rate` units of `toCurrency` for 1 unit of `fromCurrency`. */
+export interface IExchangeRate {
+  exchangeRateId: number;
+  rateDate: string;
+  fromCurrency: string;
+  toCurrency: string;
+  rate: number;
+  source: string;
+  validTo: string | null;
+  note: string | null;
+  active: boolean;
+}
+
+/** Finance entry: a MANUAL rate for one day, or a CBIC customs rate for its notified period. */
+export interface IManageExchangeRate {
+  rateDate: string;
+  fromCurrency: string;
+  toCurrency: string;
+  rate: number;
+  source: 'MANUAL' | 'CBIC_CUSTOMS';
+  validTo?: string | null;
+  note?: string | null;
+}
+
+/** FX saved on an invoice when it is issued (principle 1). */
+export interface IInvoiceFx {
+  fxRate?: number | null;
+  fxRateDate?: string | null;
+  fxSource?: string | null;
+  /** INR for Indian franchises, AED for the UAE; null when the invoice is already in it */
+  functionalCurrency?: string | null;
+  functionalTotalAmount?: number | null;
+  functionalTaxAmount?: number | null;
+}
+

@@ -10,6 +10,8 @@ import {
   InvoiceSeriesUtil,
 } from '@server_1/platform';
 import { FranchiseService } from '@server_1/modules/franchise';
+import { ExchangeRateService, IResolvedRate } from '@server_1/modules/tax-engine';
+import { Op } from 'sequelize';
 import { TxnMemberPayment } from '../models/txn-member-payment.model';
 import { TxnMemberProduct } from '../models/txn-member-product.model';
 import { TxnMemberProductOrderItem } from '../models/txn-member-product-order-item.model';
@@ -37,6 +39,7 @@ export class InvoiceIssueService {
     private readonly franchiseService: FranchiseService,
     private readonly addressService: AddressService,
     private readonly countryService: CountryService,
+    private readonly exchangeRateService: ExchangeRateService,
   ) {}
 
   /** Franchise, its country (from its address) and timezone. */
@@ -92,7 +95,74 @@ export class InvoiceIssueService {
     record.invoiceId = issued.invoiceId;
     record.invoiceSeries = issued.invoiceSeries;
     record.invoiceDate = issued.invoiceDate;
+    await this.applyFx(record, recordType, franchiseContext.countryCode, issued.invoiceDate);
     return issued;
+  }
+
+  /**
+   * Saves the invoice's value in the franchise's functional currency (INR for Indian franchises,
+   * AED for the UAE) at the official rate for the invoice date (decision 14). A same-currency
+   * invoice needs none; without a rate yet the invoice is "FX pending" (functional currency set,
+   * rate empty) and the daily job fills it in. Never blocks issuing.
+   */
+  public async applyFx(
+    record: TxnMemberPayment | TxnMemberProduct,
+    recordType: InvoiceRecordType,
+    franchiseCountryCode: string | null,
+    invoiceDate: string,
+  ): Promise<void> {
+    const functional = franchiseCountryCode === 'IN' ? 'INR' : franchiseCountryCode === 'AE' ? 'AED' : null;
+    const currency = (record.currency || '').toUpperCase();
+    if (!functional || !currency || currency === functional) {
+      return;
+    }
+    record.functionalCurrency = functional;
+    try {
+      const rate = await this.exchangeRateService.findRate(currency, functional, invoiceDate, recordType === 'product' ? 'GOODS' : 'SERVICES');
+      if (rate) {
+        this.setFx(record, rate);
+      } else {
+        this.logger.warn(`No ${currency}→${functional} rate for ${invoiceDate}; invoice ${record.invoiceId} is FX pending`);
+      }
+    } catch (error) {
+      this.logger.error(`Exchange rate lookup failed for invoice ${record.invoiceId}; FX pending`, error as Error);
+    }
+  }
+
+  /** Fills the FX of invoices issued while no rate was available. Returns how many were filled. */
+  public async backfillPendingFx(limit = 200): Promise<number> {
+    const pending = { invoiceId: { [Op.ne]: null }, functionalCurrency: { [Op.ne]: null }, fxRate: null };
+    let filled = 0;
+    const plans = await TxnMemberPayment.findAll({ where: pending, limit });
+    const products = await TxnMemberProduct.findAll({ where: pending, limit });
+    const rows: Array<[TxnMemberPayment | TxnMemberProduct, InvoiceRecordType]> = [
+      ...plans.map((row): [TxnMemberPayment, InvoiceRecordType] => [row, 'plan']),
+      ...products.map((row): [TxnMemberProduct, InvoiceRecordType] => [row, 'product']),
+    ];
+    for (const [row, recordType] of rows) {
+      const onDate = row.invoiceDate || FranchiseDateUtil.localDate(new Date(row.paymentDate || new Date()));
+      const rate = await this.exchangeRateService.findRate(
+        (row.currency || '').toUpperCase(),
+        row.functionalCurrency as string,
+        onDate,
+        recordType === 'product' ? 'GOODS' : 'SERVICES',
+      );
+      if (rate) {
+        this.setFx(row, rate);
+        await row.save({ fields: ['fxRate', 'fxRateDate', 'fxSource', 'functionalTotalAmount', 'functionalTaxAmount'] });
+        filled += 1;
+      }
+    }
+    return filled;
+  }
+
+  private setFx(record: TxnMemberPayment | TxnMemberProduct, rate: IResolvedRate): void {
+    const round2 = (n: number): number => Math.round(n * 100) / 100;
+    record.fxRate = rate.rate;
+    record.fxRateDate = rate.rateDate;
+    record.fxSource = rate.source;
+    record.functionalTotalAmount = round2(Number(record.totalAmount || 0) * rate.rate);
+    record.functionalTaxAmount = round2(Number(record.taxAmount || 0) * rate.rate);
   }
 
   /** Series for a record from its stored billing snapshot and the tax it was charged. */

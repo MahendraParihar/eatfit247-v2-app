@@ -96,6 +96,7 @@ export function mapPaymentToInvoiceDocument(
     seller,
     buyer,
     items,
+    fx: fxSectionOf(payment),
     pricing: {
       subtotal: payment.orderAmount,
       discount: payment.discountAmount,
@@ -355,6 +356,30 @@ function buildBuyerInfo(
 
 export const PROFORMA_TITLE = 'PROFORMA INVOICE';
 
+/** Functional-currency equivalents saved at issue; absent for same-currency invoices or while FX is pending. */
+function fxSectionOf(record: {
+  currency: string;
+  fxRate?: number | null;
+  fxRateDate?: string | null;
+  fxSource?: string | null;
+  functionalCurrency?: string | null;
+  functionalTotalAmount?: number | null;
+  functionalTaxAmount?: number | null;
+}): IInvoiceDocument['fx'] {
+  if (!record.fxRate || !record.functionalCurrency || !record.fxRateDate) {
+    return undefined;
+  }
+  return {
+    rate: Number(record.fxRate),
+    rateDate: String(record.fxRateDate),
+    source: record.fxSource || '',
+    fromCurrency: record.currency,
+    currency: record.functionalCurrency,
+    totalAmount: Number(record.functionalTotalAmount || 0),
+    taxAmount: Number(record.functionalTaxAmount || 0),
+  };
+}
+
 /**
  * Indian GST invoices (Rule 46): place of supply as "State (code)" for domestic supplies, the
  * country for exports, plus the country of destination for exports.
@@ -529,6 +554,7 @@ export function mapProductOrderToInvoiceDocument(
     seller,
     buyer,
     items,
+    fx: fxSectionOf(productOrder),
     pricing: {
       subtotal: productOrder.subTotalAmount,
       discount: productOrder.discountAmount,

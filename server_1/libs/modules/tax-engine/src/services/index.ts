@@ -5,3 +5,4 @@ export * from './us-sales-tax.service';
 
 export * from './lut.service';
 export * from './tax-master.service';
+export * from './exchange-rate.service';

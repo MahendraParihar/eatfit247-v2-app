@@ -6,6 +6,8 @@ import { TaxMode, TaxTypeEnum, TransactionType } from '../../enum';
  * Used for PDF generation, UI preview, and email attachments
  */
 export interface IInvoiceDocument {
+  /** Functional-currency equivalents (foreign-currency invoices; absent while FX is pending) */
+  fx?: IInvoiceFxSection;
   header: IInvoiceHeader;
   seller: IInvoiceParty;
   buyer: IInvoiceParty;
@@ -74,6 +76,17 @@ export interface IInvoicePricing {
   taxableAmount: number;
   taxAmount: number;
   totalAmount: number;
+}
+
+/** The invoice converted to the supplier's functional currency (INR / AED) at the saved rate. */
+export interface IInvoiceFxSection {
+  rate: number;
+  rateDate: string;
+  source: string;
+  fromCurrency: string;
+  currency: string;
+  totalAmount: number;
+  taxAmount: number;
 }
 
 export interface IInvoiceTax {
