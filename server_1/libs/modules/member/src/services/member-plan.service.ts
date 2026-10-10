@@ -561,6 +561,7 @@ export class MemberPlanService {
     if (payment.paymentSource !== PaymentSourceEnum.MANUAL && financialChanged) {
       warnings.push('Existing payment gateway link/order may no longer match the updated amount or currency.');
     }
+    const blockReason = await this.findSeriesChange(payment, draft);
 
     return {
       memberPaymentId: paymentId,
@@ -569,8 +570,8 @@ export class MemberPlanService {
       dietPlanImpact,
       highlights,
       warnings,
-      // Series guard arrives with 4.7 group 4
-      blocked: false,
+      blocked: !!blockReason,
+      blockReason: blockReason ?? undefined,
     };
   }
 
@@ -622,6 +623,11 @@ export class MemberPlanService {
     }
 
     const draft = await this.buildPaymentDraft(memberId, obj);
+    // Decision 10: an issued invoice can't move to the other series
+    const blockReason = await this.findSeriesChange(payment, draft);
+    if (blockReason) {
+      throw new BadRequestException(blockReason);
+    }
     const t = await this.sequelize.transaction();
     try {
       payment.addressId = obj.addressId || null;
@@ -654,8 +660,12 @@ export class MemberPlanService {
         this.applyPaymentDraft(payment, obj, draft);
       }
 
-      // Invoice number is never generated or changed during edit — it is issued only on
-      // create. Any existing payment.invoiceId is preserved untouched.
+      // Decision 8: the number is issued the first time the payment is PAID, here as on create or
+      // by the gateway. An issued number, series and date are never changed (decision 9).
+      const invoiceFranchiseId = payment.franchiseId || draft.member.franchiseId;
+      if (payment.paymentStatusId === PaymentStatusEnum.PAID && !payment.invoiceId && invoiceFranchiseId) {
+        await this.invoiceIssueService.issue(payment, 'plan', invoiceFranchiseId, t);
+      }
 
       await payment.save({ transaction: t });
       await this.memberDietPlanService.updateLimitsForPayment(
@@ -691,6 +701,37 @@ export class MemberPlanService {
       (obj.currency || '').toUpperCase() !== (payment.currency || '').toUpperCase() ||
       Math.abs(Number(obj.discountAmount || 0) - Number(payment.discountAmount || 0)) > 0.001 ||
       Number(obj.billingAddressId || 0) !== Number(payment.billingAddressId || 0)
+    );
+  }
+
+  /**
+   * Decision 10: the message to block an edit that would move an issued invoice to the other
+   * series, or null. Rows issued before 4.7 (no stored series) and gateway records (billing
+   * snapshot and amounts are locked) are not guarded.
+   */
+  private async findSeriesChange(
+    payment: TxnMemberPayment,
+    draft: Awaited<ReturnType<MemberPlanService['buildPaymentDraft']>>,
+  ): Promise<string | null> {
+    const franchiseId = payment.franchiseId || draft.member.franchiseId;
+    if (!payment.invoiceSeries || payment.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY || !franchiseId) {
+      return null;
+    }
+    const { countryCode } = await this.invoiceIssueService.franchiseContext(franchiseId);
+    const nextSeries = await this.invoiceIssueService.resolveSeries(
+      { memberAddress: draft.memberAddressSnapshot, taxAmount: draft.paymentObj.taxAmount } as Pick<
+        TxnMemberPayment,
+        'memberAddress' | 'taxAmount'
+      >,
+      countryCode,
+    );
+    if (nextSeries === payment.invoiceSeries) {
+      return null;
+    }
+    const label = (series: string): string => series.toLowerCase();
+    return (
+      `This invoice is in the ${label(payment.invoiceSeries)} series. This change would make it ` +
+      `${label(nextSeries)}. Issue a credit note and record a new payment instead.`
     );
   }
 
@@ -905,6 +946,8 @@ export class MemberPlanService {
       transactionId: item.transactionId,
       paymentDate: item.paymentDate,
       invoiceId: item.invoiceId,
+      invoiceSeries: item.invoiceSeries ?? null,
+      invoiceDate: item.invoiceDate ?? null,
       paymentStatusId: item.paymentStatusId,
       paymentStatus: item.paymentStatus?.paymentStatus || '',
       promoCode: item.promoCode,

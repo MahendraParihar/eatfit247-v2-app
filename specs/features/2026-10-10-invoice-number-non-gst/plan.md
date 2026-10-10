@@ -72,13 +72,13 @@
 
 ## Group 4: Issue on PAID and edit guard (`member-plan.service.ts`)
 
-- [ ] 4.1 `update`:
+- [x] 4.1 `update`:
   - Inside the existing transaction, if the row has no `invoice_id` and the new status is PAID, issue a number (series from `resolveInvoiceSeries` on the edited draft, date = today in the franchise's zone).
   - Replace the "never generated during edit" comment.
   - Never clear or change an existing `invoice_id`, `invoice_series` or `invoice_date`.
-- [ ] 4.2 Series guard: if `invoice_series` is set and `resolveInvoiceSeries(draft) !== invoice_series`, throw `BadRequestException` with the message "This invoice is in the {X} series. This change would make it {Y}. Issue a credit note and record a new payment instead."
-- [ ] 4.3 `previewUpdate`: run the same check and return `blocked` and `blockReason`.
-- [ ] 4.4 Unit tests:
+- [x] 4.2 Series guard: if `invoice_series` is set and `resolveInvoiceSeries(draft) !== invoice_series`, throw `BadRequestException` with the message "This invoice is in the {X} series. This change would make it {Y}. Issue a credit note and record a new payment instead."
+- [x] 4.3 `previewUpdate`: run the same check and return `blocked` and `blockReason`.
+- [x] 4.4 Unit tests:
   - PENDING→PAID issues a number once; saving again issues nothing.
   - PAID→PENDING keeps the number.
   - PAID→PENDING→PAID keeps the first number.
@@ -86,7 +86,9 @@
   - A financial edit that keeps the series is allowed.
   - A Q1 legacy row (`invoice_series` NULL) is not guarded.
   - A backdated payment date doesn't change `invoice_date` or the FY.
-- [ ] 4.5 Commit.
+- [x] 4.5 Commit.
+
+> **As built (group 4):** `update` issues the number through `InvoiceIssueService` when the saved row is PAID and has none (franchise = the payment's `franchise_id`, else the member's). `findSeriesChange` (used by `update` → 400, and by `previewUpdate` → `blocked` / `blockReason`) recomputes the series from the edited billing snapshot and tax; it skips rows without a stored series (Q1 legacy) and gateway records (their billing and amounts are locked by 4.5). `convertToModel` (plans and products) now returns `invoiceSeries` / `invoiceDate`, so the PDF prints the stored invoice date. Tests: `member-plan.invoice-on-paid.spec.ts` (7). Live (local DB): new manual payment 5129 for 4945, PENDING → edit to PAID → `EFMUM/EXP/2026-27/S/000001`, dated 2026-10-10; edit back to PENDING keeps it; PDF renders.
 
 ## Group 5: Proforma (backend + admin)
 

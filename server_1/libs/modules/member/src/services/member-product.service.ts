@@ -447,6 +447,8 @@ export class MemberProductService {
       transactionId: item.transactionId,
       paymentDate: item.paymentDate,
       invoiceId: item.invoiceId,
+      invoiceSeries: item.invoiceSeries ?? null,
+      invoiceDate: item.invoiceDate ?? null,
       paymentStatusId: item.paymentStatusId,
       paymentStatus: item.paymentStatus?.paymentStatus,
       promoCode: item.promoCode,
