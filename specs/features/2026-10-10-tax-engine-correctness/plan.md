@@ -76,6 +76,7 @@
   - in admin member create/update/`updateFranchise`: a warning when the franchise country isn't IN and the billing/profile country is IN
   - public signup keeps mapping by country
 - [ ] 4.5 Specs: update the mocked tax inputs in the existing member specs; new tests for the route lock and the guard.
+- [ ] 4.6 Invoice series (4.7 shipped first): swap the body of 4.7's `resolveInvoiceSeries` from the interim billing-country rule to the stored tax mode (EXPORT for `EXPORT_OF_SERVICE` / `EXPORT_OF_GOODS`, including IGST-paid exports), so a foreign client paying INR over Indian rails goes to DOMESTIC. Update the 4.7 tests and the 4.7 spec's decision 1 note.
 
 ## Group 5: Website checkout (`eatfit247-web-1`)
 

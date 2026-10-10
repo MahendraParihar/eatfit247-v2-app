@@ -2,20 +2,21 @@
 
 > How we know the feature is done and correct. The agent runs every automated check. A human runs the manual checks and signs off on the review. Accounts signs off the migration preview.
 >
-> **Precondition:** 4.6 is live, so new foreign payments store an export tax mode.
+> **Precondition:** 4.5 is live. 4.6 is not: new invoices use the decision 1 interim rule (Indian franchise + foreign billing snapshot + no tax charged → EXPORT).
 
 ## Acceptance Scorecard
 
 | # | Criterion (Given / When / Then) | How verified | Result |
 |---|---------------------------------|--------------|--------|
 | A1 | Given an EFMUM member with an **Indian** billing address, when a PAID plan payment is recorded, then `invoice_id = EFMUM/2026-27/S/<next domestic>`, `invoice_series = DOMESTIC`, and only the DOMESTIC/SERVICE counter increments | unit + manual + SQL | ☐ |
-| A2 | Given an EFMUM member with a **foreign** billing address (stored `EXPORT_OF_SERVICE` after 4.6), when a PAID plan payment is recorded, then `invoice_id = EFMUM/EXP/2026-27/S/<next>`, `invoice_series = EXPORT` | unit + manual + SQL | ☐ |
+| A2 | Given an EFMUM member with a **foreign** billing address and no tax charged (e.g. member 4945, United States, INR, `NO_TAX`), when a PAID plan payment is recorded, then `invoice_id = EFMUM/EXP/2026-27/S/<next>`, `invoice_series = EXPORT` | unit + manual + SQL | ☐ |
+| A2b | Given an EFMUM member with a foreign billing address who **was charged GST** (tax > 0), when a PAID payment is recorded, then the DOMESTIC series is used | unit | ☐ |
 | A3 | Given a foreign product order whose items all carry the export mode, when it is PAID, then `invoice_id = MEMUM/EXP/2026-27/P/<next>` (or the configured product seller's code) | unit + manual | ☐ |
 | A4 | Given a product order with **mixed** item tax modes, when an invoice would be issued, then it fails with a clear error and no counter changes | unit | ☐ |
 | A5 | Given Razorpay test-mode payments (plan and product, domestic and foreign), when the capture webhook arrives, then the series follows A1–A3, `payment_date` and `invoice_date` are the franchise-local date, and a replayed webhook issues nothing | webhook spec + manual | ☐ |
 | A6 | Given HCUAE members (one UAE/VAT, one non-UAE/`NO_TAX`), when they pay, then both use the single `HCUAE/{FY}/S/…` series, no EXPORT counter is created for HCUAE, `invoice_date` uses `Asia/Dubai`, and migration 138 leaves HCUAE untouched | unit + manual + SQL | ☐ |
 | A7 | Given the same series, when invoices are issued concurrently, then numbers are unique and contiguous | unit (lock) + manual parallel requests | ☐ |
-| A8 | Given a PENDING manual plan payment, when an admin edits it to PAID, then a number is issued in the series of its tax mode, with `invoice_date` = today (local) | unit + manual | ☐ |
+| A8 | Given a PENDING manual plan payment, when an admin edits it to PAID, then a number is issued in the series `resolveInvoiceSeries` gives (A2 rule), with `invoice_date` = today (local) | unit + manual | ☐ |
 | A9 | Given an invoiced payment, when its status goes PAID→PENDING→PAID (or it is refunded or soft-deleted), then `invoice_id`, `invoice_series` and `invoice_date` never change and no second number is issued | unit + SQL | ☐ |
 | A10 | Given an invoiced plan payment with `invoice_series` set, when an edit would move it to the other series, then the preview is blocked with a reason, Save is disabled, and the API returns 400 | unit + manual | ☐ |
 | A11 | Given an invoiced plan payment, when an edit keeps the series, then it saves with today's warnings and the number is unchanged | unit + manual | ☐ |
@@ -90,7 +91,6 @@ SELECT tax_mode, count(*) FROM txn_member_product_order_items GROUP BY 1;
 | Item | Value |
 |------|-------|
 | Accounts sign-off (name, date) | |
-| 4.6 go-live date | |
 | 4.7 go-live timestamp | |
 | Counters before 138 | |
 | Counters after 138 | |

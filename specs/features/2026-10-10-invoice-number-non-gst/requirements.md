@@ -4,7 +4,7 @@
 |-------|-------|
 | Status | Draft (revised 2026-10-10 after the [accounting audit](../../backlog/2026-10-10-accounting-audit.md), option A) |
 | Branch | `feature/10-10-2026-invoice-number-non-gst`; PR into `m3-cms-update` |
-| Roadmap | Phase 4: **4.7** Invoice series and proforma (was 4.1). **Depends on 4.6** (tax-engine correctness) |
+| Roadmap | Phase 4: **4.7** Invoice series and proforma (was 4.1). **Ships before 4.6** (owner, 2026-10-10: needed for the Q2 FY 2026-27 filing). Until 4.6 ships, new invoices use the billing-country rule of decision 1 |
 | References | Accounts department change request (2026-10-10); [mission.md](../../product/mission.md) principles 1, 2, 10, 11; audit findings C2, C3, C6, M1; CGST Act s.13, s.34; CGST Rules 46, 96A; GSTR-1 Table 13 |
 | Apps touched | server_1 / shared-library / eatfit247-admin / db_changes |
 
@@ -43,7 +43,7 @@ Tax itself is unchanged by this feature. 4.6 owns tax correctness. Correcting th
 *Series*
 - A new **series** dimension (DOMESTIC / EXPORT) on `mst_invoice_sequences`, added to the counter key.
 - The series is stored on each invoiced row (`invoice_series`).
-- For new invoices, the series is chosen from the **stored tax mode**, which is correct after 4.6. This covers service and product invoices on every issuing path.
+- For new invoices, the series follows the **same rule as the Q2 renumbering** (decision 1) until 4.6 ships, then the stored tax mode. This covers service and product invoices on every issuing path.
 - Export format: `{franchiseCode}/EXP/{FY}/{S|P}/{6-digit seq}`. The domestic format is unchanged.
 
 *When the number is issued*
@@ -81,8 +81,8 @@ Tax itself is unchanged by this feature. 4.6 owns tax correctness. Correcting th
 
 | # | Decision | Why |
 |---|----------|-----|
-| 1 | **New invoices:** series = EXPORT when the stored tax mode is an export mode as defined by 4.6 (`EXPORT_OF_SERVICE`, and the export-of-goods mode). Otherwise DOMESTIC. Never decided from currency or a live address lookup. | Principle 1: the series must match the tax treatment printed on the invoice. A foreign client paying INR over domestic rails is taxed as domestic IGST under 4.6, so goes to DOMESTIC. |
-| 2 | Numbering only; tax rules belong to 4.6. **This feature ships after 4.6** (gate). | Without 4.6, no new payment would carry an export mode (audit C2/C3). |
+| 1 | **New invoices (until 4.6 ships):** EXPORT when the franchise is Indian, the billing country in the payment's `member_address` snapshot is not India, **and** no tax was charged (`tax_amount = 0`); otherwise DOMESTIC, the same rule as the Q2 renumbering (decision 13). Never decided from currency or a live address lookup. **After 4.6:** 4.6 switches the helper to the stored tax mode (EXPORT for `EXPORT_OF_SERVICE` / `EXPORT_OF_GOODS`), and a foreign client paying INR over Indian payment methods (IGST) then goes to DOMESTIC. | Owner decision 2026-10-10: 4.7 ships first, and until 4.6 every foreign client is stored `NO_TAX`, so the stored mode can't tell exports apart. Using the decision 13 rule keeps new invoices consistent with the renumbered Q2 ones. The snapshot is taken at payment, so this is still a stored value (principle 1). |
+| 2 | Numbering only; tax rules belong to 4.6. **This feature ships before 4.6** (owner, 2026-10-10), using the decision 1 interim rule. | The Q2 filing can't wait for 4.6. |
 | 3 | Export format `{code}/EXP/{FY}/{S\|P}/{seq}`, e.g. `EFMUM/EXP/2026-27/S/000001` (26 characters). Domestic format unchanged (22 characters). | Owner and Accounts decision: Accounts re-keys numbers into Tally. **Accepted risk:** Rule 46(b) allows 16 characters, so the PDF number differs from the filed number (audit C6). |
 | 4 | Add `series` (`DOMESTIC` \| `EXPORT`, default `DOMESTIC`) to `mst_invoice_sequences`, with the unique key `(franchise_id, invoice_type, financial_year, series)`. Add a nullable `invoice_series` column to `txn_member_payments` and `txn_member_products`, set at issue. | Existing counter rows become DOMESTIC with no data change. The stored series lets the edit guard and reports work without parsing `invoice_id` or trusting the (historically wrong) tax mode. |
 | 5 | `InvoiceSeriesEnum` lives in `shared-library`. | Principle 8. |
@@ -90,14 +90,14 @@ Tax itself is unchanged by this feature. 4.6 owns tax correctness. Correcting th
 | 7 | The counter row for a new series is created on first use (`findOrCreate` under a row lock) and starts at `000001`. | Matches existing behaviour. Accounts confirmed starting at 1. |
 | 8 | **The number is issued on the first transition to PAID, and only then.** This covers create-as-PAID, admin plan-payment edit to PAID (**new**), and webhook capture. PENDING and FAILED rows have no number. | GST s.13: the liability arises at the earlier of invoice and payment. Issuing a number at entry would create tax on money never received, and IGST plus interest on unpaid exports after 1 year (Rule 96A). The owner chose this. |
 | 9 | **An issued number is permanent.** Later status changes (PAID→PENDING, refund, soft delete) never clear or reissue it. Returning to PAID later does not issue a second number. Nothing is blocked because of status. | GST has no invoice deletion. Cancelled invoices are reported in Table 13, and corrections are made with credit notes (4.9). Principles 2 and 10. |
-| 10 | **Edit guard:** on an invoiced plan payment with `invoice_series` set, reject the edit when `series(recalculated tax mode) ≠ invoice_series`. Q1 legacy rows (`invoice_series` NULL) skip the guard; 4.8 will freeze their financial fields. The preview endpoint reports the block before save. | An invoice can't change series once issued; the correct route is a credit note plus a new invoice. Comparing against the stored series avoids false blocks on historical rows whose stored tax mode was wrong. |
+| 10 | **Edit guard:** on an invoiced plan payment with `invoice_series` set, reject the edit when the series the decision 1 rule gives for the edited draft (billing snapshot + recalculated tax) ≠ `invoice_series`. Q1 legacy rows (`invoice_series` NULL) skip the guard; 4.8 will freeze their financial fields. The preview endpoint reports the block before save. | An invoice can't change series once issued; the correct route is a credit note plus a new invoice. Comparing against the stored series avoids false blocks on historical rows whose stored tax mode was wrong. |
 | 11 | **Proforma.** With `invoice_id` empty, the mapper renders the title `PROFORMA INVOICE`, no invoice number, and the note "This is a proforma invoice and not a tax invoice under GST." The admin action is labelled "Download Proforma". The payment-report ZIP export only includes rows with an `invoice_id`. | Today a PENDING entry downloads as a "TAX INVOICE" with a blank number, which is invalid. A proforma creates no tax liability. |
 | 12 | **Invoice date.** `invoice_date` (date) is stored at issue as the **local date in the franchise's timezone** (new `mst_franchises.time_zone`, IANA name; default `Asia/Kolkata`, HCUAE `Asia/Dubai`). The FY in the number comes from `invoice_date`, and the PDF prints `invoice_date`. Webhook `payment_date` is derived in the same timezone. A backdated payment does **not** backdate its invoice. | Under GST, the invoice date is the date of issue. This fixes 31 Mar / 1 Apr mismatches (audit M1) and keeps closed-FY series closed without blocking backdated payment entries. |
 | 13 | **Migration window:** FY `2026-27`, EFMUM and MEMUM, `payment_date >= 2026-07-01` with no upper bound (includes October rows issued before go-live), both tables, both types. Rows outside the window are never touched. **Historical classification:** EXPORT when the billing country in the `member_address` snapshot (billing address, else address; `countryCode`, else the country name resolved via `mst_countries`) is not India **and** no tax was charged (`tax_amount = 0`). Otherwise DOMESTIC. | The stored tax mode on historical rows is unreliable (C2/C3). The series follows what was actually charged: a foreign order that was charged GST stays DOMESTIC until a CA decides on a correction. |
 | 14 | Inside the window, DOMESTIC numbers **continue** from the highest Q1 sequence per (franchise, type), and EXPORT starts at `000001`. Order by `payment_date`, then `created_at`, then the primary key. The migration sets `invoice_date = payment_date` (what the PDF printed) and `invoice_series` for every renumbered row. | Gap-free and continuous with the filed Q1 numbers. |
 | 15 | Every in-window row with an `invoice_id` is renumbered, whatever its `active` flag or status (refunded or cancelled included). | An issued number belongs to its series. Cancelled and refunded invoices keep their place (Table 13, credit notes). |
 | 16 | Delivered as numbered SQL: `137` (schema) and `138` (data). `138` runs in one transaction with guards, a `bkp_138_invoice_renumber` old→new table, a two-phase update (to avoid clashing with the unique `invoice_id` indexes), counter resets and post-asserts. A read-only preview SQL runs first. | `db_changes` convention. Reviewable, auditable, and reversible from the backup. |
-| 17 | `137`, `138` and the code ship together, in a short window with both APIs stopped, **after 4.6 is live**. | No invoice may be issued during renumbering. Razorpay retries webhooks. |
+| 17 | `137`, `138` and the code ship together, in a short window with both APIs stopped. 4.6 is **not** required first (decision 2). | No invoice may be issued during renumbering. Razorpay retries webhooks. |
 
 ## Research: GST and accounting
 
@@ -118,7 +118,7 @@ This is a summary; see the [audit](../../backlog/2026-10-10-accounting-audit.md)
 - Both use one series, `HCUAE/{calendar FY}/{S|P}/{seq}`.
 
 **Impact of this feature: none.**
-- The EXPORT series needs an Indian export tax mode, and HCUAE never produces one.
+- The EXPORT series is only for Indian franchises (decision 1), so HCUAE never gets one.
 - HCUAE keeps a single DOMESTIC series, and migration 138 excludes it.
 - The new `invoice_date` uses `Asia/Dubai` for HCUAE.
 
@@ -131,7 +131,7 @@ This is a summary; see the [audit](../../backlog/2026-10-10-accounting-audit.md)
 - tax credit notes
 - e-invoicing readiness for 1 Jul 2027
 
-**Built to extend.** `resolveInvoiceSeries` keeps its list of export modes in one place. Adding a UAE zero-rated mode later needs no schema change.
+**Built to extend.** `resolveInvoiceSeries` is the only place that decides the series. 4.6 swaps its body from the interim billing-country rule to the stored tax mode, with no schema change.
 
 ## Technical Constraints
 
@@ -154,7 +154,7 @@ This is a summary; see the [audit](../../backlog/2026-10-10-accounting-audit.md)
   - Invoice download returns a proforma for rows without an invoice.
 - **RBAC:** no change.
 - **Money:**
-  - One helper maps tax modes to a series.
+  - One helper decides the series (the decision 1 rule now; the stored tax mode after 4.6).
   - `generateInvoiceNumber` takes the series and the invoice date, and runs in the caller's transaction with `LOCK.UPDATE`.
   - A number is issued only when `invoice_id` is empty.
 - **Async:** both webhook paths use the same helper. The webhook row lock and forward-only status rules come from 4.5.
@@ -163,7 +163,7 @@ This is a summary; see the [audit](../../backlog/2026-10-10-accounting-audit.md)
 
 | Principle | Status |
 |-----------|--------|
-| 1 Tax at payment | ✅ The series comes from the stored tax mode (correct after 4.6). Historical rows are classified by what was charged. |
+| 1 Tax at payment | ✅ The series comes from values stored at payment: the billing snapshot and the tax charged (the stored tax mode after 4.6). Historical rows use the same rule. |
 | 2 No invoice gaps | ✅ Gap-free counters per franchise, type, FY and series. Numbers are issued on PAID and never removed. **Exception:** Q1 FY 2026-27 stays as filed. |
 | 3 Franchise isolation | ✅ Counters are per franchise. |
 | 6 Soft delete only | ✅ Nothing is deleted. The backup table is kept. |

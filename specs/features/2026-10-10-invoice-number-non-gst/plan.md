@@ -2,7 +2,7 @@
 
 > Source: [requirements.md](./requirements.md) · Done when: [validation.md](./validation.md) passes
 >
-> **Gate:** 4.6 (tax-engine correctness) is merged. 4.5 (checkout and webhook lockdown) is strongly recommended first.
+> **Gate:** 4.5 (checkout and webhook lockdown) is merged. 4.6 is **not** required: this feature ships first (owner, 2026-10-10) and uses the decision 1 interim series rule.
 > This feature touches **invoices and migrations**. Implement **one group at a time** and commit between groups. If review finds a gap, add a new group here rather than patching silently.
 
 ## Group 1: Shared Library
@@ -34,10 +34,11 @@
   - Use `findOrCreate` with `LOCK.UPDATE`, keyed by series as well.
   - EXPORT numbers format as `{code}/EXP/{fy}/{S|P}/{seq}`.
   - Return `{ invoiceId, invoiceSeries, invoiceDate }` so callers store all three.
-- [ ] 3.3 Add a pure helper `resolveInvoiceSeries(taxModes: TaxMode[])`:
-  - EXPORT if every mode is in `EXPORT_TAX_MODES` (the 4.6 export modes).
-  - DOMESTIC if none is.
-  - Throw `BadRequestException` if they are mixed.
+- [ ] 3.3 Add a pure helper `resolveInvoiceSeries({ franchiseCountryCode, billingCountryCode, taxAmount })` (decision 1 interim rule):
+  - EXPORT if the franchise is Indian, the billing country from the stored `member_address` snapshot is not India, and `taxAmount = 0`.
+  - DOMESTIC otherwise.
+  - Product orders: the order's total tax and its single billing snapshot (so mixed-item series can't happen).
+  - Share the country resolution with migration 138 (decision 13) so both give the same answer. 4.6 later swaps the body to the stored tax mode.
   - DOMESTIC if the list is empty.
 - [ ] 3.4 Wire the existing issuing paths, each storing `invoice_id`, `invoice_series` and `invoice_date`:
   - plan create (`paymentObj.taxMode`)
@@ -56,10 +57,10 @@
 ## Group 4: Issue on PAID and edit guard (`member-plan.service.ts`)
 
 - [ ] 4.1 `update`:
-  - Inside the existing transaction, if the row has no `invoice_id` and the new status is PAID, issue a number (series from the recalculated tax mode, date = today in the franchise's zone).
+  - Inside the existing transaction, if the row has no `invoice_id` and the new status is PAID, issue a number (series from `resolveInvoiceSeries` on the edited draft, date = today in the franchise's zone).
   - Replace the "never generated during edit" comment.
   - Never clear or change an existing `invoice_id`, `invoice_series` or `invoice_date`.
-- [ ] 4.2 Series guard: if `invoice_series` is set and `resolveInvoiceSeries([draft taxMode]) !== invoice_series`, throw `BadRequestException` with the message "This invoice is in the {X} series. This change would make it {Y}. Issue a credit note and record a new payment instead."
+- [ ] 4.2 Series guard: if `invoice_series` is set and `resolveInvoiceSeries(draft) !== invoice_series`, throw `BadRequestException` with the message "This invoice is in the {X} series. This change would make it {Y}. Issue a credit note and record a new payment instead."
 - [ ] 4.3 `previewUpdate`: run the same check and return `blocked` and `blockReason`.
 - [ ] 4.4 Unit tests:
   - PENDING→PAID issues a number once; saving again issues nothing.
@@ -129,7 +130,7 @@
 ## Group 7: Release
 
 - [ ] 7.1 PR runbook:
-  1. Confirm 4.6 is live.
+  1. Confirm 4.5 is live (migration 139 applied).
   2. Stop public-api and admin-api.
   3. Apply 137, then 138.
   4. Deploy the server, shared-library and admin builds.
