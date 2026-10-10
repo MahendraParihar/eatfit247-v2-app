@@ -57,6 +57,35 @@ describe('InvoiceSeriesUtil.resolve (decision 1)', () => {
     ).toBe(expected);
   });
 
+  it.each([
+    ['export of service under LUT', 'IN', 'US', 0, ['EXPORT_OF_SERVICE'], InvoiceSeriesEnum.EXPORT],
+    ['export with IGST paid (no LUT)', 'IN', 'US', 180, ['EXPORT_OF_SERVICE'], InvoiceSeriesEnum.EXPORT],
+    ['export of goods, every line', 'IN', 'US', 0, ['EXPORT_OF_GOODS', 'EXPORT_OF_GOODS'], InvoiceSeriesEnum.EXPORT],
+    ['foreign client paying INR (IGST, not export)', 'IN', 'US', 180, ['DOMESTIC_GST'], InvoiceSeriesEnum.DOMESTIC],
+    ['foreign client, legacy NO_TAX (pre-4.6)', 'IN', 'US', 0, ['NO_TAX'], InvoiceSeriesEnum.EXPORT],
+    ['UAE franchise zero-rated export', 'AE', 'US', 0, ['VAT'], InvoiceSeriesEnum.DOMESTIC],
+  ])('4.6 rule: %s', (_label, franchiseCountryCode, billingCountryCode, taxAmount, taxModes, expected) => {
+    expect(
+      InvoiceSeriesUtil.resolve({
+        franchiseCountryCode: franchiseCountryCode as string,
+        billingCountryCode: billingCountryCode as string,
+        taxAmount: taxAmount as number,
+        taxModes: taxModes as string[],
+      }),
+    ).toBe(expected);
+  });
+
+  it('4.6 rule: refuses a product order whose lines disagree on export', () => {
+    expect(() =>
+      InvoiceSeriesUtil.resolve({
+        franchiseCountryCode: 'IN',
+        billingCountryCode: 'US',
+        taxAmount: 0,
+        taxModes: ['EXPORT_OF_GOODS', 'DOMESTIC_GST'],
+      }),
+    ).toThrow('order lines disagree');
+  });
+
   it('reads the billing address of the snapshot, else the address', () => {
     expect(
       InvoiceSeriesUtil.snapshotCountry({

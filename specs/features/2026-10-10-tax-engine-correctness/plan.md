@@ -82,21 +82,30 @@
 
 ## Group 4: Wire callers (plans + products, admin + public)
 
-- [ ] 4.1 `member-plan.service.ts` `calculateTax` / `calculatePaymentObject` / `create` / `update` / `buildPaymentDraft`, plus `calculatePublicTax` / `createPublicCheckoutOrder`:
+- [x] 4.1 `member-plan.service.ts` `calculateTax` / `calculatePaymentObject` / `create` / `update` / `buildPaymentDraft`, plus `calculatePublicTax` / `createPublicCheckoutOrder`:
   - pass currency, route (server-set for gateway records: non-INR → INTERNATIONAL_CARD_GATEWAY, INR → DOMESTIC), supply date
   - save the new decision fields
   - require a billing address with country + state
-- [ ] 4.2 `member-product.service.ts`: the same, plus the delivery (shipping) country for goods; per-line saving of mode / category / ARN / reason.
-- [ ] 4.3 Route changes:
+- [x] 4.2 `member-product.service.ts`: the same, plus the delivery (shipping) country for goods; per-line saving of mode / category / ARN / reason.
+- [x] 4.3 Route changes:
   - The route is a tax input: changing it re-prices an unissued manual record.
   - Gateway records and issued invoices keep the 4.5 amount lock.
   - Admin DTOs accept `paymentRoute` + `remittanceReference` only for manual records (`@ValidateIf`); public DTOs never accept them.
-- [ ] 4.4 Indian-customer guard (decision 6):
+- [x] 4.4 Indian-customer guard (decision 6):
   - in tax paths (from 2.3) with a clear 400
   - in admin member create/update/`updateFranchise`: a warning when the franchise country isn't IN and the billing/profile country is IN
   - public signup keeps mapping by country
-- [ ] 4.5 Specs: update the mocked tax inputs in the existing member specs; new tests for the route lock and the guard.
-- [ ] 4.6 Invoice series (4.7 shipped first): swap the body of 4.7's `resolveInvoiceSeries` from the interim billing-country rule to the stored tax mode (EXPORT for `EXPORT_OF_SERVICE` / `EXPORT_OF_GOODS`, including IGST-paid exports), so a foreign client paying INR over Indian rails goes to DOMESTIC. Update the 4.7 tests and the 4.7 spec's decision 1 note.
+- [x] 4.5 Specs: update the mocked tax inputs in the existing member specs; new tests for the route lock and the guard.
+- [x] 4.6 Invoice series (4.7 shipped first): swap the body of 4.7's `resolveInvoiceSeries` from the interim billing-country rule to the stored tax mode (EXPORT for `EXPORT_OF_SERVICE` / `EXPORT_OF_GOODS`, including IGST-paid exports), so a foreign client paying INR over Indian rails goes to DOMESTIC. Update the 4.7 tests and the 4.7 spec's decision 1 note.
+
+> **As built (group 4):**
+> - Plans: one `calculatePaymentObject(…, options)` serves the admin preview (`calculateTax`, which no longer duplicates the address logic), admin create/update (`buildPaymentDraft`) and public checkout. `taxOptions()`: manual → the admin's route (default DOMESTIC) and the payment date as supply date; gateway / public → no route (the currency decides) and today. A missing franchise is a 400, not a TypeError. The payment stores `taxCategory`, `lutArn`, `taxDecisionReason`, `paymentRoute`, `remittanceReference` (manual only), and edits refresh them together with `invoiceNote`. `IPlanTaxCalculationRequest` gains `paymentSource` / `paymentRoute` / `paymentDate`.
+> - Products: `calculateTax` / `calculateOrderItemsTax` take the delivery (shipping) address and route/supply-date options; every line stores the decision fields; the order stores `paymentRoute` (manual: admin's; gateway: by currency) and `remittanceReference`.
+> - DTOs: admin plan and product DTOs accept `paymentRoute` (enum) and `remittanceReference` (≤100); the service ignores them for gateway records. Public DTOs don't accept them.
+> - 4.6 (series): `InvoiceSeriesUtil.resolve` now uses the stored tax mode(s): EXPORT for `EXPORT_OF_SERVICE` / `EXPORT_OF_GOODS` (LUT or IGST-paid); product lines must agree (else 400); records priced before 4.6 (`NO_TAX`) keep 4.7's billing-country rule so they match migration 138; non-Indian franchises are always DOMESTIC. `InvoiceIssueService` reads product line modes in the issuing transaction; the edit guard passes the draft's mode.
+> - 4.4: the engine refuses Indian clients under a non-IN franchise on every tax path. The admin **member-edit warning** moves to group 6 (client-side), since a server warning would need a new member API shape.
+> - Tests: series-rule cases added (`invoice-numbering.spec.ts`), confirmation spec mocks product line modes. Member jest 233/233.
+> - Live (local DB, payments kept as test data): 4945 US+INR DOMESTIC → IGST 18%, `EFMUM/2026-27/S/000010`; US+INR via NRE/FCNR with FIRC ref → 0% under `AD270326000001T`, `EFMUM/EXP/2026-27/S/000002`; India billing → CGST+SGST; 5889 (India, HCUAE) refused; product preview to a US address → EXPORT_OF_GOODS with IGST 12% (MEMUM has no LUT).
 
 ## Group 5: Website checkout (`eatfit247-web-1`)
 

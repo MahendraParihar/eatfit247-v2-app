@@ -12,6 +12,7 @@ import {
 import { FranchiseService } from '@server_1/modules/franchise';
 import { TxnMemberPayment } from '../models/txn-member-payment.model';
 import { TxnMemberProduct } from '../models/txn-member-product.model';
+import { TxnMemberProductOrderItem } from '../models/txn-member-product-order-item.model';
 
 export type InvoiceRecordType = 'plan' | 'product';
 
@@ -72,7 +73,11 @@ export class InvoiceIssueService {
       return null;
     }
     const franchiseContext = context ?? (await this.franchiseContext(franchiseId));
-    const series = await this.resolveSeries(record, franchiseContext.countryCode);
+    const taxModes =
+      recordType === 'product'
+        ? await this.productLineModes((record as TxnMemberProduct).memberProductId, transaction)
+        : [(record as TxnMemberPayment).taxMode];
+    const series = await this.resolveSeries({ memberAddress: record.memberAddress, taxAmount: record.taxAmount, taxModes }, franchiseContext.countryCode);
     const issued = await this.invoiceSequenceService.generateInvoiceNumber(
       {
         franchiseId,
@@ -92,7 +97,7 @@ export class InvoiceIssueService {
 
   /** Series for a record from its stored billing snapshot and the tax it was charged. */
   public async resolveSeries(
-    record: Pick<TxnMemberPayment | TxnMemberProduct, 'memberAddress' | 'taxAmount'>,
+    record: Pick<TxnMemberPayment | TxnMemberProduct, 'memberAddress' | 'taxAmount'> & { taxModes?: Array<string | null | undefined> },
     franchiseCountryCode: string | null,
   ): Promise<InvoiceSeriesEnum> {
     const billingCountryCode = await this.billingCountryCode(record.memberAddress);
@@ -103,7 +108,21 @@ export class InvoiceIssueService {
       franchiseCountryCode,
       billingCountryCode,
       taxAmount: record.taxAmount,
+      taxModes: record.taxModes,
     });
+  }
+
+  /** Tax modes of a product order's lines, read in the issuing transaction. */
+  private async productLineModes(memberProductId: number, transaction: Transaction): Promise<string[]> {
+    if (!memberProductId) {
+      return [];
+    }
+    const lines = await TxnMemberProductOrderItem.findAll({
+      attributes: ['taxMode'],
+      where: { memberProductId },
+      transaction,
+    });
+    return lines.map((line) => line.taxMode);
   }
 
   /** Code from the snapshot, else its country id, else its country name (decision 13). */

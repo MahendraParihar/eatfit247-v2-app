@@ -31,6 +31,7 @@ import {
   mapPaymentToInvoiceDocument,
   MediaForEnum,
   PaymentGatewayEnum,
+  PaymentRouteEnum,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TableEnum,
@@ -64,6 +65,13 @@ import { promises as fs } from 'fs';
 import { find } from 'lodash';
 import moment from 'moment';
 import { InvoiceIssueService } from './invoice-issue.service';
+
+/** How a plan payment is collected, for the tax decision (roadmap 4.6). */
+interface IPlanTaxOptions {
+  franchiseId: number | null;
+  paymentRoute: PaymentRouteEnum | null;
+  supplyDate: Date | string | null;
+}
 
 @Injectable()
 export class MemberPlanService {
@@ -163,72 +171,21 @@ export class MemberPlanService {
       );
     }
     // Get franchise address (supplier address)
-    let franchiseAddress: IAddress | null = null;
-    if (member.franchiseId) {
-      const franchiseAddresses = await this.addressService.filterByTableIdAndPk(
-        TableEnum.MST_FRANCHISES,
-        member.franchiseId,
-      );
-      franchiseAddress =
-        franchiseAddresses && franchiseAddresses.length > 0 ? franchiseAddresses[0] : null;
-    }
-    // Get country and state codes from addresses
-    let supplierCountryCode = null;
-    let supplierStateCode: string | null = null;
-    let customerCountryCode = null;
-    let customerStateCode: string | null = null;
-    if (franchiseAddress) {
-      if (franchiseAddress.countryId) {
-        const franchiseCountry = await this.countryService.fetchById(franchiseAddress.countryId);
-        supplierCountryCode = franchiseCountry.countryCode;
-      }
-      if (franchiseAddress.stateId) {
-        const franchiseState = await this.stateService.fetchById(franchiseAddress.stateId);
-        supplierStateCode = franchiseState.code || null;
-      }
-    }
-    if (billingAddress) {
-      if (billingAddress.countryId) {
-        const customerCountry = await this.countryService.fetchById(billingAddress.countryId);
-        customerCountryCode = customerCountry.countryCode;
-      }
-      if (billingAddress.stateId) {
-        const customerState = await this.stateService.fetchById(billingAddress.stateId);
-        customerStateCode = customerState.code || null;
-      }
-    }
+    const franchiseAddress = member.franchiseId ? await this.findFranchiseAddress(member.franchiseId) : null;
     const programPlan = await this.programPlanService.fetchById(payload.programPlanId);
     const fee: { fees: number; currencyCode: string } = find(programPlan.programPlanFees, {
       currencyCode: payload.currency,
     });
-    // Calculate base amounts
-    // Use tax engine to calculate tax
-    const taxInput: TaxInput = {
-      baseAmount: fee.fees,
-      discountAmount: payload.discountAmount,
-      supplierCountryCode,
-      supplierStateCode: supplierStateCode || undefined,
-      customerCountryCode,
-      customerStateCode: customerStateCode || undefined,
-      referenceId: 1,
-      franchiseId: member.franchiseId,
-      currency: payload.currency,
-      transactionType: TransactionType.SERVICE,
-    };
-    const taxResult = await this.taxEngineService.calculate(taxInput);
-    // If tax is included in plan fees, adjust calculations
-    return <ICalculateTaxResponse>{
-      orderAmount: taxResult.baseAmount,
-      taxableAmount: taxInput.baseAmount - (taxResult.discount || 0),
-      discountAmount: taxResult.discount,
-      taxPercentage: taxResult.taxPercentage,
-      taxAmount: taxResult.taxAmount,
-      totalAmount: taxResult.totalAmount,
-      taxObj: taxResult.taxObj,
-      taxType: taxResult.taxType,
-      taxMode: taxResult.taxMode,
-      invoiceNote: taxResult.invoiceNote,
-    };
+    if (!fee) {
+      throw new BadRequestException('Selected currency is not configured for this program plan');
+    }
+    const result = await this.calculatePaymentObject(
+      { orderAmount: Number(fee.fees), discountAmount: payload.discountAmount, currencyCode: payload.currency },
+      billingAddress,
+      franchiseAddress,
+      this.taxOptions(member.franchiseId, payload.paymentSource, payload.paymentRoute, payload.paymentDate),
+    );
+    return { ...result, taxableAmount: Number(fee.fees) - (result.discountAmount || 0) };
   }
 
   /**
@@ -362,6 +319,9 @@ export class MemberPlanService {
       }
       const programPlan = await this.programPlanService.fetchById(obj.programPlanId);
       const fees = find(programPlan.programPlanFees, { currencyCode: obj.currency });
+      if (!fees) {
+        throw new BadRequestException('Selected currency is not configured for this program plan');
+      }
       const paymentObj = await this.calculatePaymentObject(
         {
           orderAmount: fees.fees,
@@ -370,6 +330,7 @@ export class MemberPlanService {
         },
         billingAddress,
         franchiseAddress,
+        this.taxOptions(member.franchiseId, obj.paymentSource, obj.paymentRoute, obj.paymentDate),
       );
       // Get program plan details to get noOfCycle and noOfDaysInCycle
       const noOfCycle = programPlan.noOfCycle;
@@ -405,6 +366,12 @@ export class MemberPlanService {
         taxObj: paymentObj.taxObj,
         jurisdiction: paymentObj.jurisdiction,
         invoiceNote: paymentObj.invoiceNote,
+        taxCategory: paymentObj.taxCategory ?? null,
+        lutArn: paymentObj.lutArn ?? null,
+        taxDecisionReason: paymentObj.taxDecisionReason ?? null,
+        paymentRoute: paymentObj.paymentRoute ?? null,
+        remittanceReference:
+          obj.paymentSource === PaymentSourceEnum.MANUAL ? obj.remittanceReference?.trim() || null : null,
         noOfCycle: noOfCycle,
         daysInCycle: noOfDaysInCycle,
         active: true,
@@ -726,10 +693,11 @@ export class MemberPlanService {
     }
     const { countryCode } = await this.invoiceIssueService.franchiseContext(franchiseId);
     const nextSeries = await this.invoiceIssueService.resolveSeries(
-      { memberAddress: draft.memberAddressSnapshot, taxAmount: draft.paymentObj.taxAmount } as Pick<
-        TxnMemberPayment,
-        'memberAddress' | 'taxAmount'
-      >,
+      {
+        memberAddress: draft.memberAddressSnapshot,
+        taxAmount: draft.paymentObj.taxAmount,
+        taxModes: [draft.paymentObj.taxMode],
+      } as Pick<TxnMemberPayment, 'memberAddress' | 'taxAmount'> & { taxModes: string[] },
       countryCode,
     );
     if (nextSeries === payment.invoiceSeries) {
@@ -763,6 +731,13 @@ export class MemberPlanService {
     payment.isLutApplied = draft.paymentObj.isLutApplied;
     payment.taxObj = draft.paymentObj.taxObj;
     payment.jurisdiction = draft.paymentObj.jurisdiction;
+    // The tax decision follows the recalculation (an "export under LUT" note can't outlive it)
+    payment.invoiceNote = draft.paymentObj.invoiceNote ?? null;
+    payment.taxCategory = draft.paymentObj.taxCategory ?? null;
+    payment.lutArn = draft.paymentObj.lutArn ?? null;
+    payment.taxDecisionReason = draft.paymentObj.taxDecisionReason ?? null;
+    payment.paymentRoute = draft.paymentObj.paymentRoute ?? null;
+    payment.remittanceReference = obj.remittanceReference?.trim() || null;
     payment.noOfCycle = draft.noOfCycle;
     payment.daysInCycle = draft.noOfDaysInCycle;
   }
@@ -826,6 +801,7 @@ export class MemberPlanService {
       },
       billingAddress,
       franchiseAddress,
+      this.taxOptions(member.franchiseId, obj.paymentSource, obj.paymentRoute, obj.paymentDate),
     );
 
     return {
@@ -976,6 +952,12 @@ export class MemberPlanService {
       isLutApplied: item.isLutApplied,
       taxObj: item.taxObj,
       jurisdiction: item.jurisdiction,
+      invoiceNote: item.invoiceNote ?? undefined,
+      taxCategory: item.taxCategory ?? null,
+      lutArn: item.lutArn ?? null,
+      taxDecisionReason: item.taxDecisionReason ?? null,
+      paymentRoute: item.paymentRoute ?? null,
+      remittanceReference: item.remittanceReference ?? null,
       noOfCycle: item.noOfCycle,
       noOfDaysInCycle: item.daysInCycle,
       deletable: false, // TODO: Add logic to determine if payment can be deleted
@@ -1007,6 +989,7 @@ export class MemberPlanService {
     },
     billingAddress: IAddress | null,
     franchiseAddress: IAddress | null,
+    options: IPlanTaxOptions,
   ): Promise<ICalculateTaxResponse> {
     const orderAmount = paymentObjInput.orderAmount;
     const discountAmount = paymentObjInput.discountAmount;
@@ -1018,10 +1001,14 @@ export class MemberPlanService {
       this.countryService,
       this.stateService,
     );
-    const supplierCountryCode = addressCodes.supplierCountryCode || '';
+    const supplierCountryCode = addressCodes.supplierCountryCode;
     const supplierStateCode = addressCodes.supplierStateCode;
-    const customerCountryCode = addressCodes.customerCountryCode || '';
+    const customerCountryCode = addressCodes.customerCountryCode;
     const customerStateCode = addressCodes.customerStateCode;
+    const franchiseId = options.franchiseId ?? franchiseAddress?.pkOfTable;
+    if (!franchiseId) {
+      throw new BadRequestException('The member has no franchise, so tax cannot be calculated.');
+    }
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
       baseAmount: orderAmount,
@@ -1031,9 +1018,11 @@ export class MemberPlanService {
       customerCountryCode,
       customerStateCode,
       referenceId: 1,
-      franchiseId: franchiseAddress.pkOfTable,
+      franchiseId,
       currency: currencyCode,
       transactionType: TransactionType.SERVICE,
+      paymentRoute: options.paymentRoute ?? null,
+      supplyDate: options.supplyDate ?? null,
     };
     const taxResult = await this.taxEngineService.calculate(taxInput);
     return <ICalculateTaxResponse>{
@@ -1053,7 +1042,35 @@ export class MemberPlanService {
         placeOfSupply: taxResult.placeOfSupply,
       },
       invoiceNote: taxResult.invoiceNote || null,
+      taxCategory: taxResult.taxCategory ?? null,
+      lutArn: taxResult.lutArn ?? null,
+      paymentRoute: taxResult.paymentRoute ?? null,
+      taxDecisionReason: taxResult.taxDecisionReason ?? null,
     };
+  }
+
+  /**
+   * Tax inputs that depend on how a plan payment is collected: manual payments use the admin's
+   * route (default DOMESTIC) and payment date; gateway payments let the currency decide the route
+   * and are supplied today (roadmap 4.6, decision 11).
+   */
+  private taxOptions(
+    franchiseId: number | null | undefined,
+    paymentSource: PaymentSourceEnum | undefined,
+    paymentRoute: PaymentRouteEnum | null | undefined,
+    paymentDate: Date | string | null | undefined,
+  ): IPlanTaxOptions {
+    const manual = paymentSource === PaymentSourceEnum.MANUAL;
+    return {
+      franchiseId: franchiseId ?? null,
+      paymentRoute: manual ? paymentRoute || PaymentRouteEnum.DOMESTIC : null,
+      supplyDate: manual ? paymentDate ?? null : null,
+    };
+  }
+
+  private async findFranchiseAddress(franchiseId: number): Promise<IAddress | null> {
+    const franchiseAddresses = await this.addressService.filterByTableIdAndPk(TableEnum.MST_FRANCHISES, franchiseId);
+    return franchiseAddresses?.[0] || null;
   }
 
   /**
@@ -1501,6 +1518,8 @@ export class MemberPlanService {
       { orderAmount: Number(fee.fees), discountAmount: promo.discountAmount, currencyCode: currency },
       billingAddress,
       franchiseAddress,
+      // Online: the order currency decides the route (decision 2)
+      this.taxOptions(member.franchiseId, PaymentSourceEnum.PAYMENT_GATEWAY, null, null),
     );
     const serviceFranchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
     if (!serviceFranchise?.length) {
@@ -1541,6 +1560,10 @@ export class MemberPlanService {
           taxObj: paymentObj.taxObj,
           jurisdiction: paymentObj.jurisdiction,
           invoiceNote: paymentObj.invoiceNote,
+          taxCategory: paymentObj.taxCategory ?? null,
+          lutArn: paymentObj.lutArn ?? null,
+          taxDecisionReason: paymentObj.taxDecisionReason ?? null,
+          paymentRoute: paymentObj.paymentRoute ?? null,
           noOfCycle: programPlan.noOfCycle,
           daysInCycle: programPlan.noOfDaysInCycle,
           active: true,

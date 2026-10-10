@@ -19,6 +19,7 @@ import {
   IMemberProductOrderItemBasic,
   IProductVariantTaxResult,
   InputLengthEnum,
+  PaymentRouteEnum,
   PaymentSourceEnum,
 } from '@eatfit247-shared-lib';
 import { Type } from 'class-transformer';
@@ -86,6 +87,15 @@ export class CreateMemberProductDto implements IManageMemberProduct {
   @IsInt()
   @Min(1)
   franchisePaymentGatewayId?: number;
+  /** Manual orders only: how the money arrived (gateway routes are set by the server) */
+  @IsOptional()
+  @IsEnum(PaymentRouteEnum)
+  paymentRoute?: PaymentRouteEnum | null;
+  /** FIRC / e-FIRA / bank reference for a foreign route */
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  remittanceReference?: string | null;
   @IsOptional()
   @IsString()
   @MaxLength(InputLengthEnum.CHAR_100)

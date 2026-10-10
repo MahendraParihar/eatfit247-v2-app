@@ -117,6 +117,11 @@ export interface IPlanTaxCalculationRequest {
   currency: string;
   addressId?: number;
   billingAddressId?: number;
+  /** Admin preview: the route only applies to manual payments; gateway routes follow the currency */
+  paymentSource?: PaymentSourceEnum;
+  paymentRoute?: PaymentRouteEnum | null;
+  /** Date of supply (manual payment date) for the LUT check; defaults to today */
+  paymentDate?: Date | string | null;
 }
 
 export interface IMemberPaymentUpdateChange {

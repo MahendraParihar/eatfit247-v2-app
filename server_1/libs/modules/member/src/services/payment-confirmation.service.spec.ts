@@ -4,7 +4,7 @@ import { AddressService, CountryService, FranchiseDateUtil, InvoiceSequenceServi
 import { FranchiseService } from '@server_1/modules/franchise';
 import { PromoCodeService } from '@server_1/modules/promo-code';
 import { BusinessTypeEnum, GatewayEventResultEnum, InvoiceSeriesEnum, PaymentStatusEnum } from '@eatfit247-shared-lib';
-import { TxnMemberPayment, TxnMemberProduct } from '../models';
+import { TxnMemberPayment, TxnMemberProduct, TxnMemberProductOrderItem } from '../models';
 import {
   IConfirmGatewayPaymentInput,
   PaymentConfirmationService,
@@ -95,6 +95,10 @@ describe('PaymentConfirmationService', () => {
       };
     });
     recordUsage = jest.fn().mockResolvedValue({ overLimit: false });
+    // Product line tax modes for the series rule (domestic GST lines)
+    jest
+      .spyOn(TxnMemberProductOrderItem, 'findAll')
+      .mockResolvedValue([{ taxMode: 'DOMESTIC_GST' }] as unknown as TxnMemberProductOrderItem[]);
     emit = jest.fn();
 
     service = new PaymentConfirmationService(

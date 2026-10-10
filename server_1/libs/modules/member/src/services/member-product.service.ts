@@ -32,6 +32,7 @@ import {
   mapProductOrderToInvoiceDocument,
   MediaForEnum,
   PaymentGatewayEnum,
+  PaymentRouteEnum,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TableEnum,
@@ -70,6 +71,12 @@ import { find, map, sumBy } from 'lodash';
 import { MemberService } from './member.service';
 import { CheckoutGatewayService, ICheckoutPaymentLink } from './checkout-gateway.service';
 import { InvoiceIssueService } from './invoice-issue.service';
+
+/** How a product order is collected and when, for the tax decision (roadmap 4.6). */
+interface IProductTaxOptions {
+  paymentRoute?: PaymentRouteEnum | null;
+  supplyDate?: Date | string | null;
+}
 
 @Injectable()
 export class MemberProductService {
@@ -366,6 +373,8 @@ export class MemberProductService {
     franchise: IDropdownItem,
     franchiseAddress: IAddress | null,
     billingAddress: IAddress | null,
+    deliveryAddress: IAddress | null,
+    options: IProductTaxOptions = {},
   ): Promise<
     Array<{
       productId: number;
@@ -387,6 +396,9 @@ export class MemberProductService {
       isLutApplied?: boolean;
       jurisdiction: any;
       invoiceNote?: string | null;
+      taxCategory?: string | null;
+      lutArn?: string | null;
+      taxDecisionReason?: string | null;
     }>
   > {
     const orderItemObjs = await Promise.all(
@@ -402,6 +414,8 @@ export class MemberProductService {
           // calculateTax takes (billingAddress, franchiseAddress); these were swapped
           billingAddress,
           franchiseAddress,
+          deliveryAddress,
+          options,
         );
         return {
           productId: item.productId,
@@ -423,6 +437,9 @@ export class MemberProductService {
           isLutApplied: taxCalculationResult.isLutApplied,
           jurisdiction: taxCalculationResult.jurisdiction,
           invoiceNote: taxCalculationResult.invoiceNote,
+          taxCategory: taxCalculationResult.taxCategory ?? null,
+          lutArn: taxCalculationResult.lutArn ?? null,
+          taxDecisionReason: taxCalculationResult.taxDecisionReason ?? null,
         };
       }),
     );
@@ -448,6 +465,8 @@ export class MemberProductService {
       paymentDate: item.paymentDate,
       invoiceId: item.invoiceId,
       invoiceSeries: item.invoiceSeries ?? null,
+      paymentRoute: item.paymentRoute ?? null,
+      remittanceReference: item.remittanceReference ?? null,
       invoiceDate: item.invoiceDate ?? null,
       paymentStatusId: item.paymentStatusId,
       paymentStatus: item.paymentStatus?.paymentStatus,
@@ -506,6 +525,10 @@ export class MemberProductService {
             taxMode: orderItem.taxMode,
             jurisdiction: orderItem.jurisdiction,
             invoiceNote: orderItem.invoiceNote,
+            isLutApplied: orderItem.isLutApplied,
+            taxCategory: orderItem.taxCategory ?? null,
+            lutArn: orderItem.lutArn ?? null,
+            taxDecisionReason: orderItem.taxDecisionReason ?? null,
           }))
         : [],
     };
@@ -708,6 +731,7 @@ export class MemberProductService {
       franchise[0],
       addresses.franchiseAddress,
       memberAddressSnapshot.billingAddress,
+      memberAddressSnapshot.address,
     );
     // The public preview must show exactly what the order will charge (same per-line rounding)
     const orderItemObjs = publicCheckout
@@ -734,6 +758,11 @@ export class MemberProductService {
         invoiceNote: item.invoiceNote,
         isLutApplied: item.isLutApplied,
         jurisdiction: item.jurisdiction,
+        taxType: item.taxType,
+        taxMode: item.taxMode,
+        taxCategory: item.taxCategory ?? null,
+        lutArn: item.lutArn ?? null,
+        taxDecisionReason: item.taxDecisionReason ?? null,
       });
     }
     return <ICalculateProductVariantTaxResponse>{
@@ -756,6 +785,8 @@ export class MemberProductService {
     payload: ICalculateTaxRequest,
     billingAddress: IAddress | null,
     franchiseAddress: IAddress | null,
+    deliveryAddress: IAddress | null = null,
+    options: IProductTaxOptions = {},
   ): Promise<ICalculateTaxResponse> {
     // Validate billing address is provided when tax is applicable
     if (!billingAddress) {
@@ -774,6 +805,10 @@ export class MemberProductService {
     const supplierStateCode = addressCodes.supplierStateCode;
     const customerCountryCode = addressCodes.customerCountryCode;
     const customerStateCode = addressCodes.customerStateCode;
+    // Goods: the place of supply is where they are delivered (decision 3)
+    const deliveryCodes = deliveryAddress
+      ? await PaymentUtil.extractAddressCodes(null, deliveryAddress, this.countryService, this.stateService)
+      : null;
     // Use tax engine to calculate tax
     const taxInput: TaxInput = {
       baseAmount: payload.orderAmount,
@@ -786,6 +821,10 @@ export class MemberProductService {
       franchiseId: franchise.id as number,
       currency: payload.currency,
       transactionType: TransactionType.PRODUCT,
+      deliveryCountryCode: deliveryCodes?.customerCountryCode ?? null,
+      deliveryStateCode: deliveryCodes?.customerStateCode ?? null,
+      paymentRoute: options.paymentRoute ?? null,
+      supplyDate: options.supplyDate ?? null,
     };
     const taxResult = await this.taxEngineService.calculate(taxInput);
     // Calculate base amounts
@@ -806,7 +845,19 @@ export class MemberProductService {
         customerCountry: taxResult.customerCountry,
         placeOfSupply: taxResult.placeOfSupply,
       },
+      taxCategory: taxResult.taxCategory ?? null,
+      lutArn: taxResult.lutArn ?? null,
+      paymentRoute: taxResult.paymentRoute ?? null,
+      taxDecisionReason: taxResult.taxDecisionReason ?? null,
     };
+  }
+
+  /** Manual orders: the admin's route (default DOMESTIC); gateway orders: by currency (decision 11). */
+  private orderRoute(paymentSource: PaymentSourceEnum, currency: string, chosen?: PaymentRouteEnum | null): PaymentRouteEnum {
+    if (paymentSource === PaymentSourceEnum.MANUAL) {
+      return chosen || PaymentRouteEnum.DOMESTIC;
+    }
+    return (currency || '').toUpperCase() === 'INR' ? PaymentRouteEnum.DOMESTIC : PaymentRouteEnum.INTERNATIONAL_CARD_GATEWAY;
   }
 
   private async findAddresses(
@@ -1016,11 +1067,17 @@ export class MemberProductService {
         currencyCode: obj.orderItems.find((i) => i.productId === item.productId)?.currency || 'INR',
       }));
       // Calculate tax for order items
+      const route = this.orderRoute(obj.paymentSource, obj.orderItems[0]?.currency, obj.paymentRoute);
       const orderItemObjs = await this.calculateOrderItemsTax(
         tempOrderItemsWithCurrency,
         franchise[0],
         addresses.franchiseAddress,
         memberAddressSnapshot.billingAddress,
+        memberAddressSnapshot.address,
+        {
+          paymentRoute: route,
+          supplyDate: obj.paymentSource === PaymentSourceEnum.MANUAL ? obj.paymentDate ?? null : null,
+        },
       );
       const totalOrderAmount = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
       const totalTaxAmount = orderItemObjs.reduce((acc, item) => acc + item.taxAmount, 0);
@@ -1044,6 +1101,9 @@ export class MemberProductService {
         gstNumber: obj.gstNumber || null,
         memberAddress: memberAddressSnapshot,
         paymentSource: obj.paymentSource,
+        paymentRoute: route,
+        remittanceReference:
+          obj.paymentSource === PaymentSourceEnum.MANUAL ? obj.remittanceReference?.trim() || null : null,
         subTotalAmount: totalOrderAmount,
         discountAmount: totalDiscount,
         taxAmount: totalTaxAmount,
@@ -1383,11 +1443,14 @@ export class MemberProductService {
     const subtotal = sumBy(tempOrderItems, 'baseAmount');
     const promo = await this.checkoutGatewayService.applyPromoCode(obj.promoCode, subtotal, currency);
     this.allocateDiscount(tempOrderItems, promo.discountAmount);
+    const route = this.orderRoute(PaymentSourceEnum.PAYMENT_GATEWAY, currency);
     const pricedItems = await this.calculateOrderItemsTax(
       tempOrderItems.map((item) => ({ ...item, currencyCode: currency })),
       franchise[0],
       addresses.franchiseAddress,
       memberAddressSnapshot.billingAddress,
+      memberAddressSnapshot.address,
+      { paymentRoute: route },
     );
     // Round each line first, so the stored lines add up to the charged total.
     const orderItemObjs = this.roundOrderLines(pricedItems, currency);
@@ -1414,6 +1477,7 @@ export class MemberProductService {
           gstNumber: obj.gstNumber || null,
           memberAddress: memberAddressSnapshot,
           paymentSource: PaymentSourceEnum.PAYMENT_GATEWAY,
+          paymentRoute: route,
           checkoutSessionId,
           subTotalAmount: round(sumBy(orderItemObjs, 'baseAmount')),
           discountAmount: round(sumBy(orderItemObjs, 'discountAmount')),

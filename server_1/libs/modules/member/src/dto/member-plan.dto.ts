@@ -14,6 +14,7 @@ import {
   IManageMemberPayment,
   InputLengthEnum,
   IPlanTaxCalculationRequest,
+  PaymentRouteEnum,
   PaymentSourceEnum,
 } from '@eatfit247-shared-lib';
 
@@ -93,6 +94,16 @@ export class CreateMemberPaymentDto implements IManageMemberPayment {
   @IsInt()
   @Min(1)
   franchisePaymentGatewayId?: number;
+  /** Manual payments only: how the money arrived (export vs IGST for foreign clients); gateway routes are set by the server */
+  @ValidateIf((o: { paymentSource?: PaymentSourceEnum }) => o.paymentSource === PaymentSourceEnum.MANUAL)
+  @IsOptional()
+  @IsEnum(PaymentRouteEnum)
+  paymentRoute?: PaymentRouteEnum | null;
+  /** FIRC / e-FIRA / bank reference for a foreign route */
+  @IsOptional()
+  @IsString()
+  @MaxLength(InputLengthEnum.CHAR_100)
+  remittanceReference?: string | null;
 }
 
 export class PlanTaxCalculationRequestDto implements IPlanTaxCalculationRequest {
@@ -116,6 +127,15 @@ export class PlanTaxCalculationRequestDto implements IPlanTaxCalculationRequest 
   @IsOptional()
   @IsNumber()
   addressId?: number;
+  @IsOptional()
+  @IsEnum(PaymentSourceEnum)
+  paymentSource?: PaymentSourceEnum;
+  @IsOptional()
+  @IsEnum(PaymentRouteEnum)
+  paymentRoute?: PaymentRouteEnum | null;
+  @IsOptional()
+  @IsDateString()
+  paymentDate?: string | null;
 }
 
 export class PreviewMemberPaymentUpdateDto extends CreateMemberPaymentDto {}
