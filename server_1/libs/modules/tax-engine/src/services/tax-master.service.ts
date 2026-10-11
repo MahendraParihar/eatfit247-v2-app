@@ -3,7 +3,10 @@ import { ITaxRuleLookup } from '../interfaces/tax.interface';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { MstTaxMaster } from '../models';
-import { IBasicSearch, ITableList, ITaxMaster, TaxCategoryEnum, TaxTypeEnum } from '@eatfit247-shared-lib';
+import { IBasicSearch, ITableList, ITaxMaster, TaxCategoryEnum, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
+
+/** `reference_id` of a franchise's default SERVICE rule (every plan without its own rule) */
+export const SERVICE_DEFAULT_REFERENCE = 1;
 import { CommonFunctionsUtil, MstFranchise, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { CreateTaxMasterDto } from '../dto/tax-master.dto';
 
@@ -19,10 +22,19 @@ export class TaxMasterService {
    * newest first. Null when none is configured (the engine turns that into an error).
    */
   async getApplicableTaxRule(input: ITaxRuleLookup): Promise<MstTaxMaster | null> {
+    const rule = await this.findRule(input, input.referenceId);
+    if (rule || input.transactionType !== TransactionType.SERVICE || input.referenceId === SERVICE_DEFAULT_REFERENCE) {
+      return rule;
+    }
+    // Services: a plan-specific rule wins; otherwise the franchise's default service rule (reference 1)
+    return this.findRule(input, SERVICE_DEFAULT_REFERENCE);
+  }
+
+  private findRule(input: ITaxRuleLookup, referenceId: number): Promise<MstTaxMaster | null> {
     return this.mstTaxMaster.findOne({
       where: {
         franchiseId: input.franchiseId,
-        referenceId: input.referenceId,
+        referenceId,
         transactionType: input.transactionType,
         countryCode: input.countryCode,
         active: true,

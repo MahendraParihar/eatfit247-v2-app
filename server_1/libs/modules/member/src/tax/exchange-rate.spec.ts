@@ -26,7 +26,7 @@ describe('exchange rates', () => {
     it('A16 a USD invoice of an Indian franchise saves the FBIL rate and INR equivalents', async () => {
       findRate.mockResolvedValue({ rate: 83.1234, rateDate: '2026-10-09', source: 'FBIL' });
       const record = payment({});
-      await service.applyFx(record, 'plan', 'IN', '2026-10-12');
+      await service.applyFx(record, 'plan', 'INR', '2026-10-12');
       expect(findRate).toHaveBeenCalledWith('USD', 'INR', '2026-10-12', 'SERVICES');
       expect(record).toMatchObject({
         functionalCurrency: 'INR',
@@ -41,7 +41,7 @@ describe('exchange rates', () => {
     it('A16 a USD invoice of the UAE franchise is converted to AED; goods use the customs purpose', async () => {
       findRate.mockResolvedValue({ rate: 3.6725, rateDate: '1997-11-01', source: 'CBUAE_PEG' });
       const record = payment({});
-      await service.applyFx(record, 'product', 'AE', '2026-10-12');
+      await service.applyFx(record, 'product', 'AED', '2026-10-12');
       expect(findRate).toHaveBeenCalledWith('USD', 'AED', '2026-10-12', 'GOODS');
       expect(record).toMatchObject({ functionalCurrency: 'AED', functionalTotalAmount: 367.25 });
     });
@@ -49,17 +49,17 @@ describe('exchange rates', () => {
     it('A17 no rate yet: FX pending (functional currency set, rate empty), never throws', async () => {
       findRate.mockResolvedValue(null);
       const pending = payment({});
-      await service.applyFx(pending, 'plan', 'IN', '2026-10-12');
+      await service.applyFx(pending, 'plan', 'INR', '2026-10-12');
       expect(pending).toMatchObject({ functionalCurrency: 'INR' });
       expect(pending.fxRate).toBeUndefined();
 
       findRate.mockRejectedValue(new Error('db down'));
-      await expect(service.applyFx(payment({}), 'plan', 'IN', '2026-10-12')).resolves.toBeUndefined();
+      await expect(service.applyFx(payment({}), 'plan', 'INR', '2026-10-12')).resolves.toBeUndefined();
     });
 
     it('a same-currency invoice needs no FX', async () => {
       const record = payment({ currency: 'INR' });
-      await service.applyFx(record, 'plan', 'IN', '2026-10-12');
+      await service.applyFx(record, 'plan', 'INR', '2026-10-12');
       expect(findRate).not.toHaveBeenCalled();
       expect(record.functionalCurrency).toBeUndefined();
     });

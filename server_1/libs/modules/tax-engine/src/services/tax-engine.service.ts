@@ -14,13 +14,15 @@ import {
   TransactionType,
 } from '@eatfit247-shared-lib';
 import { CountryService, FranchiseDateUtil } from '@server_1/platform';
-import { MstFranchise } from '@server_1/core';
+import { AppConfigService, MstFranchise } from '@server_1/core';
+import { ConfigParam } from '@eatfit247-shared-lib';
 import { MstTaxMaster } from '../models';
 import {
   EXPORT_UNDER_LUT_NOTE,
   EXPORT_WITH_IGST_NOTE,
   INDIA_COUNTRY_CODE,
   UAE_ZERO_RATED_EXPORT_NOTE,
+  UAE_ZERO_RATED_GOODS_EXPORT_NOTE,
 } from '../constants/tax-notes.constant';
 
 interface ITaxContext {
@@ -56,6 +58,7 @@ export class TaxEngineService {
     private readonly taxMasterService: TaxMasterService,
     private readonly lutService: LutService,
     @InjectModel(MstFranchise) private readonly franchiseRepository: typeof MstFranchise,
+    private readonly appConfigService: AppConfigService,
   ) {}
 
   async calculate(input: TaxInput): Promise<TaxResult> {
@@ -73,7 +76,11 @@ export class TaxEngineService {
       throw new BadRequestException('Indian clients must be registered under the India franchise.');
     }
 
-    const supplyDate = this.toLocalDate(input.supplyDate);
+    const franchise = await this.franchiseRepository.findByPk(input.franchiseId, {
+      attributes: ['franchiseId', 'gstNumber', 'vatNumber', 'timeZone'],
+    });
+    // The supply date is the franchise's local calendar day (LUT validity, rule dates)
+    const supplyDate = this.toLocalDate(input.supplyDate, franchise?.timeZone);
     const rule = await this.taxMasterService.getApplicableTaxRule({
       franchiseId: input.franchiseId,
       referenceId: input.referenceId,
@@ -87,7 +94,7 @@ export class TaxEngineService {
           `${input.transactionType} (reference ${input.referenceId}). Add it in Tax Master.`,
       );
     }
-    await this.assertRegistration(input.franchiseId, rule);
+    this.assertRegistration(franchise, rule);
 
     const rate = Number(rule.taxPercent || 0);
     const taxable = rule.isTaxInclusive
@@ -102,12 +109,14 @@ export class TaxEngineService {
       // Goods are taxed where they are delivered (decision 3); the billing country isn't a substitute
       throw new BadRequestException('A shipping address with a country is required for product orders.');
     }
-    const placeOfSupplyCountry =
-      input.transactionType === TransactionType.PRODUCT ? (this.normalize(input.deliveryCountryCode) as string) : customer;
-    const result =
-      placeOfSupplyCountry === supplier
-        ? await this.domestic(context)
-        : await this.crossBorder(context, placeOfSupplyCountry);
+    const isGoods = input.transactionType === TransactionType.PRODUCT;
+    const placeOfSupplyCountry = isGoods ? (this.normalize(input.deliveryCountryCode) as string) : customer;
+    const isDomestic = placeOfSupplyCountry === supplier;
+    const result = isDomestic ? await this.domestic(context) : await this.crossBorder(context, placeOfSupplyCountry);
+    // Stored with the decision (Circular 242/36/2024): the State only exists for a domestic supply
+    const placeOfSupplyState = isDomestic
+      ? this.normalize(isGoods ? input.deliveryStateCode || input.customerStateCode : input.customerStateCode)
+      : null;
     return {
       ...result,
       baseAmount: taxable + input.discountAmount,
@@ -115,6 +124,9 @@ export class TaxEngineService {
       entityCountry: countryName(supplier),
       customerCountry: countryName(customer),
       placeOfSupply: countryName(placeOfSupplyCountry),
+      placeOfSupplyCountryCode: placeOfSupplyCountry,
+      placeOfSupplyStateCode: placeOfSupplyState,
+      hsnSacCode: rule.hsnSacCode?.trim() || null,
     };
   }
 
@@ -159,8 +171,28 @@ export class TaxEngineService {
           taxDecisionReason: 'Sales tax by billing state',
         };
       }
-      default:
+      default: {
+        const isGoods = input.transactionType === TransactionType.PRODUCT;
+        const deliveryState = this.normalize(input.deliveryStateCode || input.customerStateCode);
+        const supplierState = this.normalize(input.supplierStateCode);
+        const interState = !!deliveryState && !!supplierState && deliveryState !== supplierState;
+        if (context.supplier === INDIA_COUNTRY_CODE && isGoods && interState && !this.allowUnregisteredInterstateGoods()) {
+          // CGST s.24(i): any inter-state taxable supply needs registration, whatever the turnover
+          throw new BadRequestException(
+            'Inter-state goods supply needs GST registration (CGST s.24(i)). Ask the CA, or deliver within the franchise state.',
+          );
+        }
         return this.noTax(taxable, 'The franchise is not registered for tax');
+      }
+    }
+  }
+
+  /** Decision 8: the CA may accept the s.24(i) risk explicitly through configuration. */
+  private allowUnregisteredInterstateGoods(): boolean {
+    try {
+      return this.appConfigService.getBoolean(ConfigParam.ALLOW_UNREGISTERED_INTERSTATE_GOODS, false, false);
+    } catch {
+      return false;
     }
   }
 
@@ -185,12 +217,15 @@ export class TaxEngineService {
       );
     }
     if (rule.taxSystem === TaxTypeEnum.VAT) {
+      const isGoods = input.transactionType === TransactionType.PRODUCT;
       return this.vat(
         context,
         0,
         TaxCategoryEnum.ZERO_RATED,
-        UAE_ZERO_RATED_EXPORT_NOTE,
-        `Zero-rated export: recipient outside ${context.countryName(supplier)} (billing address)`,
+        isGoods ? UAE_ZERO_RATED_GOODS_EXPORT_NOTE : UAE_ZERO_RATED_EXPORT_NOTE,
+        isGoods
+          ? `Zero-rated export of goods: delivered to ${context.countryName(destination)} (delivery address)`
+          : `Zero-rated export: recipient outside ${context.countryName(supplier)} (billing address)`,
       );
     }
     return this.noTax(taxable, rule.taxSystem === TaxTypeEnum.NONE ? 'The franchise is not registered for tax' : 'Outside the franchise tax jurisdiction');
@@ -239,7 +274,7 @@ export class TaxEngineService {
     reason: string,
   ): TaxResult {
     const rate = Number(context.rule.taxPercent || 0);
-    const taxAmount = (context.taxable * rate) / 100;
+    const taxAmount = Math.round(((context.taxable * rate) / 100 + Number.EPSILON) * 100) / 100;
     return {
       baseAmount: context.taxable,
       discount: context.input.discountAmount,
@@ -247,7 +282,7 @@ export class TaxEngineService {
       taxPercentage: rate,
       taxAmount,
       taxObj: { IGST: { amount: taxAmount, taxPercentage: rate } },
-      totalAmount: context.taxable + taxAmount,
+      totalAmount: Math.round((context.taxable + taxAmount + Number.EPSILON) * 100) / 100,
       taxMode: mode,
       invoiceNote: note ?? undefined,
       isLutApplied: false,
@@ -282,13 +317,13 @@ export class TaxEngineService {
   }
 
   /** A GST rule needs the franchise's GSTIN; a VAT rule its TRN (decision 18). */
-  private async assertRegistration(franchiseId: number, rule: MstTaxMaster): Promise<void> {
+  private assertRegistration(
+    franchise: Pick<MstFranchise, 'gstNumber' | 'vatNumber'> | null,
+    rule: MstTaxMaster,
+  ): void {
     if (rule.taxSystem !== TaxTypeEnum.GST && rule.taxSystem !== TaxTypeEnum.VAT) {
       return;
     }
-    const franchise = await this.franchiseRepository.findByPk(franchiseId, {
-      attributes: ['franchiseId', 'gstNumber', 'vatNumber'],
-    });
     if (rule.taxSystem === TaxTypeEnum.GST && !franchise?.gstNumber?.trim()) {
       throw new BadRequestException(
         'This franchise has a GST tax rule but no GSTIN. Add the GSTIN, or set its rule to "no tax" if it is not registered.',
@@ -352,13 +387,13 @@ export class TaxEngineService {
     };
   }
 
-  private toLocalDate(value: Date | string | null | undefined): string {
-    // A plain calendar date is already local; a timestamp is converted to the Indian calendar day
+  private toLocalDate(value: Date | string | null | undefined, timeZone?: string | null): string {
+    // A plain calendar date is already local; a timestamp is converted to the franchise's calendar day
     if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
       return value;
     }
     const date = value ? new Date(value) : new Date();
-    return FranchiseDateUtil.localDate(Number.isNaN(date.getTime()) ? new Date() : date, 'Asia/Kolkata');
+    return FranchiseDateUtil.localDate(Number.isNaN(date.getTime()) ? new Date() : date, timeZone);
   }
 
   private normalize(code: string | null | undefined): string | null {

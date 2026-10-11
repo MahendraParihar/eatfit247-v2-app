@@ -36,14 +36,21 @@
 
 ## Group 2: Engine hardening (`server_1/libs/modules/tax-engine`, `member`)
 
-- [ ] 2.1 `TaxResult` carries `placeOfSupplyCountryCode` and `placeOfSupplyStateCode` (goods: delivery; services: billing; exports: destination country, state null). `member-plan.service.ts` and `member-product.service.ts` save them; `invoice.mapper.ts placeOfSupplyOf()` prefers the stored codes and falls back to the address only when both are null.
-- [ ] 2.2 Unregistered inter-state goods guard: domestic branch, `rule.taxSystem === NONE && supplier === IN && transactionType === PRODUCT && deliveryState !== supplierState` → 400 "Inter-state goods supply needs GST registration (CGST s.24(i)). Ask the CA." unless config `ALLOW_UNREGISTERED_INTERSTATE_GOODS = true`.
-- [ ] 2.3 Per-plan rule reference: plans pass `referenceId: programPlanId`; `getApplicableTaxRule` retries with `referenceId = 1` for SERVICE when no row matches. Invoice line SAC = `rule.hsnSacCode ?? DIET_SAC_CODE`; product line HSN = `rule.hsnSacCode ?? product.hsnCode`.
-- [ ] 2.4 Cross-border VAT by type: goods get a goods zero-rated export note and a "delivery address" reason; services unchanged.
-- [ ] 2.5 Supply date in the franchise time zone (`mst_franchises.time_zone`), not `Asia/Kolkata`.
-- [ ] 2.6 `invoice-issue.service.ts` functional currency from `mst_countries.currency_code`; single `INDIA_COUNTRY_CODE` constant (remove the copy in `invoice-series.util.ts`).
-- [ ] 2.7 Rounding: `IndiaGstService` rounds per line to 2 dp, CGST = round(tax/2), SGST = tax − CGST; VAT already rounded.
-- [ ] 2.8 Update affected unit tests (member jest stays green).
+- [x] 2.1 `TaxResult` carries `placeOfSupplyCountryCode` and `placeOfSupplyStateCode` (goods: delivery; services: billing; exports: destination country, state null). `member-plan.service.ts` and `member-product.service.ts` save them; `invoice.mapper.ts placeOfSupplyOf()` prefers the stored codes and falls back to the address only when both are null.
+- [x] 2.2 Unregistered inter-state goods guard: domestic branch, `rule.taxSystem === NONE && supplier === IN && transactionType === PRODUCT && deliveryState !== supplierState` → 400 "Inter-state goods supply needs GST registration (CGST s.24(i)). Ask the CA." unless config `ALLOW_UNREGISTERED_INTERSTATE_GOODS = true`.
+- [x] 2.3 Per-plan rule reference: plans pass `referenceId: programPlanId`; `getApplicableTaxRule` retries with `referenceId = 1` for SERVICE when no row matches. Invoice line SAC = `rule.hsnSacCode ?? DIET_SAC_CODE`; product line HSN = `rule.hsnSacCode ?? product.hsnCode`.
+- [x] 2.4 Cross-border VAT by type: goods get a goods zero-rated export note and a "delivery address" reason; services unchanged.
+- [x] 2.5 Supply date in the franchise time zone (`mst_franchises.time_zone`), not `Asia/Kolkata`.
+- [x] 2.6 `invoice-issue.service.ts` functional currency from `mst_countries.currency_code`; single `INDIA_COUNTRY_CODE` constant (remove the copy in `invoice-series.util.ts`).
+- [x] 2.7 Rounding: `IndiaGstService` rounds per line to 2 dp, CGST = round(tax/2), SGST = tax − CGST; VAT already rounded.
+- [x] 2.8 Update affected unit tests (member jest stays green).
+
+> **As built (group 2):**
+> - `TaxResult` / `ICalculateTaxResponse` carry `placeOfSupplyCountryCode`, `placeOfSupplyStateCode` (domestic only; null for exports) and `hsnSacCode` (from the rule). Plans and product lines save all three (new `hsn_sac_code` column on payments and order items, added to 144); the mapper prints the stored State code (snapshot State name + stored code; "State code NN" if the snapshot has no name) and the stored HSN on product lines; the plan invoice line uses the stored SAC and falls back to `DIET_SAC_CODE` only for pre-144 rows.
+> - Engine loads the franchise once (GSTIN, TRN, `time_zone`): the supply date is the franchise's local day (HCUAE → Asia/Dubai); `assertRegistration` is now synchronous on that row.
+> - s.24(i) guard in the `NONE` branch for Indian goods delivered to another State, unless config `ALLOW_UNREGISTERED_INTERSTATE_GOODS` (seeded `false` in 144; `ConfigParam` added). Cross-border VAT uses a goods note / "delivery address" reason for products. GST amounts rounded to 2 dp with CGST = round(tax/2), SGST = remainder; IGST rounded the same way.
+> - `TaxMasterService.getApplicableTaxRule` retries SERVICE lookups with `SERVICE_DEFAULT_REFERENCE` (1); plans pass their `programPlanId` through `IPlanTaxOptions`. `INDIA_COUNTRY_CODE` has one definition (platform) re-exported by the tax-engine constants. `InvoiceIssueService` takes the functional currency from `mst_countries.currency_code` (context field `functionalCurrency`; `applyFx` signature changed; FX specs updated).
+> - Live (ts-node Nest context against the local DB): R1 CGST 90.45 + SGST 90.45 PoS IN/27; R2 IGST PoS IN/29; ref 999 falls back to ref 1; R5 0% under `AD270326000001T`; R5b (supply 2025-06-01T19:30Z → IST 2025-06-02, no LUT) IGST export; R6 INR domestic → IGST not export; R6b NRE/FCNR → export; R3/R4 MEMUM 12% incl. (local rule) with HSN 3004; R7 EXPORT_OF_GOODS with IGST (no MEMUM LUT); R8 VAT 0 Z PoS AE/1; R10 zero-rated export; R11 HCUAE PRODUCT → "no rule" 400 (configuration, as designed); R12 refused. Member jest 265/265; both APIs build.
 
 ## Group 3: Matrix test
 

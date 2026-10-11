@@ -545,6 +545,12 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
   declare placeOfSupplyStateCode: string | null;
   @Column({
     allowNull: true,
+    field: 'hsn_sac_code',
+    type: DataType.STRING(8),
+  })
+  declare hsnSacCode: string | null;
+  @Column({
+    allowNull: true,
     field: 'payment_route',
     type: DataType.ENUM(...Object.values(PaymentRouteEnum)),
   })

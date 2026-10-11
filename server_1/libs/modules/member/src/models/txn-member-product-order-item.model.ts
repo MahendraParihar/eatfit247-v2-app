@@ -202,5 +202,11 @@ export class TxnMemberProductOrderItem extends Model<TxnMemberProductOrderItem> 
     type: DataType.STRING(10),
   })
   declare placeOfSupplyStateCode: string | null;
+  @Column({
+    allowNull: true,
+    field: 'hsn_sac_code',
+    type: DataType.STRING(8),
+  })
+  declare hsnSacCode: string | null;
 }
 

@@ -15,11 +15,13 @@
 --      The functional currency of a franchise comes from its country, not from
 --      an 'AE' → 'AED' literal in code.
 --
---   4. place_of_supply_country_code / place_of_supply_state_code on
---      txn_member_payments and txn_member_product_order_items
+--   4. place_of_supply_country_code / place_of_supply_state_code / hsn_sac_code
+--      on txn_member_payments and txn_member_product_order_items
 --      Stored when tax is decided (Circular 242/36/2024; principle 10). The
---      invoice prints the stored value; the address is only a fallback for
---      rows priced before this migration.
+--      invoice prints the stored values; the address snapshot / product HSN /
+--      DIET_SAC_CODE config are only fallbacks for rows priced before this.
+--      Config ALLOW_UNREGISTERED_INTERSTATE_GOODS (default false) is the CA
+--      override for the s.24(i) guard.
 --
 --   5. Seeded tax rules (guarded: a franchise that already has a rule for the
 --      same reference / country / type is left alone — rules are owner data):
@@ -83,11 +85,19 @@ UPDATE public.mst_countries SET currency_code = 'USD' WHERE upper(trim(country_c
 -- ------------------------------------------------- 4. stored place of supply
 ALTER TABLE public.txn_member_payments
     ADD COLUMN IF NOT EXISTS place_of_supply_country_code CHAR(3),
-    ADD COLUMN IF NOT EXISTS place_of_supply_state_code   VARCHAR(10);
+    ADD COLUMN IF NOT EXISTS place_of_supply_state_code   VARCHAR(10),
+    ADD COLUMN IF NOT EXISTS hsn_sac_code                 VARCHAR(8);
 
 ALTER TABLE public.txn_member_product_order_items
     ADD COLUMN IF NOT EXISTS place_of_supply_country_code CHAR(3),
-    ADD COLUMN IF NOT EXISTS place_of_supply_state_code   VARCHAR(10);
+    ADD COLUMN IF NOT EXISTS place_of_supply_state_code   VARCHAR(10),
+    ADD COLUMN IF NOT EXISTS hsn_sac_code                 VARCHAR(8);
+
+-- CA override for decision 8 (CGST s.24(i)): an unregistered Indian franchise may not make
+-- inter-state goods supplies unless the CA accepts the risk explicitly.
+INSERT INTO public.mst_configs (config_name, config_value, module)
+SELECT 'ALLOW_UNREGISTERED_INTERSTATE_GOODS', 'false', 'Invoice'
+WHERE NOT EXISTS (SELECT 1 FROM public.mst_configs WHERE config_name = 'ALLOW_UNREGISTERED_INTERSTATE_GOODS');
 
 -- ------------------------------------------------- 5. seeded rules
 -- EFMUM: India services, GST 18%
