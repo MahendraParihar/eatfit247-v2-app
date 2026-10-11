@@ -110,6 +110,8 @@ export class TaxMasterService {
       applyOn: item.applyOn,
       isTaxInclusive: item.isTaxInclusive,
       taxCategory: item.taxCategory,
+      hsnSacCode: item.hsnSacCode ?? null,
+      legalBasis: item.legalBasis ?? null,
       effectiveFrom: item.effectiveFrom,
       effectiveTo: item.effectiveTo,
       active: item.active,
@@ -157,6 +159,8 @@ export class TaxMasterService {
       applyOn: obj.applyOn,
       isTaxInclusive: obj.isTaxInclusive,
       taxCategory: obj.taxCategory || TaxCategoryEnum.STANDARD,
+      hsnSacCode: obj.hsnSacCode?.trim() || null,
+      legalBasis: obj.legalBasis?.trim() || null,
       effectiveFrom: obj.effectiveFrom,
       effectiveTo: obj.effectiveTo || null,
       createdBy: adminId,
@@ -192,6 +196,8 @@ export class TaxMasterService {
     updateObj.applyOn = obj.applyOn;
     updateObj.isTaxInclusive = obj.isTaxInclusive;
     if (obj.taxCategory !== undefined) updateObj.taxCategory = obj.taxCategory;
+    if (obj.hsnSacCode !== undefined) updateObj.hsnSacCode = obj.hsnSacCode?.trim() || null;
+    if (obj.legalBasis !== undefined) updateObj.legalBasis = obj.legalBasis?.trim() || null;
     updateObj.effectiveFrom = obj.effectiveFrom;
     updateObj.effectiveTo = obj.effectiveTo || null;
     updateObj.modifiedBy = adminId;

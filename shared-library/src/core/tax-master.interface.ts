@@ -14,6 +14,10 @@ export interface ITaxMaster extends IAdminInfo {
   isTaxInclusive: boolean;
   /** VAT category (STANDARD / ZERO_RATED / EXEMPT / OUT_OF_SCOPE) */
   taxCategory: string;
+  /** HSN (goods) or SAC (services) this rule prices; printed on the invoice line */
+  hsnSacCode?: string | null;
+  /** Notification / article / adviser note Accounts can quote for this rate */
+  legalBasis?: string | null;
   effectiveFrom: Date | string;
   effectiveTo: Date | string | null;
   active: boolean;

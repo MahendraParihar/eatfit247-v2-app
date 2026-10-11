@@ -14,7 +14,7 @@
 
 ## Group 1: Migration 144, contract and models
 
-- [ ] 1.1 `db_changes/144_tax_mapping_matrix.sql` (idempotent, in a transaction):
+- [x] 1.1 `db_changes/144_tax_mapping_matrix.sql` (idempotent, in a transaction):
   - `mst_tax_master.hsn_sac_code VARCHAR(8)`, `legal_basis TEXT`
   - `mst_program_plan.is_electronic_service BOOLEAN NOT NULL DEFAULT FALSE`
   - `mst_countries.currency_code CHAR(3)`; set IN→INR, AE→AED, US→USD
@@ -25,9 +25,14 @@
     - HCUAE (2) · `AE` · SERVICE · ref 1 · `VAT_0` · 0 · ZERO_RATED · `999319` · from 2018-01-01 · basis: ER Art 41 per UAE adviser; confirm licence, else 5% STANDARD
     - MEMUM (3) · `IN` · PRODUCT · one pair per active `mst_product`: `NONE_0` · 0 · active · basis: unregistered, CGST s.24(i); and `GST_5` · 5 · STANDARD · **inactive** · HSN from the product · from 2025-09-22 · basis: Notif 9/2025-CT(R) Sch. I (2106 / 3004)
   - seed `created_by` = system admin id used by earlier migrations; header comment lists which rows the CA may activate
-- [ ] 1.2 Apply 144 twice on the local DB (no error, same row counts), and once on a DB that already has hand-entered EFMUM/HCUAE rules (no duplicates).
-- [ ] 1.3 shared-library: `ITaxMaster.hsnSacCode` / `legalBasis`, `ICalculateTaxResponse.placeOfSupplyCountryCode` / `placeOfSupplyStateCode`, `IProgramPlan.isElectronicService`, `ICountry.currencyCode`; build.
-- [ ] 1.4 Models + DTOs: `MstTaxMaster`, `MstProgramPlan`, `MstCountry`, `TxnMemberPayment`, order-item model; tax-master / program-plan / country DTOs validate the new fields (`hsnSacCode` 4–8 digits).
+- [x] 1.2 Apply 144 twice on the local DB (no error, same row counts), and once on a DB that already has hand-entered EFMUM/HCUAE rules (no duplicates).
+- [x] 1.3 shared-library: `ITaxMaster.hsnSacCode` / `legalBasis`, `ICalculateTaxResponse.placeOfSupplyCountryCode` / `placeOfSupplyStateCode`, `IProgramPlan.isElectronicService`, `ICountry.currencyCode`; build.
+- [x] 1.4 Models + DTOs: `MstTaxMaster`, `MstProgramPlan`, `MstCountry`, `TxnMemberPayment`, order-item model; tax-master / program-plan / country DTOs validate the new fields (`hsnSacCode` 4–8 digits).
+
+> **As built (group 1):**
+> - `144_tax_mapping_matrix.sql`: `hsn_sac_code` / `legal_basis` on rules (back-filled from `mst_product.hsn_code` and `999319`), `is_electronic_service` on plans, `currency_code` on countries (IN/AE/US set; the missing `AE` / `US` ISO codes from seed 101 are filled too), place-of-supply columns on payments and order items. Seeds are guarded per (franchise, reference, country, type): on the local DB, which already had hand-entered EFMUM 18 / HCUAE 0 Z / MEMUM 12 rows, only the **staged inactive MEMUM GST_5** row was added (its guard checks for an existing 5% rule, not any GST rule, because production carries GST 12%). A rolled-back run on an emptied table produced the full seed set. Applied twice: NOTICEs only.
+> - shared-library: `ITaxMaster.hsnSacCode` / `legalBasis`, `ICalculateTaxResponse.placeOfSupplyCountryCode` / `placeOfSupplyStateCode` / `hsnSacCode`, `IBaseProgramPlan.isElectronicService`, `IBaseCountry.currencyCode`.
+> - server: models (`MstTaxMaster`, `MstProgramPlan`, `MstCountry`, `TxnMemberPayment`, order item), DTOs (`hsnSacCode` 4–8 digits, `legalBasis` ≤ 1000, `isElectronicService`, `currencyCode`), tax-master / program-plan / country services round-trip the fields. Member jest 265/265; both API apps build. The `platform` jest project fails to load on the base commit too (enum import cycle in `mst-franchise.model.ts`), unrelated.
 
 ## Group 2: Engine hardening (`server_1/libs/modules/tax-engine`, `member`)
 

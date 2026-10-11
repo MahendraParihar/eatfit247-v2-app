@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
@@ -62,6 +63,18 @@ export class CreateTaxMasterDto {
   @IsOptional()
   @IsEnum(TaxCategoryEnum)
   taxCategory?: TaxCategoryEnum;
+
+  /** HSN (goods) or SAC (services), 4–8 digits */
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4,8}$/, { message: 'hsnSacCode must be 4 to 8 digits' })
+  hsnSacCode?: string | null;
+
+  /** Notification / article / adviser note for this rate */
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  legalBasis?: string | null;
 
   @IsNotEmpty()
   @IsDate()
