@@ -42,8 +42,8 @@
 | A9, A10 | ✅ | `tax-engine.spec`, mapper specs; live 5134 (HCUAE) VAT 0% Z, TAX INVOICE + TRN PDF |
 | A11 | ✅ | engine refusal (spec + live 5889); member-form warning deferred (spec updated) |
 | A12 | ✅ unit | missing / inactive / wrong-type rule → 400 |
-| A13 | ✅ | `lut.service.spec`; live create, overlap refused, Dubai-scoped admin refused; admin tab builds (browser check pending restart) |
-| A14 | ⏳ browser | currency choice + label built (SSR build green); needs API restart and a USD plan fee |
+| A13 | ✅ | `lut.service.spec`; live create, overlap refused, Dubai-scoped admin refused; LUT Register tab checked in the browser 2026-10-11 (valid row, status chip) |
+| A14 | ✅ browser | 2026-10-11 web :4300, plan 263 with a USD 250 fee: US billing → USD, `Export – 0% (LUT)`, Razorpay USD test payment captured, `EFMUM/EXP/2026-27/S/000007`, PDF with the endorsement. Without a USD fee the INR + IGST path was seen on the admin preview. See the tax-mapping-matrix validation "Browser run" for the findings (gateway franchise leak, hardcoded domestic flag, default franchise) |
 | A15 | ✅ | mapper specs (GSTIN / TRN / none; place of supply; words in AED / USD / INR) |
 | A16, A17 | ✅ | `exchange-rate.spec`; live FBIL fetch (8 rates), USD→INR resolves to FBIL; pending + backfill path |
 | A18 | ✅ | goods without a customs rate → pending (live); customs entry screen built |
@@ -81,9 +81,9 @@ Automated: member jest **265/265**; `nx build admin-api` and `public-api` green;
 
 ## Manual Checks
 
-- [ ] Admin: create manual payments for 4945 (USD + LUT, INR domestic, INR + FIRC), 5888 (AED), 5889 (blocked); check the preview reasons and PDFs
-- [ ] Admin: LUT register and exchange-rate screens (add, override, customs entry); Tax Credit Note on a 5888 test invoice
-- [ ] Web (:4300): checkout as a foreign client with and without a USD plan fee; Safari + mobile width
+- [x] Admin: create manual payments for 4945 (USD + LUT, INR domestic, INR + FIRC), 5888 (AED), 5889 (blocked); check the preview reasons and PDFs — 2026-10-11 browser (5145 INR + FIRC, 5146 AED, 5889 refused; USD + LUT via the website, 5142)
+- [x] Admin: LUT register and exchange-rate screens (add, override, customs entry); Tax Credit Note on a 5888 test invoice — LUT register and credit note `HCUAE/2026/CN/000004` checked in the browser 2026-10-11; exchange-rate screen covered by the API/live checks
+- [x] Web (:4300): checkout as a foreign client with and without a USD plan fee — Chrome 2026-10-11 (⏳ Safari + mobile width)
 - [ ] Daily FX job run by hand: rates fetched from FBIL and the UAE Central Bank; a forced failure is logged and doesn't affect payments
 - [ ] RBAC: a role without the LUT / exchange-rate / credit-note permissions is denied; another franchise's owner can't see HCUAE credit notes
 - [ ] Owner: CA/UAE-adviser answers recorded in requirements.md Open Questions before production config (HCUAE TRN, Mahi registration, USD fees, LUT rows)
