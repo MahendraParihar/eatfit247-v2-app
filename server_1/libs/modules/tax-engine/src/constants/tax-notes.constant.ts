@@ -8,4 +8,8 @@ export const EXPORT_WITH_IGST_NOTE = 'SUPPLY MEANT FOR EXPORT ON PAYMENT OF INTE
 /** UAE VAT: services to a recipient outside the UAE (Executive Regulation Art 31). */
 export const UAE_ZERO_RATED_EXPORT_NOTE = 'Zero-rated supply of services to a recipient outside the UAE.';
 
-export const INDIA_COUNTRY_CODE = 'IN';
+/** UAE VAT: goods exported to a destination outside the UAE (Executive Regulation Art 30). */
+export const UAE_ZERO_RATED_GOODS_EXPORT_NOTE = 'Zero-rated export of goods to a destination outside the UAE.';
+
+/** The one definition; the platform copy is re-exported so both layers agree. */
+export { INDIA_COUNTRY_CODE } from '@server_1/platform';

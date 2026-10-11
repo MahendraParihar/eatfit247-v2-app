@@ -23,6 +23,12 @@ export class CreateCountryDto implements IManageCountry {
   @IsNumber()
   defaultTaxPercentage?: number;
 
+  /** ISO 4217 functional currency (INR, AED, USD) */
+  @IsOptional()
+  @IsString()
+  @MaxLength(3)
+  currencyCode?: string | null;
+
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;

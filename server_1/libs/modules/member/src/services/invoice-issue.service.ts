@@ -22,6 +22,8 @@ export type InvoiceRecordType = 'plan' | 'product';
 export interface IInvoiceFranchiseContext {
   franchise: IFranchise;
   countryCode: string | null;
+  /** The franchise country's currency (mst_countries.currency_code): INR, AED, … */
+  functionalCurrency: string | null;
   timeZone: string;
 }
 
@@ -47,14 +49,19 @@ export class InvoiceIssueService {
     const franchise = await this.franchiseService.fetchById(franchiseId);
     const addresses = await this.addressService.filterByTableIdAndPk(TableEnum.MST_FRANCHISES, franchiseId);
     const countryId = addresses?.[0]?.countryId;
-    const countryCode = countryId ? await this.countryCodeById(countryId) : null;
+    const country = countryId ? await this.countryById(countryId) : null;
+    const countryCode = country?.countryCode ?? null;
     if (!countryCode) {
       // Without the franchise's country every invoice falls back to the domestic series
       this.logger.warn(`Country unknown for franchise ${franchiseId}; invoices use the domestic series`);
+    } else if (!country?.currencyCode) {
+      // mst_countries.currency_code (migration 144) is the functional currency; without it no FX is saved or back-filled
+      this.logger.warn(`Country ${countryCode} has no currency_code; invoices of franchise ${franchiseId} get no FX until it is set`);
     }
     return {
       franchise,
       countryCode,
+      functionalCurrency: country?.currencyCode ?? null,
       timeZone: franchise.timeZone || FranchiseDateUtil.DEFAULT_TIME_ZONE,
     };
   }
@@ -95,7 +102,7 @@ export class InvoiceIssueService {
     record.invoiceId = issued.invoiceId;
     record.invoiceSeries = issued.invoiceSeries;
     record.invoiceDate = issued.invoiceDate;
-    await this.applyFx(record, recordType, franchiseContext.countryCode, issued.invoiceDate);
+    await this.applyFx(record, recordType, franchiseContext.functionalCurrency, issued.invoiceDate);
     return issued;
   }
 
@@ -108,10 +115,11 @@ export class InvoiceIssueService {
   public async applyFx(
     record: TxnMemberPayment | TxnMemberProduct,
     recordType: InvoiceRecordType,
-    franchiseCountryCode: string | null,
+    functionalCurrency: string | null,
     invoiceDate: string,
   ): Promise<void> {
-    const functional = franchiseCountryCode === 'IN' ? 'INR' : franchiseCountryCode === 'AE' ? 'AED' : null;
+    // The franchise country's currency from the country master (no 'AE' → 'AED' literal)
+    const functional = (functionalCurrency || '').trim().toUpperCase() || null;
     const currency = (record.currency || '').toUpperCase();
     if (!functional || !currency || currency === functional) {
       return;
@@ -220,9 +228,16 @@ export class InvoiceIssueService {
   }
 
   private async countryCodeById(countryId: number): Promise<string | null> {
+    return (await this.countryById(countryId))?.countryCode ?? null;
+  }
+
+  private async countryById(countryId: number): Promise<{ countryCode: string | null; currencyCode: string | null } | null> {
     try {
       const country = await this.countryService.fetchById(countryId);
-      return InvoiceSeriesUtil.normalize(country?.countryCode);
+      return {
+        countryCode: InvoiceSeriesUtil.normalize(country?.countryCode),
+        currencyCode: (country?.currencyCode || '').trim().toUpperCase() || null,
+      };
     } catch {
       return null;
     }

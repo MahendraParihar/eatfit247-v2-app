@@ -57,10 +57,14 @@ EatFit247 is a health and nutrition coaching business that runs on a global fran
 ## Markets
 
 | Market | Franchise | Payments today | Tax |
-|--------|-----------|----------------|-----|
-| India | EatFit247 | **Online through Razorpay (live)** | GST (IGST / CGST+SGST) |
-| Non-Indian customers of the Indian franchise | EatFit247 | Razorpay / offline | Export of service (non-GST invoice sequence) |
-| UAE and other countries | Partner (Dubai) | **Offline, recorded manually in v2** | VAT / no tax by jurisdiction |
+|---|---|---|---|
+| India, diet programs (services) | EatFit247 (EFMUM) | **Online through Razorpay (live)** | GST 18%: CGST+SGST in Maharashtra, IGST elsewhere; customer State on every invoice |
+| India, debloat powder (goods) | Mahi Enterprise (MEMUM) | Razorpay / offline, courier delivery | GST 5% (HSN 2106/3004, from 22 Sep 2025) once registered; today unregistered, so intra-state only |
+| Non-Indian customers of the Indian franchises | EFMUM / MEMUM | Razorpay (foreign currency) / offline | Export of service or goods under LUT (0%, export invoice series). A foreign client paying INR over Indian rails gets IGST 18% |
+| UAE and other countries, diet programs | Partner (Dubai, HCUAE) | **Offline, recorded manually in v2** | UAE VAT: UAE clients per the configured rule (0% zero-rated per adviser, else 5%); clients outside the UAE zero-rated exports |
+| Indian customers of a partner franchise | — | — | **Refused.** Indian clients are always served by the India franchise (avoids OIDAR registration abroad) |
+
+Full matrix, legal basis and gaps: [specs/features/2026-10-10-tax-mapping-matrix/requirements.md](../features/2026-10-10-tax-mapping-matrix/requirements.md).
 
 Telr (UAE) and Stripe (international) integrations exist in code but are **not live**. Going live with them is on the roadmap.
 

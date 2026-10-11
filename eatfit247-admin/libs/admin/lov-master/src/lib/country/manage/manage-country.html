@@ -51,7 +51,9 @@
           <shared-ui-input-error [control]="formGroup.get('phoneNumberCode')" controlName="Phone Number Code"></shared-ui-input-error>
         </mat-form-field>
 
-        <div class="row">
+        <!-- Deprecated (spec 2026-10-10-tax-mapping-matrix, G17): tax rules live in Tax Master per franchise;
+             these country-level fields are not read by the engine. Kept hidden so stored values round-trip. -->
+        <div class="row" style="display: none">
           <mat-form-field appearance="outline" class="half-width">
             <mat-label>Tax Type</mat-label>
             <mat-select formControlName="taxType">

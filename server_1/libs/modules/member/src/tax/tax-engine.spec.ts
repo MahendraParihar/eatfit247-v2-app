@@ -69,6 +69,7 @@ describe('TaxEngineService decision matrix', () => {
       {
         findByPk: jest.fn().mockImplementation(async (id: number) => franchises[id] ?? null),
       } as unknown as typeof MstFranchise,
+      { getBoolean: jest.fn().mockReturnValue(false) } as never,
     );
   });
 

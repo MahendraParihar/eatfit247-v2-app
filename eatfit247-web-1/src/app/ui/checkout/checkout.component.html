@@ -136,6 +136,7 @@
                             <mat-option [value]="state.id">{{ state.label }}</mat-option>
                           }
                         </mat-select>
+                        <mat-hint>Required for your tax invoice (place of supply)</mat-hint>
                         @if (basicDetailsForm.get('stateId')?.touched && basicDetailsForm.get('stateId')?.invalid) {
                           <mat-error>State is required</mat-error>
                         }
@@ -474,7 +475,7 @@
           <div>
             <span class="os-grand__label">Total</span>
             <span class="os-grand__inclusive">
-              {{ taxCalculation ? 'Inclusive of all taxes' : 'Tax calculated at next step' }}
+              {{ taxCalculation ? totalNote : 'Tax calculated at next step' }}
             </span>
           </div>
           <span class="os-grand__value">

@@ -60,6 +60,7 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
     noOfDaysInCycle: [1, [Validators.required, Validators.min(1)]],
     isOnline: [true, [Validators.required]],
     isVisibleOnWeb: [false, [Validators.required]],
+    isElectronicService: [false],
     active: [true, [Validators.required]],
     url: [''],
     programPlanFees: this.fb.array([])
@@ -102,6 +103,7 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
         noOfDaysInCycle: this.initialData.noOfDaysInCycle || 1,
         isOnline: this.initialData.isOnline !== undefined ? this.initialData.isOnline : true,
         isVisibleOnWeb: this.initialData.isVisibleOnWeb !== undefined ? this.initialData.isVisibleOnWeb : false,
+        isElectronicService: !!this.initialData.isElectronicService,
         active: this.initialData.active !== undefined ? this.initialData.active : true
       });
       // Populate fees form array if editing

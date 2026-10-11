@@ -60,6 +60,12 @@ export interface IMemberProductOrderItem {
   taxCategory?: TaxCategoryEnum | null;
   lutArn?: string | null;
   taxDecisionReason?: string | null;
+  /** ISO country of the place of supply, stored with the tax decision (Circular 242/36/2024) */
+  placeOfSupplyCountryCode?: string | null;
+  /** State code of the place of supply (GST state code in India); null for exports */
+  placeOfSupplyStateCode?: string | null;
+  /** HSN / SAC of the rule that priced this line, stored at decision time */
+  hsnSacCode?: string | null;
 }
 
 export interface IBasicMemberProduct extends IInvoiceFx {

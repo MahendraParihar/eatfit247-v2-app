@@ -339,6 +339,12 @@
                         <span>{{ taxDecisionReason }}</span>
                       </div>
                     }
+                    @if (placeOfSupplyLabel) {
+                      <div class="tax-reason">
+                        <mat-icon>place</mat-icon>
+                        <span>Place of supply: {{ placeOfSupplyLabel }}</span>
+                      </div>
+                    }
                     <div class="tax-computation-summary">
                       <div class="summary-row">
                         <span class="label">Subtotal:</span>

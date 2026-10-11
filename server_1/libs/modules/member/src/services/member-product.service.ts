@@ -400,6 +400,9 @@ export class MemberProductService {
       taxCategory?: string | null;
       lutArn?: string | null;
       taxDecisionReason?: string | null;
+      placeOfSupplyCountryCode?: string | null;
+      placeOfSupplyStateCode?: string | null;
+      hsnSacCode?: string | null;
     }>
   > {
     const orderItemObjs = await Promise.all(
@@ -441,6 +444,9 @@ export class MemberProductService {
           taxCategory: taxCalculationResult.taxCategory ?? null,
           lutArn: taxCalculationResult.lutArn ?? null,
           taxDecisionReason: taxCalculationResult.taxDecisionReason ?? null,
+          placeOfSupplyCountryCode: taxCalculationResult.placeOfSupplyCountryCode ?? null,
+          placeOfSupplyStateCode: taxCalculationResult.placeOfSupplyStateCode ?? null,
+          hsnSacCode: taxCalculationResult.hsnSacCode ?? null,
         };
       }),
     );
@@ -536,6 +542,9 @@ export class MemberProductService {
             taxCategory: orderItem.taxCategory ?? null,
             lutArn: orderItem.lutArn ?? null,
             taxDecisionReason: orderItem.taxDecisionReason ?? null,
+            placeOfSupplyCountryCode: orderItem.placeOfSupplyCountryCode ?? null,
+            placeOfSupplyStateCode: orderItem.placeOfSupplyStateCode ?? null,
+            hsnSacCode: orderItem.hsnSacCode ?? null,
           }))
         : [],
     };
@@ -784,6 +793,9 @@ export class MemberProductService {
         taxCategory: item.taxCategory ?? null,
         lutArn: item.lutArn ?? null,
         taxDecisionReason: item.taxDecisionReason ?? null,
+        placeOfSupplyCountryCode: item.placeOfSupplyCountryCode ?? null,
+        placeOfSupplyStateCode: item.placeOfSupplyStateCode ?? null,
+        hsnSacCode: item.hsnSacCode ?? null,
       });
     }
     return <ICalculateProductVariantTaxResponse>{
@@ -870,6 +882,9 @@ export class MemberProductService {
       lutArn: taxResult.lutArn ?? null,
       paymentRoute: taxResult.paymentRoute ?? null,
       taxDecisionReason: taxResult.taxDecisionReason ?? null,
+      placeOfSupplyCountryCode: taxResult.placeOfSupplyCountryCode ?? null,
+      placeOfSupplyStateCode: taxResult.placeOfSupplyStateCode ?? null,
+      hsnSacCode: taxResult.hsnSacCode ?? null,
     };
   }
 

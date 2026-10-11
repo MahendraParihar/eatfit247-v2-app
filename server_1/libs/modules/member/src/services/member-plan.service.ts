@@ -52,7 +52,7 @@ import {
   StateService,
 } from '@server_1/platform';
 import { ProgramPlanService, ProgramService } from '@server_1/modules/program-plan';
-import { TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
+import { SERVICE_DEFAULT_REFERENCE, TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
 import { FranchisePaymentGatewayService, FranchiseService } from '@server_1/modules/franchise';
 import {
   PaymentGatewayCredentialService,
@@ -70,6 +70,8 @@ import { InvoiceIssueService } from './invoice-issue.service';
 /** How a plan payment is collected, for the tax decision (roadmap 4.6). */
 interface IPlanTaxOptions {
   franchiseId: number | null;
+  /** The plan being priced: a plan-specific tax rule wins over the franchise default (reference 1) */
+  programPlanId?: number | null;
   paymentRoute: PaymentRouteEnum | null;
   supplyDate: Date | string | null;
 }
@@ -179,12 +181,15 @@ export class MemberPlanService {
       { orderAmount: Number(fee.fees), discountAmount: payload.discountAmount, currencyCode: payload.currency },
       billingAddress,
       franchiseAddress,
-      this.taxOptions(
-        member.franchiseId,
-        payload.paymentSource,
-        payload.paymentSource === PaymentSourceEnum.MANUAL ? await this.paymentModeService.routeOf(payload.paymentModeId) : null,
-        payload.paymentDate,
-      ),
+      {
+        ...this.taxOptions(
+          member.franchiseId,
+          payload.paymentSource,
+          payload.paymentSource === PaymentSourceEnum.MANUAL ? await this.paymentModeService.routeOf(payload.paymentModeId) : null,
+          payload.paymentDate,
+        ),
+        programPlanId: programPlan.programPlanId,
+      },
     );
     return { ...result, taxableAmount: Number(fee.fees) - (result.discountAmount || 0) };
   }
@@ -332,7 +337,7 @@ export class MemberPlanService {
         },
         billingAddress,
         franchiseAddress,
-        this.taxOptions(member.franchiseId, obj.paymentSource, obj.paymentRoute, obj.paymentDate),
+        { ...this.taxOptions(member.franchiseId, obj.paymentSource, obj.paymentRoute, obj.paymentDate), programPlanId: programPlan.programPlanId },
       );
       // Get program plan details to get noOfCycle and noOfDaysInCycle
       const noOfCycle = programPlan.noOfCycle;
@@ -372,6 +377,9 @@ export class MemberPlanService {
         lutArn: paymentObj.lutArn ?? null,
         taxDecisionReason: paymentObj.taxDecisionReason ?? null,
         paymentRoute: paymentObj.paymentRoute ?? null,
+        placeOfSupplyCountryCode: paymentObj.placeOfSupplyCountryCode ?? null,
+        placeOfSupplyStateCode: paymentObj.placeOfSupplyStateCode ?? null,
+        hsnSacCode: paymentObj.hsnSacCode ?? null,
         remittanceReference:
           obj.paymentSource === PaymentSourceEnum.MANUAL ? obj.remittanceReference?.trim() || null : null,
         noOfCycle: noOfCycle,
@@ -735,6 +743,9 @@ export class MemberPlanService {
       lutArn: payment.lutArn ?? null,
       paymentRoute: payment.paymentRoute ?? null,
       taxDecisionReason: payment.taxDecisionReason ?? null,
+      placeOfSupplyCountryCode: payment.placeOfSupplyCountryCode ?? null,
+      placeOfSupplyStateCode: payment.placeOfSupplyStateCode ?? null,
+      hsnSacCode: payment.hsnSacCode ?? null,
     };
   }
 
@@ -800,6 +811,9 @@ export class MemberPlanService {
     payment.lutArn = draft.paymentObj.lutArn ?? null;
     payment.taxDecisionReason = draft.paymentObj.taxDecisionReason ?? null;
     payment.paymentRoute = draft.paymentObj.paymentRoute ?? null;
+    payment.placeOfSupplyCountryCode = draft.paymentObj.placeOfSupplyCountryCode ?? null;
+    payment.placeOfSupplyStateCode = draft.paymentObj.placeOfSupplyStateCode ?? null;
+    payment.hsnSacCode = draft.paymentObj.hsnSacCode ?? null;
     payment.remittanceReference = obj.remittanceReference?.trim() || null;
     payment.noOfCycle = draft.noOfCycle;
     payment.daysInCycle = draft.noOfDaysInCycle;
@@ -878,7 +892,7 @@ export class MemberPlanService {
       },
       billingAddress,
       franchiseAddress,
-      this.taxOptions(member.franchiseId, obj.paymentSource, obj.paymentRoute, obj.paymentDate),
+      { ...this.taxOptions(member.franchiseId, obj.paymentSource, obj.paymentRoute, obj.paymentDate), programPlanId: programPlan.programPlanId },
     );
 
     return {
@@ -1041,6 +1055,9 @@ export class MemberPlanService {
       taxDecisionReason: item.taxDecisionReason ?? null,
       paymentRoute: item.paymentRoute ?? null,
       remittanceReference: item.remittanceReference ?? null,
+      placeOfSupplyCountryCode: item.placeOfSupplyCountryCode ?? null,
+      placeOfSupplyStateCode: item.placeOfSupplyStateCode ?? null,
+      hsnSacCode: item.hsnSacCode ?? null,
       noOfCycle: item.noOfCycle,
       noOfDaysInCycle: item.daysInCycle,
       deletable: false, // TODO: Add logic to determine if payment can be deleted
@@ -1100,7 +1117,7 @@ export class MemberPlanService {
       supplierStateCode,
       customerCountryCode,
       customerStateCode,
-      referenceId: 1,
+      referenceId: options.programPlanId ?? SERVICE_DEFAULT_REFERENCE,
       franchiseId,
       currency: currencyCode,
       transactionType: TransactionType.SERVICE,
@@ -1129,6 +1146,9 @@ export class MemberPlanService {
       lutArn: taxResult.lutArn ?? null,
       paymentRoute: taxResult.paymentRoute ?? null,
       taxDecisionReason: taxResult.taxDecisionReason ?? null,
+      placeOfSupplyCountryCode: taxResult.placeOfSupplyCountryCode ?? null,
+      placeOfSupplyStateCode: taxResult.placeOfSupplyStateCode ?? null,
+      hsnSacCode: taxResult.hsnSacCode ?? null,
     };
   }
 
@@ -1633,7 +1653,7 @@ export class MemberPlanService {
       billingAddress,
       franchiseAddress,
       // Online: the order currency decides the route (decision 2)
-      this.taxOptions(member.franchiseId, PaymentSourceEnum.PAYMENT_GATEWAY, null, null),
+      { ...this.taxOptions(member.franchiseId, PaymentSourceEnum.PAYMENT_GATEWAY, null, null), programPlanId: programPlan.programPlanId },
     );
     const serviceFranchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
     if (!serviceFranchise?.length) {
@@ -1678,6 +1698,9 @@ export class MemberPlanService {
           lutArn: paymentObj.lutArn ?? null,
           taxDecisionReason: paymentObj.taxDecisionReason ?? null,
           paymentRoute: paymentObj.paymentRoute ?? null,
+          placeOfSupplyCountryCode: paymentObj.placeOfSupplyCountryCode ?? null,
+          placeOfSupplyStateCode: paymentObj.placeOfSupplyStateCode ?? null,
+          hsnSacCode: paymentObj.hsnSacCode ?? null,
           noOfCycle: programPlan.noOfCycle,
           daysInCycle: programPlan.noOfDaysInCycle,
           active: true,
@@ -1821,7 +1844,8 @@ export class MemberPlanService {
       {
         type: TransactionType.SERVICE,
         description: `Nutrition & Diet Counseling Services`,
-        sacCode: this.appConfigService.getString(ConfigParam.DIET_SAC_CODE),
+        // The SAC stored with the decision; the config value only for payments priced before 144
+        sacCode: payment.hsnSacCode || this.appConfigService.getString(ConfigParam.DIET_SAC_CODE),
         hsnCode: undefined,
         qty: 1,
         unitPrice: payment.orderAmount,

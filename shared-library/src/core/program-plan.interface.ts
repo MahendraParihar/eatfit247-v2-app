@@ -10,6 +10,8 @@ export interface IBaseProgramPlan {
   noOfDaysInCycle: number;
   isOnline: boolean;
   isVisibleOnWeb: boolean;
+  /** UAE VAT ER Art 23: automated/app-delivered plan (true) vs human-delivered coaching (false). Stored only. */
+  isElectronicService?: boolean;
   programPlanFees: { fees: number; currencyCode: string }[];
 }
 

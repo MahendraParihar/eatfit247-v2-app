@@ -101,6 +101,15 @@ export class PlaceProductOrderComponent implements OnInit {
   loading = signal(false);
   submitting = signal(false);
   calculatingTax = signal(false);
+  /** Stored with the decision: the delivery country and, for a domestic supply, the State code */
+  get placeOfSupplyLabel(): string | null {
+    const item = this.taxCalculationResult()?.items?.[0];
+    if (!item?.placeOfSupplyCountryCode) {
+      return null;
+    }
+    return item.placeOfSupplyStateCode ? `${item.placeOfSupplyCountryCode} / State ${item.placeOfSupplyStateCode}` : item.placeOfSupplyCountryCode;
+  }
+
   /** Why the server taxed the order this way (first line; lines share one address). */
   get taxDecisionReason(): string | null {
     return this.taxCalculationResult()?.items?.[0]?.taxDecisionReason || null;

@@ -130,6 +130,20 @@ export class MstTaxMaster extends Model<MstTaxMaster> {
   declare taxCategory: TaxCategoryEnum;
 
   @Column({
+    allowNull: true,
+    field: 'hsn_sac_code',
+    type: DataType.STRING(8),
+  })
+  declare hsnSacCode: string | null;
+
+  @Column({
+    allowNull: true,
+    field: 'legal_basis',
+    type: DataType.TEXT,
+  })
+  declare legalBasis: string | null;
+
+  @Column({
     allowNull: false,
     field: 'effective_from',
     type: DataType.DATEONLY,

@@ -91,7 +91,7 @@ export function mapPaymentToInvoiceDocument(
       invoiceDate,
       isProforma,
       currency: payment.currency,
-      ...placeOfSupplyOf(taxType, taxMode, memberAddress, payment.jurisdiction?.placeOfSupply),
+      ...placeOfSupplyOf(taxType, taxMode, memberAddress, payment.jurisdiction?.placeOfSupply, payment.placeOfSupplyStateCode),
     },
     seller,
     buyer,
@@ -393,11 +393,17 @@ function fxSectionOf(record: {
  * Indian GST invoices (Rule 46): place of supply as "State (code)" for domestic supplies, the
  * country for exports, plus the country of destination for exports.
  */
+/**
+ * Place of supply for the invoice header. The State code stored with the tax decision wins
+ * (Circular 242/36/2024; principle 10); the address snapshot supplies the State name and is the
+ * only source for rows priced before migration 144.
+ */
 function placeOfSupplyOf(
   taxType: TaxTypeEnum,
   taxMode: TaxMode,
   buyerAddress: IAddress,
   storedPlaceOfSupply?: string,
+  storedStateCode?: string | null,
 ): { placeOfSupply?: string; countryOfDestination?: string } {
   if (taxType !== TaxTypeEnum.GST) {
     return {};
@@ -407,10 +413,13 @@ function placeOfSupplyOf(
     return { placeOfSupply: country || undefined, countryOfDestination: country || undefined };
   }
   const state = (buyerAddress.state || '').trim();
-  const code = (buyerAddress.stateCode || '').trim();
+  const code = (storedStateCode || buyerAddress.stateCode || '').trim();
   const isIndianBuyer = (buyerAddress.countryCode || '').toUpperCase() === 'IN' || (buyerAddress.country || '').toLowerCase() === 'india';
   if (state && isIndianBuyer) {
     return { placeOfSupply: code ? `${state} (${code})` : state };
+  }
+  if (code && isIndianBuyer) {
+    return { placeOfSupply: `State code ${code}` };
   }
   // A foreign client taxed IGST (not an export): the place of supply is their country
   return storedPlaceOfSupply ? { placeOfSupply: storedPlaceOfSupply } : {};
@@ -466,7 +475,7 @@ function buildInvoiceOrderItem(productOrder: IMemberProduct): IInvoiceItem[] {
     return {
       type: TransactionType.PRODUCT,
       description: `${orderItem.productName} ${orderItem.quantityLabel}`,
-      hsnCode: orderItem.taxType === TaxTypeEnum.GST ? orderItem.hsnCode : undefined,
+      hsnCode: orderItem.taxType === TaxTypeEnum.GST ? orderItem.hsnSacCode || orderItem.hsnCode : undefined,
       qty: orderItem.quantity,
       unitPrice: orderItem.unitPrice,
       amount: orderItem.baseAmount,
@@ -559,6 +568,7 @@ export function mapProductOrderToInvoiceDocument(
         productOrder.orderItems[0].taxMode,
         (productOrder.memberAddress?.address as IAddress | undefined) ?? memberAddress,
         productOrder.orderItems[0].jurisdiction?.placeOfSupply,
+        productOrder.orderItems[0].placeOfSupplyStateCode,
       ),
     },
     seller,

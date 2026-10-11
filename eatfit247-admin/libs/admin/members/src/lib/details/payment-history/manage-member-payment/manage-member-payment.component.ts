@@ -731,6 +731,17 @@ export class ManageMemberPaymentComponent implements OnInit {
     return code ? code !== 'IN' : !!name && name !== 'india';
   }
 
+  /** Stored with the decision (Circular 242/36/2024): country and, for a domestic supply, the State code */
+  get placeOfSupplyLabel(): string | null {
+    const result = this.taxCalculationResult();
+    if (!result?.placeOfSupplyCountryCode) {
+      return null;
+    }
+    return result.placeOfSupplyStateCode
+      ? `${result.placeOfSupplyCountryCode} / State ${result.placeOfSupplyStateCode}`
+      : result.placeOfSupplyCountryCode;
+  }
+
   /** Why the server taxed it this way (shown under the tax summary). */
   get taxDecisionReason(): string | null {
     return this.taxCalculationResult()?.taxDecisionReason || null;

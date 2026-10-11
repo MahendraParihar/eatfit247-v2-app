@@ -51,4 +51,10 @@ export interface TaxResult {
   lutArn?: string | null;
   paymentRoute?: PaymentRouteEnum | null;
   taxDecisionReason?: string | null;
+  /** ISO country of the place of supply (delivery country for goods, billing country for services) */
+  placeOfSupplyCountryCode?: string | null;
+  /** State code of the place of supply for domestic supplies; null for exports */
+  placeOfSupplyStateCode?: string | null;
+  /** HSN / SAC of the rule that priced the line */
+  hsnSacCode?: string | null;
 }

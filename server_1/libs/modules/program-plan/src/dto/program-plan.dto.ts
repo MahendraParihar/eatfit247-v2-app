@@ -44,6 +44,10 @@ export class CreateProgramPlanDto implements IManageProgramPlan {
   @IsNotEmpty()
   @IsBoolean()
   isVisibleOnWeb!: boolean;
+  /** UAE VAT ER Art 23 classification; stored only */
+  @IsOptional()
+  @IsBoolean()
+  isElectronicService?: boolean;
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;

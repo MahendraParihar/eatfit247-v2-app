@@ -131,7 +131,7 @@ export class FaqComponent implements OnInit {
         {
           question: 'Is GST included?',
           answer:
-            'All prices displayed include applicable GST for Indian residents. International clients see pre-tax pricing.',
+            'Program fees are shown before tax; for clients in India, GST (currently 18%) is added at checkout and your State appears on the tax invoice. Debloat Powder prices include GST. Clients outside India who pay in a foreign currency are invoiced as exports with no Indian GST; a payment in rupees from an Indian bank account is taxed at 18% IGST.',
         },
       ],
     },
