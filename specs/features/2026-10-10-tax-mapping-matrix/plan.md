@@ -54,8 +54,10 @@
 
 ## Group 3: Matrix test
 
-- [ ] 3.1 `server_1/libs/modules/member/src/tax/tax-engine.matrix.spec.ts`: a fixture array, one entry per mapping row 1–14 and variant (LUT valid / expired; routes DOMESTIC / INTERNATIONAL_CARD_GATEWAY / FOREIGN_REMITTANCE / RUPEE_VOSTRO / NRE_FCNR_ACCOUNT; same / other State; registered / unregistered franchise; INR / USD / AED; staged MEMUM 5% row active). Each case asserts `taxMode`, `taxCategory`, `taxPercentage`, `taxObj` keys and rounded amounts, `invoiceNote`, stored place-of-supply codes, and the series from `InvoiceSeriesUtil`.
-- [ ] 3.2 Mocks use the exact group-1 seed values, so the spec documents the seed.
+- [x] 3.1 `server_1/libs/modules/member/src/tax/tax-engine.matrix.spec.ts`: a fixture array, one entry per mapping row 1–14 and variant (LUT valid / expired; routes DOMESTIC / INTERNATIONAL_CARD_GATEWAY / FOREIGN_REMITTANCE / RUPEE_VOSTRO / NRE_FCNR_ACCOUNT; same / other State; registered / unregistered franchise; INR / USD / AED; staged MEMUM 5% row active). Each case asserts `taxMode`, `taxCategory`, `taxPercentage`, `taxObj` keys and rounded amounts, `invoiceNote`, stored place-of-supply codes, and the series from `InvoiceSeriesUtil`.
+- [x] 3.2 Mocks use the exact group-1 seed values, so the spec documents the seed.
+
+> **As built (group 3):** `member/src/tax/tax-engine.matrix.spec.ts` — 26 cases: rows 1, 2, 5 (+ three INR export routes), 5b, 6, 14, 3/4 (staged 5% active, and seeded NONE with the s.24(i) refusal and CA override), 7 (LUT / no LUT / unregistered), 8 (0% Z and 5% S), 9, 10 (US and a GCC state), 11/13, 12, the plan-specific rule fallback (A15), Asia/Dubai vs IST supply day (A16) and rounding (A17). Series assertions go through `InvoiceSeriesUtil.resolve`. Mocks use the 144 seed values. 3.2: the migration's seed counts were proven by the rolled-back fresh run in group 1 (4 rows: EFMUM GST_18, HCUAE VAT_0 Z, MEMUM NONE_0 + staged GST_5); no separate harness.
 
 ## Group 4: Admin CMS (`eatfit247-admin`)
 
