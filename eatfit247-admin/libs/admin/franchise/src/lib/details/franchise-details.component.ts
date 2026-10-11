@@ -10,6 +10,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { LoaderComponent } from '@shared';
 import { IFranchise } from '@eatfit247-shared-lib';
 import { FranchiseApiService } from '../api.service';
+import { financialYearLabel } from '../financial-year.util';
 import { Subject, takeUntil } from 'rxjs';
 
 interface MenuItem {
@@ -75,6 +76,11 @@ export class FranchiseDetailsComponent implements OnInit, OnDestroy {
     } finally {
       this.loading = false;
     }
+  }
+
+  /** "Apr to Mar" instead of the stored start month number */
+  get financialYearLabel(): string {
+    return financialYearLabel(this.franchise?.financialYear);
   }
 
   getFranchiseDisplayName(): string {

@@ -106,7 +106,7 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
       ],
       inrAmount: [
         this.initialData?.inrAmount || 0,
-        [Validators.required, Validators.min(0)]
+        [Validators.required, Validators.min(1)]
       ],
       noOfCycle: [
         this.initialData?.noOfCycle || 1,

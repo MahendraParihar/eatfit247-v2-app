@@ -14,6 +14,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { FranchiseApiService } from '../api.service';
+import { FINANCIAL_YEAR_OPTIONS } from '../financial-year.util';
 import {
   BusinessTypeEnum,
   CommonUtil,
@@ -120,26 +121,13 @@ export class ManageFranchise implements OnInit, OnDestroy {
   internationalTaxModeOptions = InternationalTaxModeEnum;
   businessTypeOptions = BusinessTypeEnum;
   masterData: { taxApplicable: boolean } | null = null;
-  financialYearOptions: { value: number; label: string }[] = [];
-
-  private initializeFinancialYearOptions(): void {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    this.financialYearOptions = Array.from({ length: 12 }, (_, i) => {
-      const startMonth = months[i];
-      const endMonth = months[(i + 11) % 12];
-      return {
-        value: i + 1,
-        label: `${startMonth} to ${endMonth}`
-      };
-    });
-  }
+  financialYearOptions = FINANCIAL_YEAR_OPTIONS;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(FranchiseApiService);
   private snackBar = inject(MatSnackBar);
 
   async ngOnInit(): Promise<void> {
-    this.initializeFinancialYearOptions();
     const id = this.route.snapshot.paramMap.get('id');
     await this.loadMasterData();
     if (id && id !== 'new') {

@@ -89,6 +89,7 @@ export class MemberPaymentHistoryComponent implements OnInit, OnDestroy {
         label: 'Payment Date',
         dataKey: 'paymentDate',
         type: 'date',
+        dateFormat: 'dd MMM yyyy',
         sortable: true
       },
       {

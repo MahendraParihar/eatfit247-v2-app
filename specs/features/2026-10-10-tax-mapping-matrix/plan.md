@@ -103,10 +103,12 @@ Findings from the 2026-10-11 browser run (`validation.md` → Findings). One gro
 
 ## Group 10: Browser-run fixes — admin CMS (F6, F7, F9-admin; `eatfit247-admin`, `server_1` DTO)
 
-- [ ] 10.1 **F6 Low** — plan fee must be ≥ 1 (form validator and `ProgramPlanFeeDto`); a gateway cannot charge 0.
-- [ ] 10.2 **F7 Low** — add-payment dialog: step 1 "Next" calculates tax first and stays on step 1 with the server's message when the engine refuses (HCUAE/Indian client); step 1 is not complete without a tax result.
-- [ ] 10.3 **F9 admin** — date-only columns (payment date, invoice date) render without a time (`dateFormat` on table columns; payment details dialog); franchise header shows the financial-year label ("Apr to Mar") instead of the raw id.
-- [ ] 10.4 Admin build green; browser check of the three screens.
+- [x] 10.1 **F6 Low** — plan fee must be ≥ 1 (form validator and `ProgramPlanFeeDto`); a gateway cannot charge 0.
+- [x] 10.2 **F7 Low** — add-payment dialog: step 1 "Next" calculates tax first and stays on step 1 with the server's message when the engine refuses (HCUAE/Indian client); step 1 is not complete without a tax result.
+- [x] 10.3 **F9 admin** — date-only columns (payment date, invoice date) render without a time (`dateFormat` on table columns; payment details dialog); franchise header shows the financial-year label ("Apr to Mar") instead of the raw id.
+- [x] 10.4 Admin build green; browser check of the three screens.
+
+> **As built (2026-10-11):** plan fee `Validators.min(1)` + `[min]="1"` (both plan forms) and `@Min(1)` on `ProgramPlanFeeDto.fees`. Add-payment dialog: `PaymentFormService.calculateTax` no longer swallows errors; `taxError` signal shows the engine's message inline on step 1 (`tax-warning` block), the Next button runs `proceedToTaxStep` (calculate first, advance only with a result) and step 1 is complete only with a tax result. `ITableColumn.dateFormat` (default unchanged) with `'dd MMM yyyy'` on the member payment-history and payment-report Payment Date columns; payment details dialog prints the date only. `financial-year.util.ts` (`FINANCIAL_YEAR_OPTIONS`, `financialYearLabel`) shared by the franchise form and the details header. Admin development build green (the production build fails only on the pre-existing bundle/SCSS budget errors); both APIs build. Browser (:4200, QA super admin): franchise 1 header "Apr to Mar"; payment history dates "11 Oct 2026"; member 5889 (Indian, HCUAE) add-payment → "Indian clients must be registered under the India franchise." inline and Next leaves the dialog on step 1; plan 263 USD fee 0 → "Minimum value is 1" (not saved).
 
 ## Group 11: Browser-run fixes — invoice PDFs (F8; `shared-library`, `server_1` template + credit note)
 

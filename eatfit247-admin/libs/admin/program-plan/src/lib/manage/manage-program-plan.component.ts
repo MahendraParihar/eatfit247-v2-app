@@ -127,7 +127,8 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   addFeeFormGroup(currencyCode: string = '', fees: number = 0): void {
     const feeGroup = this.fb.group({
       currencyCode: [currencyCode, [Validators.required]],
-      fees: [fees, [Validators.required, Validators.min(0)]]
+      // A gateway cannot charge 0; a free plan is not sold through checkout
+      fees: [fees, [Validators.required, Validators.min(1)]]
     });
     this.feesFormArray.push(feeGroup);
   }

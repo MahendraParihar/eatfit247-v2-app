@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  Min,
   MinLength,
   ValidateNested,
 } from 'class-validator';
@@ -19,6 +20,7 @@ export class ProgramPlanFeeDto {
   currencyCode!: string;
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   fees!: number;
 }
 

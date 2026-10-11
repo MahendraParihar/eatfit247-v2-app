@@ -154,13 +154,20 @@
                 </div>
               </form>
 
+              @if (taxError()) {
+                <div class="tax-warning">
+                  <mat-icon>block</mat-icon>
+                  <span>{{ taxError() }}</span>
+                </div>
+              }
+
               <div class="step-actions">
                 <button mat-button (click)="onCancel()">Cancel</button>
                 <button 
                   mat-raised-button 
                   color="primary" 
-                  (click)="stepper.next()" 
-                  [disabled]="!canProceedToStep2() || step1FormGroup.invalid">
+                  (click)="proceedToTaxStep(stepper)" 
+                  [disabled]="step1FormGroup.invalid || calculatingTax()">
                   Next
                 </button>
               </div>

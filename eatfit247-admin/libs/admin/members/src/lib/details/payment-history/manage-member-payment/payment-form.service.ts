@@ -51,12 +51,8 @@ export class PaymentFormService {
       paymentModeId: formData.paymentSource === PaymentSourceEnum.MANUAL ? formData.paymentModeId || null : null,
       paymentDate: formData.paymentSource === PaymentSourceEnum.MANUAL ? formData.paymentDate || null : null,
     };
-    try {
-      return await this.apiService.calculateTax(memberId, request);
-    } catch (error) {
-      // Error is handled by the calling component
-      return null;
-    }
+    // Errors (e.g. the engine refusing the franchise / client combination) reach the caller
+    return await this.apiService.calculateTax(memberId, request);
   }
 
   /**

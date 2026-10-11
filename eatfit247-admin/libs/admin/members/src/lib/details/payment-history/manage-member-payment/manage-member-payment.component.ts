@@ -85,6 +85,8 @@ export class ManageMemberPaymentComponent implements OnInit {
   PaymentStatusEnum = PaymentStatusEnum;
   availableCurrencies = signal<IDropdownItem[]>([]);
   taxCalculationResult = signal<ICalculateTaxResponse | null>(null);
+  /** The tax engine's refusal (e.g. an Indian client under a non-Indian franchise); the dialog stays on step 1 */
+  taxError = signal<string | null>(null);
   paymentLink = signal<string | null>(null);
   paymentLinkId = signal<string | null>(null);
   supportedGateways = signal<
@@ -362,6 +364,7 @@ export class ManageMemberPaymentComponent implements OnInit {
         formData
       );
       this.taxCalculationResult.set(result);
+      this.taxError.set(null);
       if (result) {
         // Update tax percentage display
         this.formGroup.patchValue(
@@ -371,11 +374,20 @@ export class ManageMemberPaymentComponent implements OnInit {
           { emitEvent: false }
         );
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.taxCalculationResult.set(null);
-      // Error toast is handled by HttpErrorInterceptor
+      const message = (error as { message?: string } | null)?.message;
+      this.taxError.set(message || 'Tax could not be calculated for this selection.');
     } finally {
       this.calculatingTax.set(false);
+    }
+  }
+
+  /** Step 1 → 2 only with a tax decision: a refusal keeps the dialog on step 1 with the reason. */
+  async proceedToTaxStep(stepper: { next: () => void }): Promise<void> {
+    await this.calculateTaxFromBackend();
+    if (this.taxCalculationResult()) {
+      stepper.next();
     }
   }
 
@@ -400,7 +412,7 @@ export class ManageMemberPaymentComponent implements OnInit {
   }
 
   canProceedToStep2(): boolean {
-    return this.step1FormGroup?.valid ?? false;
+    return (this.step1FormGroup?.valid ?? false) && !!this.taxCalculationResult();
   }
 
   canProceedToStep3(): boolean {
