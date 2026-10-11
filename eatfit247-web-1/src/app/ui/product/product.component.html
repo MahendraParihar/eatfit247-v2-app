@@ -67,7 +67,7 @@
                       (click)="onSizeChange(size)"
                     >
                       <span class="product-size__label">{{ size.label }}</span>
-                      <span class="product-size__price">{{ size.currency }} {{ size.price }}.00</span>
+                      <span class="product-size__price">{{ size.currency }} {{ size.price | number:'1.2-2' }}</span>
                     </button>
                   }
                 }

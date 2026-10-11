@@ -153,6 +153,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   paymentLink: string | null = null;
   loading = false;
   error: string | null = null;
+  /** The plan / product could not be loaded: nothing to buy, so the stepper is not shown. */
+  checkoutBlocked = false;
   // Embedded payment
   showPaymentModal = false;
   processingPayment = false;
@@ -228,6 +230,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     } else {
       this.error =
         'No product or plan selected. Please select a product or plan first.';
+      this.checkoutBlocked = true;
     }
   }
 
@@ -281,6 +284,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.programPlan = await this.checkoutService.getProgramPlan(
         this.programPlanId,
       );
+      this.checkoutBlocked = !this.programPlan;
       if (this.programPlan) {
         this.productUnit = '';
         // Set order amount from plan fees
@@ -302,6 +306,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       this.error = 'Failed to load program plan details.';
+      this.checkoutBlocked = true;
     } finally {
       this.cdr.markForCheck();
       this.loading = false;
@@ -495,10 +500,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.moveToStep(this.STEP_INDICES.PREVIEW);
     } catch (error: unknown) {
       console.error('Error proceeding from billing:', error);
-      this.error =
-        error instanceof Error
-          ? error.message
-          : 'Failed to proceed. Please try again.';
+      // API errors are `{ status, message }` objects: show the server's reason, not a generic line.
+      // The billing form stays on screen so the user can correct it and retry.
+      this.error = this.errorMessage(error, 'Failed to proceed. Please try again.');
     } finally {
       this.cdr.markForCheck();
       this.loading = false;
@@ -941,6 +945,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
           )
         : await this.checkoutService.getSupportedPaymentGatewaysForPlan(
             this.currencyCode,
+            this.memberId,
           );
       this.paymentGateways = gateways || [];
       if (!gateways || gateways.length === 0) {
@@ -974,6 +979,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       });
       if (!variant) {
         this.error = 'No product selected. Please select a product first.';
+        this.checkoutBlocked = true;
         return;
       }
       const fees = variant.prices.find((value, index) => {
@@ -981,8 +987,10 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       });
       if (!fees) {
         this.error = 'No product selected. Please select a product first.';
+        this.checkoutBlocked = true;
         return;
       }
+      this.checkoutBlocked = false;
       this.currencyCode = fees.currency;
       this.productPrice = fees.price;
       this.productName = this.product.name;
@@ -990,10 +998,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.orderAmount = this.productPrice * this.productQuantity;
     } catch (error: unknown) {
       console.error('Error loading product details:', error);
-      this.error =
-        error instanceof Error
-          ? error.message
-          : 'Failed to load product details.';
+      this.error = this.errorMessage(error, 'Failed to load product details.');
+      this.checkoutBlocked = true;
     } finally {
       this.cdr.markForCheck();
       this.loading = false;

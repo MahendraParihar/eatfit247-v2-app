@@ -284,6 +284,19 @@ export class ProgramPlanService {
     };
   }
 
+  /** One plan for the website checkout (`?plan=<id>`): only an active plan visible on the web. */
+  public async findPublicById(id: number): Promise<any> {
+    const find = await this.programPlanRepository.scope('details').findOne({
+      where: { programPlanId: id, active: true, isVisibleOnWeb: true },
+    });
+    if (!find) {
+      throw new NotFoundException('Program plan not found');
+    }
+    const plain = find.get({ plain: true });
+    plain.programPlanFees = plain.programPlanFees || [];
+    return this.convertToPublic(this.convertToModel(plain));
+  }
+
   /**
    * Convert IProgramPlan to public version (exclude admin/internal fields)
    */

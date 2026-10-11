@@ -40,13 +40,8 @@ export class CheckoutService {
    * Get program plan details by ID
    */
   async getProgramPlan(programPlanId: number): Promise<ProgramPlan | null> {
-    try {
-      const plans = await this.programPlanService.getAllProgramPlans();
-      return plans.find((p) => p.programPlanId === programPlanId) || null;
-    } catch (error) {
-      console.error('Error fetching program plan:', error);
-      return null;
-    }
+    // By id: the paginated list only holds the first page of plans
+    return this.programPlanService.getProgramPlanById(programPlanId);
   }
 
   /**
@@ -210,13 +205,17 @@ export class CheckoutService {
    * Uses franchise SERVICE type (BusinessTypeEnum.SERVICE)
    */
   async getSupportedPaymentGatewaysForPlan(
-    currency: string = 'INR'
+    currency: string = 'INR',
+    memberId?: number | null
   ): Promise<IPaymentGateway[]> {
     try {
-      const data = await this.httpService.get<IPaymentGateway[]>(
-        `checkout/plan/supported-gateways?currency=${currency}`,
-        { headers: this.getCheckoutAuthHeaders() }
-      );
+      // Once the member exists the gateways are their own franchise's (the order is created against it)
+      const path = memberId
+        ? `checkout/plan/member/${memberId}/supported-gateways?currency=${currency}`
+        : `checkout/plan/supported-gateways?currency=${currency}`;
+      const data = await this.httpService.get<IPaymentGateway[]>(path, {
+        headers: this.getCheckoutAuthHeaders(),
+      });
       return data.data || [];
     } catch (error) {
       console.error(

@@ -43,5 +43,16 @@ export class ProgramPlanService {
       return [];
     }
   }
+
+  /** One plan by id (the checkout link); null when it is not offered on the web. */
+  async getProgramPlanById(programPlanId: number): Promise<ProgramPlan | null> {
+    try {
+      const data = await this.httpService.get<ProgramPlan>(`program-plan/${programPlanId}`);
+      return data?.data ?? null;
+    } catch (error) {
+      console.error('Error fetching program plan:', error);
+      return null;
+    }
+  }
 }
 

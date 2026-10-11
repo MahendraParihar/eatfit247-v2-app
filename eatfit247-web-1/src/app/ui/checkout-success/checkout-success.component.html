@@ -32,7 +32,9 @@
           <div class="disc">{{ error() ? 'error' : orderStatus() === 'pending' ? 'hourglass_top' : orderStatus() === 'failed' ? 'cancel' : 'verified' }}</div>
           @if (!error() && orderStatus() === 'paid') {
             <div class="chip chip--a"><span class="mat-icon">payments</span>Paid</div>
-            <div class="chip chip--b"><span class="mat-icon">local_shipping</span>Processing</div>
+            @if (!isPlanOrder) {
+              <div class="chip chip--b"><span class="mat-icon">local_shipping</span>Processing</div>
+            }
           }
         </div>
       </div>

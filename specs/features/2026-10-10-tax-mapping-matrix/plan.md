@@ -94,10 +94,12 @@ Findings from the 2026-10-11 browser run (`validation.md` → Findings). One gro
 
 ## Group 9: Browser-run fixes — public website (F4, F5, F9-web; `eatfit247-web-1`, `server_1` program-plan)
 
-- [ ] 9.1 **F4 Medium** — public `GET program-plan/:id` (active + visible on web, else 404); the checkout resolves `?plan=` by id instead of from the 15-row list.
-- [ ] 9.2 **F5 Medium** — a failed billing step keeps the form (only a failed plan/product load hides the stepper); the error banner stays above the form so the user can correct and retry.
-- [ ] 9.3 **F9 web** — product size price formatted with two decimals (no "1199.97.00"); plan checkout success shows no Packed/Shipped/Delivered timeline and no "Pan-India shipping" / replacement promises (products only).
-- [ ] 9.4 Web gateway listing uses the member-scoped route once the member exists (8.1). Web lint + build green; browser check of plans 221/224 and a billing error retry.
+- [x] 9.1 **F4 Medium** — public `GET program-plan/:id` (active + visible on web, else 404); the checkout resolves `?plan=` by id instead of from the 15-row list.
+- [x] 9.2 **F5 Medium** — a failed billing step keeps the form (only a failed plan/product load hides the stepper); the error banner stays above the form so the user can correct and retry.
+- [x] 9.3 **F9 web** — product size price formatted with two decimals (no "1199.97.00"); plan checkout success shows no Packed/Shipped/Delivered timeline and no "Pan-India shipping" / replacement promises (products only).
+- [x] 9.4 Web gateway listing uses the member-scoped route once the member exists (8.1). Web lint + build green; browser check of plans 221/224 and a billing error retry.
+
+> **As built (2026-10-11):** `GET program-plan/:id` (`ProgramPlanService.findPublicById`, 404 unless active + visible, 400 on a non-numeric id); `ProgramPlanService.getProgramPlanById` on the web replaces the list scan. `checkoutBlocked` (plan/product failed to load) is the only thing that hides the stepper; a billing-step failure shows the server's message (`errorMessage`, not the generic line) above the form, which stays editable. Product size price `number:'1.2-2'`; plan checkout shows no Packed/Shipped/Delivered timeline and no shipping/replacement promises ("Invoice available right after payment"); the success page's "Processing" shipping chip is products-only. `getSupportedPaymentGatewaysForPlan(currency, memberId)` uses the member route once the member exists. Web production build green; eslint on the touched files reports only pre-existing findings (template click handlers at line 506, empty catch). Browser (:4300): `?plan=221` loads (USD 2,500 for a US address); with `is_default` unset, a new US member got "No franchise serves this country … (set is_default …)" with the form intact, and after restoring the flag the same click created member 5890 and reached the review step (export 0% under LUT, member-scoped gateway route 200); "Continue to Payment" created order 5149 on gateway row 4 while that row was international-only (F2 end to end). The Razorpay iframe would not accept typed input in this session, so 5149 stays PENDING (like 5144). Product page: "INR 1,199.97"; plan success page: Paid chip only.
 
 ## Group 10: Browser-run fixes — admin CMS (F6, F7, F9-admin; `eatfit247-admin`, `server_1` DTO)
 

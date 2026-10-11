@@ -44,7 +44,7 @@
     <div class="checkout-grid">
       <!-- LEFT: stepper panes -->
       <section class="checkout-main">
-        @if (formsInitialized && (!error || (error && currentStepIndex()))) {
+        @if (formsInitialized && !checkoutBlocked) {
           <mat-stepper #stepper [linear]="true" class="checkout-stepper"
                        (selectionChange)="onStepperSelectionChange($event.selectedIndex)">
 
@@ -325,14 +325,16 @@
                       A receipt has been sent to <strong>{{ basicDetailsForm.get('email')?.value }}</strong>.
                     </p>
 
-                    <div class="result__timeline">
-                      <div class="trk-step is-current">
-                        <span class="mat-icon">task_alt</span>Confirmed
+                    @if (isProductCheckout) {
+                      <div class="result__timeline">
+                        <div class="trk-step is-current">
+                          <span class="mat-icon">task_alt</span>Confirmed
+                        </div>
+                        <div class="trk-step"><span class="mat-icon">inventory_2</span>Packed</div>
+                        <div class="trk-step"><span class="mat-icon">local_shipping</span>Shipped</div>
+                        <div class="trk-step"><span class="mat-icon">home</span>Delivered</div>
                       </div>
-                      <div class="trk-step"><span class="mat-icon">inventory_2</span>Packed</div>
-                      <div class="trk-step"><span class="mat-icon">local_shipping</span>Shipped</div>
-                      <div class="trk-step"><span class="mat-icon">home</span>Delivered</div>
-                    </div>
+                    }
 
                     <div class="result__card">
                       <div class="result__card-head">
@@ -485,8 +487,12 @@
 
         <ul class="os-trust">
           <li><span class="mat-icon">verified_user</span> 100% secure checkout</li>
-          <li><span class="mat-icon">local_shipping</span> Pan-India shipping in 3–5 days</li>
-          <li><span class="mat-icon">replay</span> Easy 7-day replacement</li>
+          @if (isProductCheckout) {
+            <li><span class="mat-icon">local_shipping</span> Pan-India shipping in 3–5 days</li>
+            <li><span class="mat-icon">replay</span> Easy 7-day replacement</li>
+          } @else {
+            <li><span class="mat-icon">receipt_long</span> Invoice available right after payment</li>
+          }
         </ul>
       </aside>
     </div>
