@@ -54,7 +54,7 @@ Build in this order: each item depends on the ones above it. Audit finding IDs a
   - ~~Exchange rate and INR/AED equivalents stored on each transaction~~ (done in 4.6).
   - Invoice shows place of supply, LUT number and export wording, reverse-charge line, amount in words and per-line tax.
   - [H1, H9, L3, M6]
-- 📋 **4.11 Rate and classification master.** SAC/HSN codes and tax rates with effective dates, and a recheck of invoices issued since 22 Sep 2025. **Blocked on the CA's decision.** [H5, M3]
+- 🚧 **4.11 Rate and classification master.** Data half built on `feature/tax-mapping-matrix` ([spec](../features/2026-10-10-tax-mapping-matrix/requirements.md)): seeded tax rules per franchise × country × type with HSN/SAC and legal basis, GST 2.0 (22 Sep 2025) 5% goods rows staged for the CA, per-plan rule reference, stored place-of-supply State (Circular 242/36/2024), s.24(i) guard for unregistered inter-state goods, electronic-service flag, and a table-driven test of the full franchise × customer × goods/services mapping. **Still open, blocked on the CA / UAE adviser:** the consulting SAC/rate decision, Mahi's registration, HCUAE's zero-rating basis, and the recheck of invoices issued since 22 Sep 2025. [H5, M3]
 - 📋 **4.12 Explicit seller entity.** Name the selling franchise for products and for the checkout gateway, instead of taking the first match alphabetically. [H2]
 - 📋 **4.13 Filing reports.** GSTR-1 workbook (B2B, B2CL, B2CS and EXP split; HSN summary; documents issued) and a UAE VAT-201 extract. [H4]
 

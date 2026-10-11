@@ -1,0 +1,64 @@
+# Plan: Tax Mapping Matrix
+
+> Source: [requirements.md](./requirements.md) · Done when: [validation.md](./validation.md) passes
+>
+> Tax and migrations: implement **one group at a time**. Unit-test, live-test on the local servers (members 4945 US / EFMUM, 5888 UAE / HCUAE, 5889 India / HCUAE, plus an India same-State and other-State member), review, then commit only that group's paths before starting the next.
+> If review finds a gap, add a new group here rather than patching silently.
+> **Never pay a product order locally without warning the owner**: the local courier account books live NimbusPost shipments.
+
+## Group 0: Spec and constitution
+
+- [x] 0.1 `requirements.md`, `plan.md`, `validation.md` written from the templates with the legal findings, mapping table and gap register.
+- [x] 0.2 `specs/product/roadmap.md`: 4.11 split into the data half (this feature) and the CA-dependent half.
+- [x] 0.3 `specs/product/mission.md`: markets table extended with goods and the three special rows (INR-paid foreign client, Indian client of a foreign franchise, electronic service).
+
+## Group 1: Migration 144, contract and models
+
+- [ ] 1.1 `db_changes/144_tax_mapping_matrix.sql` (idempotent, in a transaction):
+  - `mst_tax_master.hsn_sac_code VARCHAR(8)`, `legal_basis TEXT`
+  - `mst_program_plan.is_electronic_service BOOLEAN NOT NULL DEFAULT FALSE`
+  - `mst_countries.currency_code CHAR(3)`; set IN→INR, AE→AED, US→USD
+  - `place_of_supply_country_code CHAR(3)`, `place_of_supply_state_code VARCHAR(10)` on `txn_member_payments` and `txn_member_product_order_items`
+  - back-fill `hsn_sac_code` on existing PRODUCT rules from `mst_product.hsn_code`, and on SERVICE rules with `999319` where null
+  - seeds, each `INSERT … WHERE NOT EXISTS` on `(franchise_id, reference_id, country_code, tax_code, effective_from)`:
+    - EFMUM (1) · `IN` · SERVICE · ref 1 · `GST_18` · 18 · STANDARD · `999319` · from 2017-07-01 · basis: Notif 11/2017-CT(R) heading 9993; kept at 18% pending CA (requirements decision 2)
+    - HCUAE (2) · `AE` · SERVICE · ref 1 · `VAT_0` · 0 · ZERO_RATED · `999319` · from 2018-01-01 · basis: ER Art 41 per UAE adviser; confirm licence, else 5% STANDARD
+    - MEMUM (3) · `IN` · PRODUCT · one pair per active `mst_product`: `NONE_0` · 0 · active · basis: unregistered, CGST s.24(i); and `GST_5` · 5 · STANDARD · **inactive** · HSN from the product · from 2025-09-22 · basis: Notif 9/2025-CT(R) Sch. I (2106 / 3004)
+  - seed `created_by` = system admin id used by earlier migrations; header comment lists which rows the CA may activate
+- [ ] 1.2 Apply 144 twice on the local DB (no error, same row counts), and once on a DB that already has hand-entered EFMUM/HCUAE rules (no duplicates).
+- [ ] 1.3 shared-library: `ITaxMaster.hsnSacCode` / `legalBasis`, `ICalculateTaxResponse.placeOfSupplyCountryCode` / `placeOfSupplyStateCode`, `IProgramPlan.isElectronicService`, `ICountry.currencyCode`; build.
+- [ ] 1.4 Models + DTOs: `MstTaxMaster`, `MstProgramPlan`, `MstCountry`, `TxnMemberPayment`, order-item model; tax-master / program-plan / country DTOs validate the new fields (`hsnSacCode` 4–8 digits).
+
+## Group 2: Engine hardening (`server_1/libs/modules/tax-engine`, `member`)
+
+- [ ] 2.1 `TaxResult` carries `placeOfSupplyCountryCode` and `placeOfSupplyStateCode` (goods: delivery; services: billing; exports: destination country, state null). `member-plan.service.ts` and `member-product.service.ts` save them; `invoice.mapper.ts placeOfSupplyOf()` prefers the stored codes and falls back to the address only when both are null.
+- [ ] 2.2 Unregistered inter-state goods guard: domestic branch, `rule.taxSystem === NONE && supplier === IN && transactionType === PRODUCT && deliveryState !== supplierState` → 400 "Inter-state goods supply needs GST registration (CGST s.24(i)). Ask the CA." unless config `ALLOW_UNREGISTERED_INTERSTATE_GOODS = true`.
+- [ ] 2.3 Per-plan rule reference: plans pass `referenceId: programPlanId`; `getApplicableTaxRule` retries with `referenceId = 1` for SERVICE when no row matches. Invoice line SAC = `rule.hsnSacCode ?? DIET_SAC_CODE`; product line HSN = `rule.hsnSacCode ?? product.hsnCode`.
+- [ ] 2.4 Cross-border VAT by type: goods get a goods zero-rated export note and a "delivery address" reason; services unchanged.
+- [ ] 2.5 Supply date in the franchise time zone (`mst_franchises.time_zone`), not `Asia/Kolkata`.
+- [ ] 2.6 `invoice-issue.service.ts` functional currency from `mst_countries.currency_code`; single `INDIA_COUNTRY_CODE` constant (remove the copy in `invoice-series.util.ts`).
+- [ ] 2.7 Rounding: `IndiaGstService` rounds per line to 2 dp, CGST = round(tax/2), SGST = tax − CGST; VAT already rounded.
+- [ ] 2.8 Update affected unit tests (member jest stays green).
+
+## Group 3: Matrix test
+
+- [ ] 3.1 `server_1/libs/modules/member/src/tax/tax-engine.matrix.spec.ts`: a fixture array, one entry per mapping row 1–14 and variant (LUT valid / expired; routes DOMESTIC / INTERNATIONAL_CARD_GATEWAY / FOREIGN_REMITTANCE / RUPEE_VOSTRO / NRE_FCNR_ACCOUNT; same / other State; registered / unregistered franchise; INR / USD / AED; staged MEMUM 5% row active). Each case asserts `taxMode`, `taxCategory`, `taxPercentage`, `taxObj` keys and rounded amounts, `invoiceNote`, stored place-of-supply codes, and the series from `InvoiceSeriesUtil`.
+- [ ] 3.2 Mocks use the exact group-1 seed values, so the spec documents the seed.
+
+## Group 4: Admin CMS (`eatfit247-admin`)
+
+- [ ] 4.1 Tax master form + list: `hsnSacCode`, `legalBasis`; inactive staged rows shown with an "activate when the CA confirms" hint. Files under `libs/admin/tax-master/src/lib/`.
+- [ ] 4.2 Program-plan form: `isElectronicService` toggle with helper text (UAE Art 23).
+- [ ] 4.3 Payment / product tax preview shows the stored place-of-supply State and the new s.24(i) refusal message.
+- [ ] 4.4 Hide deprecated fields: franchise `internationalTaxMode`, `lutNumber`; country `taxType`, `defaultTaxPercentage` (read-only note, no DB drop).
+
+## Group 5: Public website (`eatfit247-web-1`)
+
+- [ ] 5.1 One tax statement everywhere, driven by the server's inclusive flag / tax label: product page, checkout, seasonal plans, FAQ, nutritionist pages (remove hardcoded "+ taxes" prices or label them "excl. GST").
+- [ ] 5.2 Checkout State field: hint "Required for your tax invoice (place of supply)". No new API.
+
+## Group 6: Close-out
+
+- [ ] 6.1 All checks in `validation.md` pass
+- [ ] 6.2 `requirements.md` status → Shipped; roadmap 4.11 data half → ✅ with a link
+- [ ] 6.3 Constitution changes (mission markets table) noted for the replanning step
