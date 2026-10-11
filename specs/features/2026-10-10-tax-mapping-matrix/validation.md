@@ -90,3 +90,27 @@ Test members 4945 (US, EFMUM), 5888 (UAE, HCUAE), 5889 (India, HCUAE). Plan 263 
 After the fixes (2026-10-11): gateway row 4 is international-only again (`supports_domestic = false`, the production shape); member 5890 (`qa.us.checkout@eatfit247.test`, US) and its PENDING USD order 5149 come from the group 9 browser check; the Razorpay iframe did not accept typed input in that session, so 5149 was not paid.
 
 Local config made for this run (keep or revert): `mst_franchises.is_default = true` for EFMUM; `mst_franchise_payment_gateway` row 4 (EFMUM / Razorpay / USD, test credential cloned from row 1, `supports_domestic` forced on for F2); plan 263 USD fee 250; admin user `qa.super.admin@eatfit247.test` (super_admin, same password as the other QA users, unused in the end); pending web order 5144.
+
+## Pending after groups 8–11 (noted 2026-10-11, session closed)
+
+Code for F1–F9 is pushed on `feature/tax-engine-correctness` (`562bba7f`); not yet merged to `m3-cms-update`.
+
+**Open bugs / debt**
+- PENDING web orders 5144 (pre-fix franchise leak) and 5149 (group 9 check) in the local DB — Razorpay test iframe refused typed input; pay or cancel them manually if the local data should stay clean.
+- `eatfit247-web-1` checkout component: pre-existing lint errors (template click handlers without key events at the payment modal close button, an empty `catch`) — untouched.
+- `eatfit247-admin` production build fails only on the pre-existing bundle / SCSS budget errors (development build is green).
+- `member/create` for a brand-new member from a country with no franchise still needs `is_default` (by design) — the message now says so; nothing more to fix in code.
+
+**Configuration / release runbook (F10)**
+- EFMUM: production Razorpay row for USD (and any other sold currency) with live credentials, `supports_international = true`.
+- HCUAE: no active gateway (Stripe row inactive) — UAE clients cannot pay online until one is configured; HCUAE's real TRN; a street line on its address (invoices print only "Dubai (AE-DU)").
+- EFMUM LUT row for FY 2026-27, USD fees on the plans sold abroad, `mst_franchises.is_default` on EFMUM.
+- Migration 144 on a copy of production data before release.
+
+**Still untested**
+- Safari and mobile-width checkout (A14 / A21 manual rows).
+- Product (goods) payment end to end — skipped locally because `txn_courier_provider_accounts` id 1 is the LIVE NimbusPost account.
+- RBAC: a Dubai-scoped admin cannot see or edit EFMUM's tax rules (manual check above, still unticked).
+- Exchange-rate admin screen walked only via API.
+
+**Adviser answers outstanding** (see "Open items for the CA / UAE adviser"): Mahi's 5% activation, HCUAE's legal basis, the electronic-service flag.
