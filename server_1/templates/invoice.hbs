@@ -167,7 +167,8 @@
 
     .summary-section {
       display: flex;
-      justify-content: flex-end;
+      flex-direction: column;
+      align-items: flex-end;
       margin-bottom: 8px;
     }
 
@@ -199,6 +200,18 @@
       font-size: 9px;
       background-color: #333;
       color: #fff;
+    }
+
+    .summary-table .total-row td,
+    .summary-table .total-row td:first-child {
+      background-color: #333;
+      color: #fff;
+    }
+
+    .amount-words {
+      margin-top: 4px;
+      font-size: 8px;
+      text-align: right;
     }
 
     .tax-note {
@@ -393,7 +406,7 @@
     <div class="party-address">
       {{#if invoice.seller.address.line1}}{{invoice.seller.address.line1}}<br>{{/if}}
       {{#if invoice.seller.address.line2}}{{invoice.seller.address.line2}}<br>{{/if}}
-      {{invoice.seller.address.city}}{{#if invoice.seller.address.state}}, {{invoice.seller.address.state}}{{#if invoice.seller.address.stateCode}}({{invoice.seller.address.stateCode}}){{/if}}{{/if}}<br>
+      {{#if invoice.seller.address.city}}{{invoice.seller.address.city}}{{#if invoice.seller.address.state}}, {{/if}}{{/if}}{{#if invoice.seller.address.state}}{{invoice.seller.address.state}}{{#if invoice.seller.address.stateCode}} ({{invoice.seller.address.stateCode}}){{/if}}{{/if}}<br>
       {{invoice.seller.address.postalCode}}<br>
       {{invoice.seller.address.country}}
     </div>
@@ -421,7 +434,7 @@
     <div class="party-address">
       {{#if invoice.buyer.address.line1}}{{invoice.buyer.address.line1}}<br>{{/if}}
       {{#if invoice.buyer.address.line2}}{{invoice.buyer.address.line2}}<br>{{/if}}
-      {{invoice.buyer.address.city}}{{#if invoice.buyer.address.state}}, {{invoice.buyer.address.state}}{{#if invoice.buyer.address.stateCode}}({{invoice.buyer.address.stateCode}}){{/if}}{{/if}}<br>
+      {{#if invoice.buyer.address.city}}{{invoice.buyer.address.city}}{{#if invoice.buyer.address.state}}, {{/if}}{{/if}}{{#if invoice.buyer.address.state}}{{invoice.buyer.address.state}}{{#if invoice.buyer.address.stateCode}} ({{invoice.buyer.address.stateCode}}){{/if}}{{/if}}<br>
       {{invoice.buyer.address.postalCode}}<br>
       {{invoice.buyer.address.country}}
     </div>
@@ -585,6 +598,10 @@
       </tr>
     {{/if}}
   </table>
+  {{#if invoice.pricing.totalAmount}}
+    {{!-- helper call (the registered helper shadows the context value of the same name) --}}
+    <div class="amount-words"><strong>Amount in words:</strong> {{amountInWords invoice.pricing.totalAmount invoice.currencyCode}}</div>
+  {{/if}}
   {{#if invoice.fx}}
     <div class="fx-note">
       Exchange rate: 1 {{invoice.fx.fromCurrency}} = {{invoice.fx.rate}} {{invoice.fx.currency}}
@@ -658,6 +675,7 @@
   <strong>Status:</strong> {{invoice.payment.status}}<br>
   <strong>Method:</strong> {{#each invoice.payment.methods}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
   {{#if invoice.payment.transactionId}}<br><strong>Transaction ID:</strong> {{invoice.payment.transactionId}}{{/if}}
+  {{#if invoice.payment.remittanceReference}}<br><strong>Remittance reference (FIRC / e-FIRA):</strong> {{invoice.payment.remittanceReference}}{{/if}}
 </div>
 {{/unless}}
 

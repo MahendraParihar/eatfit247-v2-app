@@ -120,6 +120,9 @@ export function mapPaymentToInvoiceDocument(
     payment: {
       methods: [payment.paymentMode || 'Online Payment'],
       status: payment.paymentStatus,
+      transactionId: payment.transactionId || undefined,
+      // Export proceeds by remittance: the FIRC / e-FIRA is the evidence of receipt (roadmap 4.6)
+      remittanceReference: payment.remittanceReference || undefined,
     },
     qrCode: qrCodeEnabled
       ? {
@@ -288,14 +291,15 @@ function buildSellerInfo(
   }
   // Use franchise address if provided, otherwise use placeholders
   // Note: IAddress has state and country as strings (from relationships)
+  // Trimmed: a blank city (spaces) must not print as ", Dubai"
   const address = {
     line1: (franchiseAddress.postalAddress || '').trim(),
     line2: franchiseAddress.addressName,
-    city: franchiseAddress.cityVillage || '',
-    state: franchiseAddress.state || '',
-    stateCode: franchiseAddress.stateCode || '',
-    postalCode: franchiseAddress.pinCode || '',
-    country: franchiseAddress.country || '',
+    city: (franchiseAddress.cityVillage || '').trim(),
+    state: (franchiseAddress.state || '').trim(),
+    stateCode: (franchiseAddress.stateCode || '').trim(),
+    postalCode: (franchiseAddress.pinCode || '').trim(),
+    country: (franchiseAddress.country || '').trim(),
   };
   // Get logo URL from franchise logo array if available
   let logoUrl: string | undefined;
@@ -340,11 +344,11 @@ function buildBuyerInfo(
     address: {
       line1: (address.postalAddress || '').trim(),
       line2: address.addressName,
-      city: address.cityVillage || '',
-      state: address.state || '',
-      stateCode: address.stateCode || '',
-      postalCode: address.pinCode || '',
-      country: address.country || '',
+      city: (address.cityVillage || '').trim(),
+      state: (address.state || '').trim(),
+      stateCode: (address.stateCode || '').trim(),
+      postalCode: (address.pinCode || '').trim(),
+      country: (address.country || '').trim(),
     },
     country: address.country,
     taxId,
@@ -598,7 +602,8 @@ export function mapProductOrderToInvoiceDocument(
     payment: {
       methods: [productOrder.paymentMode || 'Online Payment'],
       status: productOrder.paymentStatus,
-      transactionId: productOrder.transactionId,
+      transactionId: productOrder.transactionId || undefined,
+      remittanceReference: productOrder.remittanceReference || undefined,
     },
     qrCode: qrCodeEnabled
       ? {

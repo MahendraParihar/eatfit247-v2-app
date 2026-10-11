@@ -112,10 +112,12 @@ Findings from the 2026-10-11 browser run (`validation.md` → Findings). One gro
 
 ## Group 11: Browser-run fixes — invoice PDFs (F8; `shared-library`, `server_1` template + credit note)
 
-- [ ] 11.1 Total row label readable (white on the dark row); the exchange-rate line sits under the totals box without overlapping.
-- [ ] 11.2 Seller / buyer address line never starts with ", " when the city is empty.
-- [ ] 11.3 Credit-note footer says "credit note"; export invoices print the remittance reference (FIRC / e-FIRA) and the transaction id; every PDF prints the amount in words.
-- [ ] 11.4 Shared-library + platform tests green; re-download invoices 000007 (USD), 000008 (FIRC), HCUAE 000006 and credit note CN/000004 and read the PDFs.
+- [x] 11.1 Total row label readable (white on the dark row); the exchange-rate line sits under the totals box without overlapping.
+- [x] 11.2 Seller / buyer address line never starts with ", " when the city is empty.
+- [x] 11.3 Credit-note footer says "credit note"; export invoices print the remittance reference (FIRC / e-FIRA) and the transaction id; every PDF prints the amount in words.
+- [x] 11.4 Shared-library + platform tests green; re-download invoices 000007 (USD), 000008 (FIRC), HCUAE 000006 and credit note CN/000004 and read the PDFs.
+
+> **As built (2026-10-11):** `invoice.hbs`: `.total-row td` white on #333 (the `td:first-child` background rule was overriding the row), `.summary-section` is a column so the FX note sits under the totals, city/state line built with explicit separators, "Amount in words" under the totals via the registered helper (`{{amountInWords invoice.pricing.totalAmount invoice.currencyCode}}` — the bare `{{amountInWords}}` resolved to the helper with no arguments and printed "Rupees Zero"), "Remittance reference (FIRC / e-FIRA)" in the payment block. Mapper: plan invoices carry `transactionId` and both carry `remittanceReference` (`IInvoicePayment.remittanceReference`); address parts are trimmed (HCUAE's city was a single space, hence ", Dubai"). Credit note footer says "credit note". Member jest 306/306; shared-library built; both APIs build. Live (Nest context, admin-api module): regenerated 000007 (USD: "Dollars Two Hundred Fifty Only", FX line below the box), 000008 (FIRC-TEST-2026-0001 printed), HCUAE 000006 ("Dubai (AE-DU)", "Dirhams Four Thousand Two Hundred Fifty Two Only") and CN/000004 (credit-note footer); PDFs read back page by page.
 
 ## Group 6: Close-out
 

@@ -221,6 +221,7 @@ export class CreditNoteService {
         lutArn: undefined,
       },
       total: { label: 'Total Credited', amount: Number(note.totalAmount) },
+      footer: { legalNote: 'This is a computer-generated credit note and is valid without signature.' },
       fx: note.fxRate && note.functionalCurrency
         ? {
             rate: Number(note.fxRate),

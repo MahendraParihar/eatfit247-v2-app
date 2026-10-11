@@ -54,6 +54,24 @@ describe('invoice mapper: proforma and invoice date', () => {
       ...overrides,
     }) as unknown as IMemberProduct;
 
+  it('prints the transaction id and the FIRC / e-FIRA reference of a remitted export (browser-run fix F8)', () => {
+    const doc = mapPaymentToInvoiceDocument(
+      payment({ invoiceId: 'EFMUM/EXP/2026-27/S/000008', transactionId: 'SWIFT-1', remittanceReference: 'FIRC-TEST-2026-0001' }),
+      franchise,
+      address,
+      address,
+      [],
+    );
+    expect(doc.payment).toMatchObject({ transactionId: 'SWIFT-1', remittanceReference: 'FIRC-TEST-2026-0001' });
+
+    const plain = mapPaymentToInvoiceDocument(payment({ transactionId: null, remittanceReference: null }), franchise, address, address, []);
+    expect(plain.payment.transactionId).toBeUndefined();
+    expect(plain.payment.remittanceReference).toBeUndefined();
+
+    const order = mapProductOrderToInvoiceDocument(product({ remittanceReference: 'FIRC-P-1' }), franchise, address, address);
+    expect(order.payment.remittanceReference).toBe('FIRC-P-1');
+  });
+
   it('renders an unpaid plan payment as a proforma with no number, no QR and the GST note', () => {
     const doc = mapPaymentToInvoiceDocument(payment({ invoiceId: undefined }), franchise, address, address, []);
 

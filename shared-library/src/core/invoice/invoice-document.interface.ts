@@ -116,6 +116,7 @@ export interface IInvoicePayment {
   methods: string[]; // Payment method names
   status: string; // Payment status
   transactionId?: string; // Optional transaction ID
+  remittanceReference?: string; // Exports paid by bank transfer: the FIRC / e-FIRA (BRC) number
 }
 
 export interface IInvoiceQrCode {
