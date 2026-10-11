@@ -1129,6 +1129,23 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** One tax statement for the total, from the decided tax (never a fixed "inclusive of all taxes"). */
+  get totalNote(): string {
+    const line = this.taxCalculation?.items?.[0];
+    if (!line) {
+      return 'Tax calculated at next step';
+    }
+    if (line.taxType === TaxTypeEnum.NONE) {
+      return 'No tax applies';
+    }
+    if (Number(line.taxAmount || 0) === 0) {
+      return line.taxMode === TaxMode.EXPORT_OF_SERVICE || line.taxMode === TaxMode.EXPORT_OF_GOODS
+        ? 'Export – no Indian GST charged'
+        : 'Zero-rated – no tax charged';
+    }
+    return `Includes ${this.taxLabel}`;
+  }
+
   /** Order summary sidebar items */
   get sidebarItems(): ICheckoutSidebarItem[] {
     if (this.isProductCheckout) {

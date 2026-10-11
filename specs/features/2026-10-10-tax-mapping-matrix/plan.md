@@ -68,8 +68,10 @@
 
 ## Group 5: Public website (`eatfit247-web-1`)
 
-- [ ] 5.1 One tax statement everywhere, driven by the server's inclusive flag / tax label: product page, checkout, seasonal plans, FAQ, nutritionist pages (remove hardcoded "+ taxes" prices or label them "excl. GST").
-- [ ] 5.2 Checkout State field: hint "Required for your tax invoice (place of supply)". No new API.
+- [x] 5.1 One tax statement everywhere, driven by the server's inclusive flag / tax label: product page, checkout, seasonal plans, FAQ, nutritionist pages (remove hardcoded "+ taxes" prices or label them "excl. GST").
+- [x] 5.2 Checkout State field: hint "Required for your tax invoice (place of supply)". No new API.
+
+> **As built (group 5):** the checkout total line now reads from the decided tax (`totalNote`: "Includes GST 18%" / "Includes IGST 18%" / "Export – no Indian GST charged" / "Zero-rated – no tax charged" / "No tax applies") instead of a fixed "Inclusive of all taxes"; the State field carries the place-of-supply hint; the FAQ "Is GST included?" answer now matches the rules (plan fees before tax, powder prices tax-inclusive, exports untaxed, INR from Indian accounts taxed). Product page "Inclusive of all taxes" and seasonal "Taxes extra" were already right for their price rules (products inclusive, plan fees exclusive) and stay. SSR build green. Browser pass pending with the admin forms.
 
 ## Group 6: Close-out
 
