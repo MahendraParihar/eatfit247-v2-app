@@ -4,11 +4,11 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { MstTaxMaster } from '../models';
 import { IBasicSearch, ITableList, ITaxMaster, TaxCategoryEnum, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
-
-/** `reference_id` of a franchise's default SERVICE rule (every plan without its own rule) */
-export const SERVICE_DEFAULT_REFERENCE = 1;
 import { CommonFunctionsUtil, MstFranchise, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { CreateTaxMasterDto } from '../dto/tax-master.dto';
+
+/** `reference_id` of a franchise's default SERVICE rule (every plan without its own rule; a plan with id 1 shares it) */
+export const SERVICE_DEFAULT_REFERENCE = 1;
 
 @Injectable()
 export class TaxMasterService {
@@ -49,7 +49,7 @@ export class TaxMasterService {
    * A rule must match its franchise's registration (decision 18): GST needs the franchise's GSTIN,
    * VAT its TRN; a 0% VAT rule must be zero-rated or exempt (decision 7).
    */
-  private async assertConsistentRule(obj: CreateTaxMasterDto): Promise<void> {
+  private async assertConsistentRule(obj: CreateTaxMasterDto, checkRegistration = true): Promise<void> {
     const category = obj.taxCategory || TaxCategoryEnum.STANDARD;
     const rate = Number(obj.taxPercent || 0);
     if (obj.taxSystem === TaxTypeEnum.VAT && rate === 0 && category === TaxCategoryEnum.STANDARD) {
@@ -58,7 +58,7 @@ export class TaxMasterService {
     if (obj.taxSystem === TaxTypeEnum.VAT && rate > 0 && category !== TaxCategoryEnum.STANDARD) {
       throw new BadRequestException(`A ${rate}% VAT rule is standard-rated; zero-rated, exempt and out-of-scope rules are 0%.`);
     }
-    if (obj.taxSystem !== TaxTypeEnum.GST && obj.taxSystem !== TaxTypeEnum.VAT) {
+    if (!checkRegistration || (obj.taxSystem !== TaxTypeEnum.GST && obj.taxSystem !== TaxTypeEnum.VAT)) {
       return;
     }
     const franchise = await this.franchiseRepository.findByPk(obj.franchiseId, {
@@ -190,11 +190,15 @@ export class TaxMasterService {
     if (!find) {
       throw new NotFoundException('Tax master not found');
     }
-    await this.assertConsistentRule({
-      ...obj,
-      franchiseId: obj.franchiseId ?? find.franchiseId,
-      taxCategory: obj.taxCategory ?? find.taxCategory,
-    } as CreateTaxMasterDto);
+    // A staged (inactive) rule may be edited before the franchise is registered; registration is checked on activation
+    await this.assertConsistentRule(
+      {
+        ...obj,
+        franchiseId: obj.franchiseId ?? find.franchiseId,
+        taxCategory: obj.taxCategory ?? find.taxCategory,
+      } as CreateTaxMasterDto,
+      find.active,
+    );
     // Only update if provided, otherwise keep existing values
     const updateObj: any = {};
     if (obj.franchiseId !== undefined) updateObj.franchiseId = obj.franchiseId;
@@ -223,6 +227,10 @@ export class TaxMasterService {
     });
     if (!find) {
       throw new NotFoundException('Tax master not found');
+    }
+    if (active && !find.active) {
+      // Activating a staged rule (e.g. MEMUM GST 5%) needs the franchise registration behind it
+      await this.assertConsistentRule(find.get({ plain: true }) as unknown as CreateTaxMasterDto);
     }
     const updateObj = {
       active: active,

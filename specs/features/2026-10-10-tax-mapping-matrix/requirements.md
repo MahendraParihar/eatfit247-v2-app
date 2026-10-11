@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved (spec interview 2026-10-10/11) → In Progress |
+| Status | **Implemented 2026-10-11, release pending** (browser walk-through and the CA / UAE adviser answers outstanding; see [validation.md](./validation.md)) |
 | Branch | `feature/tax-mapping-matrix` (stacked on `feature/tax-engine-correctness`; retarget to `m3-cms-update` once 4.6 merges) |
 | Roadmap | Phase 4: **4.11** Rate and classification master (data half; the CA-dependent rate decisions stay open) |
 | References | [Accounting audit](../../backlog/2026-10-10-accounting-audit.md) H5, M3, part of H1/H6/H8; [4.6 requirements](../2026-10-10-tax-engine-correctness/requirements.md); IGST Act s.2(6), s.7(5)(a), s.10, s.12(2)(b), s.13, s.14, s.16; CGST s.24(i); Rule 46; CBIC Circular 242/36/2024; Notif 9/2025 & 15/2025-CT(R); Finance Act 2023 s.160; UAE Decree-Law 8/2017 Art 29/30/48; Executive Regs Art 23, 30, 31 (CD 100/2024), 41, 59 |
@@ -124,11 +124,11 @@ Already correct in 4.6: rows 1, 2, 5, 5b, 6 service logic; row 7 delivery-countr
 | 1 | **Baseline is 4.6.** Gaps are measured against `feature/tax-engine-correctness`; the branch stacks on it. | Owner decision 2026-10-10. 4.6 already fixes the audit's engine defects; re-listing them would hide the real remaining work. |
 | 2 | **Diet consultation stays 18%, SAC 999319** until the CA rules on 99972/5%. | Owner decision. Conservative reading; the rule row is effective-dated so a CA change is a config edit. |
 | 3 | **Indian clients under a non-Indian franchise stay refused** (no OIDAR registration for HCUAE). | Owner decision; 4.6 decision 6. |
-| 4 | **Seeds never overwrite admin-edited rows.** `INSERT … WHERE NOT EXISTS` on `uq_tax_master`; re-running 144 is a no-op. | Rules are owner data; a migration must not reset a CA-driven change. |
+| 4 | **Seeds never overwrite admin-edited rows.** `INSERT … WHERE NOT EXISTS` per franchise + reference + country + type (any existing row, active or not, suppresses the seed; the staged MEMUM 5% row is suppressed only by an existing 5% GST row); re-running 144 is a no-op. | Rules are owner data; a migration must not reset a CA-driven change. |
 | 5 | **MEMUM is seeded as `NONE` (active) plus a staged, inactive GST 5% row per product** (HSN from the product, effective 2025-09-22). | Mahi is unregistered today (4.6 decision 18). The CA's answer becomes "activate the staged row", not a deployment. |
 | 6 | **HCUAE AE service rule stays 0% ZERO_RATED** with `legal_basis` = "Art 41 ER healthcare zero-rating per UAE adviser; confirm licence, else 5% STANDARD". | Keeps 4.6 decision 7 while making the basis auditable (G6). |
 | 7 | **Place of supply is stored at decision time** (`place_of_supply_country_code`, `place_of_supply_state_code`) and the invoice prints the stored value; the address-derived value is only a fallback for pre-144 rows. | Circular 242 and principle 10. |
-| 8 | **Unregistered Indian franchise + delivery State ≠ supplier State → 400**, with config `ALLOW_UNREGISTERED_INTERSTATE_GOODS` (default false) as the CA override. | CGST s.24(i). Sales must not continue illegally by default, but the CA may accept the risk explicitly. |
+| 8 | **Unregistered Indian franchise + delivery State ≠ supplier State (or unknown) → 400**, with config `ALLOW_UNREGISTERED_INTERSTATE_GOODS` (default false) as the CA override; `mst_configs` is read at boot, so the override needs an API restart. Goods only: Notif 10/2017-IT exempts under-threshold inter-state *service* suppliers from s.24(i). | CGST s.24(i). Sales must not continue illegally by default, but the CA may accept the risk explicitly. |
 | 9 | **Plans pass their own `programPlanId` as the rule reference; the lookup falls back to `reference_id = 1`.** | G3 without a data migration: the single EFMUM row keeps working; a plan-specific row wins when present. |
 | 10 | **`is_electronic_service` is a stored flag only.** No engine branch reads it yet. | AE-6 needs an adviser decision; capturing the classification now avoids a second data pass. |
 | 11 | **Rounding:** per line to 2 dp; CGST = round(tax/2), SGST = tax − CGST. | Audit M3; totals must equal the sum of the printed lines. |

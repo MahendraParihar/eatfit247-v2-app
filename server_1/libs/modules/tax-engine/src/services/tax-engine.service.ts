@@ -109,14 +109,21 @@ export class TaxEngineService {
       // Goods are taxed where they are delivered (decision 3); the billing country isn't a substitute
       throw new BadRequestException('A shipping address with a country is required for product orders.');
     }
+    if (
+      input.transactionType === TransactionType.PRODUCT &&
+      this.normalize(input.deliveryCountryCode) === supplier &&
+      supplier === INDIA_COUNTRY_CODE &&
+      !this.normalize(input.deliveryStateCode)
+    ) {
+      // IGST s.10: the delivery State decides CGST/SGST vs IGST; the billing State is never a substitute
+      throw new BadRequestException('A shipping address with a state is required for product orders delivered in India.');
+    }
     const isGoods = input.transactionType === TransactionType.PRODUCT;
     const placeOfSupplyCountry = isGoods ? (this.normalize(input.deliveryCountryCode) as string) : customer;
     const isDomestic = placeOfSupplyCountry === supplier;
     const result = isDomestic ? await this.domestic(context) : await this.crossBorder(context, placeOfSupplyCountry);
     // Stored with the decision (Circular 242/36/2024): the State only exists for a domestic supply
-    const placeOfSupplyState = isDomestic
-      ? this.normalize(isGoods ? input.deliveryStateCode || input.customerStateCode : input.customerStateCode)
-      : null;
+    const placeOfSupplyState = isDomestic ? this.normalize(isGoods ? input.deliveryStateCode : input.customerStateCode) : null;
     return {
       ...result,
       baseAmount: taxable + input.discountAmount,
@@ -137,7 +144,8 @@ export class TaxEngineService {
     switch (rule.taxSystem) {
       case TaxTypeEnum.GST: {
         const isGoods = input.transactionType === TransactionType.PRODUCT;
-        const customerState = isGoods ? input.deliveryStateCode || input.customerStateCode : input.customerStateCode;
+        // Goods: the delivery State only (IGST s.10); services: the billing State (s.12(2)(b))
+        const customerState = isGoods ? input.deliveryStateCode : input.customerStateCode;
         if (!customerState) {
           throw new BadRequestException(`A ${isGoods ? 'delivery' : 'billing'} state is required for GST.`);
         }
@@ -173,9 +181,12 @@ export class TaxEngineService {
       }
       default: {
         const isGoods = input.transactionType === TransactionType.PRODUCT;
-        const deliveryState = this.normalize(input.deliveryStateCode || input.customerStateCode);
+        const deliveryState = this.normalize(input.deliveryStateCode);
         const supplierState = this.normalize(input.supplierStateCode);
-        const interState = !!deliveryState && !!supplierState && deliveryState !== supplierState;
+        // An unknown State counts as inter-state: the guard must not be bypassed by missing data.
+        // s.24(i) also covers inter-state services, but Notif 10/2017-IT exempts service suppliers under the
+        // threshold, so the guard is goods-only (requirements decision 8).
+        const interState = !deliveryState || !supplierState || deliveryState !== supplierState;
         if (context.supplier === INDIA_COUNTRY_CODE && isGoods && interState && !this.allowUnregisteredInterstateGoods()) {
           // CGST s.24(i): any inter-state taxable supply needs registration, whatever the turnover
           throw new BadRequestException(
@@ -187,7 +198,7 @@ export class TaxEngineService {
     }
   }
 
-  /** Decision 8: the CA may accept the s.24(i) risk explicitly through configuration. */
+  /** Decision 8: the CA may accept the s.24(i) risk explicitly through configuration (mst_configs is read at boot: restart the API after changing it). */
   private allowUnregisteredInterstateGoods(): boolean {
     try {
       return this.appConfigService.getBoolean(ConfigParam.ALLOW_UNREGISTERED_INTERSTATE_GOODS, false, false);

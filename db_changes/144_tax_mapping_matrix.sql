@@ -23,8 +23,8 @@
 --      Config ALLOW_UNREGISTERED_INTERSTATE_GOODS (default false) is the CA
 --      override for the s.24(i) guard.
 --
---   5. Seeded tax rules (guarded: a franchise that already has a rule for the
---      same reference / country / type is left alone — rules are owner data):
+--   5. Seeded tax rules (guarded per franchise + reference + country + type —
+--      any existing row, active or not, suppresses the seed; rules are owner data):
 --        EFMUM  IN SERVICE  GST 18% STANDARD, SAC 999319, from 2017-07-01
 --        HCUAE  AE SERVICE  VAT 0% ZERO_RATED, from 2018-01-01
 --                           (basis: ER Art 41 per UAE adviser — confirm; else 5% S)
@@ -84,17 +84,23 @@ UPDATE public.mst_countries SET currency_code = 'USD' WHERE upper(trim(country_c
 
 -- ------------------------------------------------- 4. stored place of supply
 ALTER TABLE public.txn_member_payments
-    ADD COLUMN IF NOT EXISTS place_of_supply_country_code CHAR(3),
+    ADD COLUMN IF NOT EXISTS place_of_supply_country_code VARCHAR(3),
     ADD COLUMN IF NOT EXISTS place_of_supply_state_code   VARCHAR(10),
     ADD COLUMN IF NOT EXISTS hsn_sac_code                 VARCHAR(8);
 
 ALTER TABLE public.txn_member_product_order_items
-    ADD COLUMN IF NOT EXISTS place_of_supply_country_code CHAR(3),
+    ADD COLUMN IF NOT EXISTS place_of_supply_country_code VARCHAR(3),
     ADD COLUMN IF NOT EXISTS place_of_supply_state_code   VARCHAR(10),
     ADD COLUMN IF NOT EXISTS hsn_sac_code                 VARCHAR(8);
 
+-- ISO codes are 2 letters; CHAR(3) would pad them ('IN '), so these are VARCHAR(3). The ALTERs
+-- repair a database that ran an earlier draft of this file.
+ALTER TABLE public.txn_member_payments ALTER COLUMN place_of_supply_country_code TYPE VARCHAR(3);
+ALTER TABLE public.txn_member_product_order_items ALTER COLUMN place_of_supply_country_code TYPE VARCHAR(3);
+
 -- CA override for decision 8 (CGST s.24(i)): an unregistered Indian franchise may not make
--- inter-state goods supplies unless the CA accepts the risk explicitly.
+-- inter-state goods supplies unless the CA accepts the risk explicitly. mst_configs is loaded
+-- when the API boots, so a change takes effect after a restart.
 INSERT INTO public.mst_configs (config_name, config_value, module)
 SELECT 'ALLOW_UNREGISTERED_INTERSTATE_GOODS', 'false', 'Invoice'
 WHERE NOT EXISTS (SELECT 1 FROM public.mst_configs WHERE config_name = 'ALLOW_UNREGISTERED_INTERSTATE_GOODS');

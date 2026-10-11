@@ -54,6 +54,9 @@ export class InvoiceIssueService {
     if (!countryCode) {
       // Without the franchise's country every invoice falls back to the domestic series
       this.logger.warn(`Country unknown for franchise ${franchiseId}; invoices use the domestic series`);
+    } else if (!country?.currencyCode) {
+      // mst_countries.currency_code (migration 144) is the functional currency; without it no FX is saved or back-filled
+      this.logger.warn(`Country ${countryCode} has no currency_code; invoices of franchise ${franchiseId} get no FX until it is set`);
     }
     return {
       franchise,

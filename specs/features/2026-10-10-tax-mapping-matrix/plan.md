@@ -73,8 +73,16 @@
 
 > **As built (group 5):** the checkout total line now reads from the decided tax (`totalNote`: "Includes GST 18%" / "Includes IGST 18%" / "Export – no Indian GST charged" / "Zero-rated – no tax charged" / "No tax applies") instead of a fixed "Inclusive of all taxes"; the State field carries the place-of-supply hint; the FAQ "Is GST included?" answer now matches the rules (plan fees before tax, powder prices tax-inclusive, exports untaxed, INR from Indian accounts taxed). Product page "Inclusive of all taxes" and seasonal "Taxes extra" were already right for their price rules (products inclusive, plan fees exclusive) and stay. SSR build green. Browser pass pending with the admin forms.
 
+## Group 7: Review fixes (deep review 2026-10-11)
+
+- [x] 7.1 **High** — admin tax-master: the reference no longer leaks across type switches (SERVICE → reference 1, PRODUCT → empty; edit patch uses `emitEvent: false`).
+- [x] 7.2 **High** — goods place of supply never falls back to the billing State: delivery in India without a delivery State → 400; the s.24(i) guard treats an unknown State as inter-state. New matrix case.
+- [x] 7.3 **Medium** — `place_of_supply_country_code` is `VARCHAR(3)` (guarded `ALTER … TYPE` repairs a DB that ran the CHAR(3) draft); real unit test for the SERVICE reference fallback (`tax-master-lookup.spec.ts`); `changeStatus` runs the consistency check when activating a staged rule and `update` skips the registration check for inactive rows; warning when a franchise country has no `currency_code`; 144 header and decision 8 say the config override needs an API restart.
+- [x] 7.4 **Low** — decision 4 text matches the seed guards; constant placement; JSDoc order; staged hint keyed on a `STAGED` legal basis; s.24(i) goods-only rationale commented.
+- [x] 7.5 Member jest 296/296 (21 suites); both APIs and the admin development build green; 144 re-applied locally (columns now `character varying(3)`).
+
 ## Group 6: Close-out
 
 - [ ] 6.1 All checks in `validation.md` pass
-- [ ] 6.2 `requirements.md` status → Shipped; roadmap 4.11 data half → ✅ with a link
-- [ ] 6.3 Constitution changes (mission markets table) noted for the replanning step
+- [x] 6.2 `requirements.md` status → Implemented, release pending (Shipped after the browser pass and production migration); roadmap 4.11 marked 🚧 with the split and a link
+- [x] 6.3 Constitution changes (mission markets table) noted for the replanning step

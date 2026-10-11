@@ -214,6 +214,15 @@ describe('Tax mapping matrix (franchise × customer × goods/services)', () => {
       expect(other.placeOfSupplyStateCode).toBe('29');
     });
 
+    it('goods delivered in India without a delivery State → 400 (the billing State is never a substitute, IGST s.10)', async () => {
+      rules[ruleKey(MEMUM, TransactionType.PRODUCT, 1)] = MEMUM_GST_5;
+      franchises[MEMUM].gstNumber = '27AAAAA0000A1Z5';
+      await expect(engine.calculate(goods({ deliveryStateCode: null, customerStateCode: '27' }))).rejects.toThrow('shipping address with a state');
+      rules[ruleKey(MEMUM, TransactionType.PRODUCT, 1)] = MEMUM_NONE;
+      franchises[MEMUM].gstNumber = null;
+      await expect(engine.calculate(goods({ deliveryStateCode: null, customerStateCode: '27' }))).rejects.toThrow('shipping address with a state');
+    });
+
     it('row 3 unregistered (seeded NONE): same-State delivery → no tax, plain invoice', async () => {
       const r = await engine.calculate(goods({}));
       expect(r).toMatchObject({ taxType: TaxTypeEnum.NONE, taxMode: TaxMode.NO_TAX, taxAmount: 0, placeOfSupplyStateCode: '27', hsnSacCode: '3004' });

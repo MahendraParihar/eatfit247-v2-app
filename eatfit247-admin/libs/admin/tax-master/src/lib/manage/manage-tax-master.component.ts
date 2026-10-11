@@ -60,6 +60,10 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
   initialData!: ITaxMaster;
   isEditMode = false;
   pageTitle = 'Create Tax Rule';
+  /** Seeded by migration 144 and left inactive for the CA to switch on */
+  get isStagedRule(): boolean {
+    return !!this.initialData && !this.initialData.active && (this.initialData.legalBasis || '').startsWith('STAGED');
+  }
 
   transactionTypes = Object.values(TransactionType);
   taxSystems = Object.values(TaxTypeEnum);
@@ -115,15 +119,15 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
     // Listen to transaction type changes
     this.formGroup.get('transactionType')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((transactionType) => {
       if (transactionType === TransactionType.SERVICE) {
-        // Services: the franchise default (reference 1) unless a plan is picked
-        if (!this.formGroup.get('referenceId')?.value) {
-          this.formGroup.patchValue({ referenceId: SERVICE_DEFAULT_REFERENCE }, { emitEvent: false });
-        }
+        // Services: the franchise default (reference 1) unless a plan is picked. A product id must never
+        // survive a PRODUCT → SERVICE switch as a "plan-specific" rule.
+        this.formGroup.patchValue({ referenceId: SERVICE_DEFAULT_REFERENCE }, { emitEvent: false });
         this.showProductDropdown = false;
         this.showPlanDropdown = true;
         this.formGroup.get('referenceId')?.clearValidators();
       } else if (transactionType === TransactionType.PRODUCT) {
-        // Show product dropdown for PRODUCT
+        // Show product dropdown for PRODUCT; the service reference (1) must not pass as product id 1
+        this.formGroup.patchValue({ referenceId: null }, { emitEvent: false });
         this.showProductDropdown = true;
         this.showPlanDropdown = false;
         this.formGroup.get('referenceId')?.setValidators([Validators.required]);
@@ -180,6 +184,7 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
       this.showProductDropdown = transactionType === TransactionType.PRODUCT;
       this.showPlanDropdown = transactionType === TransactionType.SERVICE;
 
+      // emitEvent: false — the type listener would otherwise reset the stored reference
       this.formGroup.patchValue({
         franchiseId: this.initialData.franchiseId,
         countryCode: this.initialData.countryCode,
@@ -196,7 +201,9 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
         legalBasis: this.initialData.legalBasis || '',
         effectiveFrom: this.initialData.effectiveFrom ? new Date(this.initialData.effectiveFrom) : null,
         effectiveTo: this.initialData.effectiveTo ? new Date(this.initialData.effectiveTo) : null,
-      });
+      }, { emitEvent: false });
+      this.formGroup.get('referenceId')?.setValidators(transactionType === TransactionType.PRODUCT ? [Validators.required] : []);
+      this.formGroup.get('referenceId')?.updateValueAndValidity({ emitEvent: false });
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
       this.router.navigate(['/tax-master']);

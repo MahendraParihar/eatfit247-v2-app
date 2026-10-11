@@ -150,10 +150,10 @@
             </mat-checkbox>
           </div>
 
-          @if (isEditMode && initialData && !initialData.active) {
+          @if (isEditMode && isStagedRule) {
             <p class="staged-hint full-width">
               <mat-icon inline>schedule</mat-icon>
-              This rule is inactive. Rules staged by migration 144 (e.g. Mahi GST 5% from 22 Sep 2025) are activated from the list once the CA confirms; once active, the newest effective date wins.
+              Staged rule: activate it from the list once the CA confirms the registration. Once active, the newest effective date wins over the older rule.
             </p>
           }
         </div>
