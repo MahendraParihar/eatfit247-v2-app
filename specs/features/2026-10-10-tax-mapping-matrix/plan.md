@@ -81,6 +81,38 @@
 - [x] 7.4 **Low** — decision 4 text matches the seed guards; constant placement; JSDoc order; staged hint keyed on a `STAGED` legal basis; s.24(i) goods-only rationale commented.
 - [x] 7.5 Member jest 296/296 (21 suites); both APIs and the admin development build green; 144 re-applied locally (columns now `character varying(3)`).
 
+## Group 8: Browser-run fixes — public checkout backend (F1, F2, F3; `server_1`)
+
+Findings from the 2026-10-11 browser run (`validation.md` → Findings). One group per layer; each group is unit-tested, checked against the running local servers and committed on its own.
+
+- [x] 8.1 **F1 High** — `MemberPlanService.createPublicCheckoutOrder` resolves the gateway with `member.franchiseId` (the franchise the payment row and invoice belong to), never `franchiseByBusinessType(SERVICE)[0]`; a member without a franchise is a 400. The plan gateway listing gets a member-scoped route (`checkout/plan/member/:memberId/supported-gateways`, checkout token) that lists the member's franchise; the unauthenticated listing (used before the member exists) lists the default franchise. Products keep the product franchise (the order itself belongs to it).
+- [x] 8.2 **F2 High** — `CheckoutGatewayService.resolveGateway` takes `isInternational` from the caller instead of `false`: international when the billing country differs from the franchise country (fallback: the engine's payment route is not DOMESTIC). Plan and product orders, admin payment links and `assertGatewayAvailable` pass it.
+- [x] 8.3 **F3 Medium** — `MemberService.createOrUpdate` finds the existing member by email/phone first and only resolves the franchise by country for a new member; the "no default franchise" error names the fix. Release runbook: set `mst_franchises.is_default` on EFMUM (decision 23).
+- [x] 8.4 Unit tests for 8.1–8.3 (member jest green); live check: USD plan order for member 4945 and an AED/HCUAE member resolve their own franchise's gateway; `member/create` for an existing member works with no default franchise.
+
+> **As built (2026-10-11):** `CheckoutGatewayService.isInternationalPayment(billingCountryId, franchiseCountryId, route)` is the one rule (countries differ → international; without both countries, a non-DOMESTIC route); `resolveGateway` / `prepareGateway` / `createGatewayOrder` / `createGatewayPaymentLink` / `assertGatewayAvailable` take the flag; plan + product public orders, admin links and link regeneration pass it. Plan orders use `member.franchiseId` (tax already refuses a member without one). `FranchiseService.getDefaultFranchise()`; `GET checkout/plan/member/:memberId/supported-gateways` (checkout token; 403 on a token for another member). `createOrUpdate` resolves the franchise only on the new-member branch; the dead `resolveGatewayAndCredentials` in the product service was removed. Member jest 305/305 (22 suites, 8 new cases); both APIs build. Live (Nest context + curl): USD row 4 set international-only → domestic payer refused, international payer resolves; HCUAE member 5888 USD order → "No payment gateway configured for franchise=2" and nothing stored; member route lists franchise 1 for 4945 and nothing for 5888 (HCUAE Stripe row inactive, F10). Browser end-to-end of the order path waits for the web changes in group 9 (the order route needs reCAPTCHA).
+
+## Group 9: Browser-run fixes — public website (F4, F5, F9-web; `eatfit247-web-1`, `server_1` program-plan)
+
+- [ ] 9.1 **F4 Medium** — public `GET program-plan/:id` (active + visible on web, else 404); the checkout resolves `?plan=` by id instead of from the 15-row list.
+- [ ] 9.2 **F5 Medium** — a failed billing step keeps the form (only a failed plan/product load hides the stepper); the error banner stays above the form so the user can correct and retry.
+- [ ] 9.3 **F9 web** — product size price formatted with two decimals (no "1199.97.00"); plan checkout success shows no Packed/Shipped/Delivered timeline and no "Pan-India shipping" / replacement promises (products only).
+- [ ] 9.4 Web gateway listing uses the member-scoped route once the member exists (8.1). Web lint + build green; browser check of plans 221/224 and a billing error retry.
+
+## Group 10: Browser-run fixes — admin CMS (F6, F7, F9-admin; `eatfit247-admin`, `server_1` DTO)
+
+- [ ] 10.1 **F6 Low** — plan fee must be ≥ 1 (form validator and `ProgramPlanFeeDto`); a gateway cannot charge 0.
+- [ ] 10.2 **F7 Low** — add-payment dialog: step 1 "Next" calculates tax first and stays on step 1 with the server's message when the engine refuses (HCUAE/Indian client); step 1 is not complete without a tax result.
+- [ ] 10.3 **F9 admin** — date-only columns (payment date, invoice date) render without a time (`dateFormat` on table columns; payment details dialog); franchise header shows the financial-year label ("Apr to Mar") instead of the raw id.
+- [ ] 10.4 Admin build green; browser check of the three screens.
+
+## Group 11: Browser-run fixes — invoice PDFs (F8; `shared-library`, `server_1` template + credit note)
+
+- [ ] 11.1 Total row label readable (white on the dark row); the exchange-rate line sits under the totals box without overlapping.
+- [ ] 11.2 Seller / buyer address line never starts with ", " when the city is empty.
+- [ ] 11.3 Credit-note footer says "credit note"; export invoices print the remittance reference (FIRC / e-FIRA) and the transaction id; every PDF prints the amount in words.
+- [ ] 11.4 Shared-library + platform tests green; re-download invoices 000007 (USD), 000008 (FIRC), HCUAE 000006 and credit note CN/000004 and read the PDFs.
+
 ## Group 6: Close-out
 
 - [ ] 6.1 All checks in `validation.md` pass

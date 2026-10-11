@@ -4,7 +4,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberPayment } from '../models';
 import {
   buildTaxRows,
-  BusinessTypeEnum,
   ConfigParam,
   IAddress,
   ICalculateTaxResponse,
@@ -421,6 +420,11 @@ export class MemberPlanService {
           currency: payment.currency,
           amount: Number(payment.totalAmount),
           requestedGatewayId: obj.franchisePaymentGatewayId,
+          isInternational: this.checkoutGatewayService.isInternationalPayment(
+            billingAddress?.countryId,
+            franchiseAddress?.countryId,
+            paymentObj.paymentRoute,
+          ),
           receipt: `plan_${payment.memberPaymentId}`,
           description: `Payment for ${programPlan.plan}`,
           customer: {
@@ -1389,6 +1393,11 @@ export class MemberPlanService {
       franchiseId: member.franchiseId,
       currency: snapshot.currency,
       amount,
+      isInternational: this.checkoutGatewayService.isInternationalPayment(
+        snapshot.memberAddress?.billingAddress?.countryId,
+        await this.franchiseCountryId(member.franchiseId),
+        snapshot.paymentRoute,
+      ),
     });
 
     const t = await this.sequelize.transaction();
@@ -1505,6 +1514,15 @@ export class MemberPlanService {
   }
 
   /** Unlocked read of the PENDING gateway payment, to prepare the gateway before locking. */
+  /** Country of the franchise's registered address (null when it has none). */
+  private async franchiseCountryId(franchiseId: number | null | undefined): Promise<number | null> {
+    if (!franchiseId) {
+      return null;
+    }
+    const addresses = await this.addressService.filterByTableIdAndPk(TableEnum.MST_FRANCHISES, franchiseId);
+    return addresses?.[0]?.countryId ?? null;
+  }
+
   private async findGatewayPayment(memberId: number, paymentId: number): Promise<TxnMemberPayment> {
     const payment = await this.memberPaymentRepository.findOne({
       where: { memberPaymentId: paymentId, memberId, active: true },
@@ -1548,21 +1566,32 @@ export class MemberPlanService {
   }
 
   /**
-   * Get supported payment gateways for public checkout (no member required)
-   * For franchise SERVICE type (plans)
-   * Reuses the same logic as getSupportedPaymentGateways but without member validation
+   * Gateways a website plan checkout can pay with. Once the member exists the gateways are the
+   * member's franchise's (the payment and invoice belong to it — the same franchise the order
+   * is created against); before that, the default franchise's (the one public signup assigns
+   * to countries without a franchise).
    */
   public async getSupportedPaymentGatewaysForCheckout(
     currencyCode: string,
+    memberId?: number,
   ): Promise<IPaymentGateway[]> {
-    // Get franchise for services (plans)
-    const franchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
-    if (!franchise || franchise.length === 0) {
+    let franchiseId: number | null = null;
+    if (memberId) {
+      const member = await this.memberRepository.findOne({ where: { memberId } });
+      if (!member) {
+        throw new NotFoundException('Member not found');
+      }
+      franchiseId = member.franchiseId ?? null;
+    } else {
+      const defaultFranchise = await this.franchiseService.getDefaultFranchise();
+      franchiseId = defaultFranchise ? Number(defaultFranchise.id) : null;
+    }
+    if (!franchiseId) {
       return [];
     }
     // Get all active gateways for franchise and currency
     const gateways = await this.franchisePaymentGatewayService.findActiveByFranchiseAndCurrency({
-      franchiseId: franchise[0].id as number,
+      franchiseId,
       currency: currencyCode,
     });
     // Transform to response format
@@ -1655,10 +1684,17 @@ export class MemberPlanService {
       // Online: the order currency decides the route (decision 2)
       { ...this.taxOptions(member.franchiseId, PaymentSourceEnum.PAYMENT_GATEWAY, null, null), programPlanId: programPlan.programPlanId },
     );
-    const serviceFranchise = await this.franchiseService.franchiseByBusinessType(BusinessTypeEnum.SERVICE);
-    if (!serviceFranchise?.length) {
-      throw new BadRequestException('Franchise not found for services');
+    // The gateway is the member's franchise's: the payment row, the invoice and the money all
+    // belong to that entity (a HCUAE client must never settle into EFMUM's account).
+    const franchiseId = member.franchiseId;
+    if (!franchiseId) {
+      throw new BadRequestException('Member does not have an associated franchise');
     }
+    const isInternational = this.checkoutGatewayService.isInternationalPayment(
+      billingAddress.countryId,
+      franchiseAddress?.countryId,
+      paymentObj.paymentRoute,
+    );
 
     const t = await this.sequelize.transaction();
     try {
@@ -1721,10 +1757,11 @@ export class MemberPlanService {
       // The gateway is charged the total as stored (DECIMAL-rounded), not the in-memory figure.
       await payment.reload({ transaction: t });
       const gateway = await this.checkoutGatewayService.createGatewayOrder({
-        franchiseId: serviceFranchise[0].id as number,
+        franchiseId,
         currency,
         amount: Number(payment.totalAmount),
         requestedGatewayId: obj.franchisePaymentGatewayId,
+        isInternational,
         receipt: `plan_${payment.memberPaymentId}`,
         description: `${programPlan.plan} plan for member ${memberId}`,
         customer: {

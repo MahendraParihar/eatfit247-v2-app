@@ -47,6 +47,7 @@ describe('MemberPlanService public checkout', () => {
     cancelLinkWith: jest.Mock;
     setAdminLockTimeout: jest.Mock;
     mapLockTimeout: jest.Mock;
+    isInternationalPayment: CheckoutGatewayService['isInternationalPayment'];
   };
   let detailsFindOne: jest.Mock;
   let createIfNotExists: jest.Mock;
@@ -128,6 +129,8 @@ describe('MemberPlanService public checkout', () => {
       cancelLinkWith: jest.fn().mockResolvedValue({ cancelled: true, status: 'cancelled' }),
       setAdminLockTimeout: jest.fn().mockResolvedValue(undefined),
       mapLockTimeout: jest.fn().mockImplementation((error: unknown) => error),
+      // Pure: the real rule, so the tests below pin what the flag is derived from
+      isInternationalPayment: CheckoutGatewayService.prototype.isInternationalPayment,
     };
     detailsFindOne = jest.fn().mockResolvedValue({ memberPaymentId: 900, memberId: 4945 });
     createIfNotExists = jest.fn().mockResolvedValue(undefined);
@@ -178,7 +181,13 @@ describe('MemberPlanService public checkout', () => {
         { provide: TaxEngineService, useValue: { calculate: taxCalculate } },
         { provide: CountryService, useValue: { fetchById: jest.fn().mockResolvedValue({ countryCode: 'IN' }) } },
         { provide: StateService, useValue: { fetchById: jest.fn().mockResolvedValue({ code: 'MH' }) } },
-        { provide: FranchiseService, useValue: { franchiseByBusinessType: jest.fn().mockResolvedValue([{ id: 1 }]) } },
+        {
+          provide: FranchiseService,
+          useValue: {
+            franchiseByBusinessType: jest.fn().mockResolvedValue([{ id: 1 }]),
+            getDefaultFranchise: jest.fn().mockResolvedValue({ id: 1, label: 'EFMUM' }),
+          },
+        },
         { provide: MemberDietPlanService, useValue: { createIfNotExists, updateLimitsForPayment: jest.fn() } },
         { provide: CheckoutGatewayService, useValue: checkout },
         { provide: AppConfigService, useValue: {} },
@@ -282,6 +291,65 @@ describe('MemberPlanService public checkout', () => {
 
     await expect(service.createPublicCheckoutOrder(4945, order, '127.0.0.1')).rejects.toThrow('This plan is not available');
     expect(paymentCreate).not.toHaveBeenCalled();
+  });
+
+  describe('gateway franchise and international flag (browser-run fixes F1, F2)', () => {
+    const memberAddresses = (countryId: number) => async (table: TableEnum) =>
+      table === TableEnum.MST_FRANCHISES
+        ? [{ addressId: 1, pkOfTable: 1, countryId: 1, stateId: 1 }]
+        : [
+            { addressId: 10, countryId, stateId: 1 },
+            { addressId: 11, countryId, stateId: 1 },
+          ];
+
+    it("the gateway order is created for the member's franchise, domestic for a billing address in its country", async () => {
+      await service.createPublicCheckoutOrder(4945, order, '127.0.0.1');
+
+      expect(checkout.createGatewayOrder).toHaveBeenCalledWith(
+        expect.objectContaining({ franchiseId: 1, isInternational: false }),
+      );
+    });
+
+    it('a billing address outside the franchise country makes the payment international', async () => {
+      (service as unknown as { addressService: AddressService }).addressService.filterByTableIdAndPk = jest
+        .fn()
+        .mockImplementation(memberAddresses(2));
+
+      await service.createPublicCheckoutOrder(4945, order, '127.0.0.1');
+
+      expect(checkout.createGatewayOrder).toHaveBeenCalledWith(
+        expect.objectContaining({ franchiseId: 1, isInternational: true }),
+      );
+    });
+
+    it('a member without a franchise cannot order online (nothing is created)', async () => {
+      const members = (service as unknown as { memberRepository: { findOne: jest.Mock } }).memberRepository;
+      members.findOne.mockResolvedValueOnce({ memberId: 4945, franchiseId: null });
+
+      // Refused by the tax step already (no franchise → no tax decision); the gateway guard is the backstop
+      await expect(service.createPublicCheckoutOrder(4945, order, '127.0.0.1')).rejects.toThrow(/no franchise/i);
+      expect(paymentCreate).not.toHaveBeenCalled();
+      expect(checkout.createGatewayOrder).not.toHaveBeenCalled();
+    });
+
+    it("the gateway listing is the member's franchise's once the member exists, the default franchise's before", async () => {
+      const findActiveByFranchiseAndCurrency = jest.fn().mockResolvedValue([]);
+      (service as unknown as { franchisePaymentGatewayService: FranchisePaymentGatewayService }).franchisePaymentGatewayService = {
+        findActiveByFranchiseAndCurrency,
+      } as unknown as FranchisePaymentGatewayService;
+      const members = (service as unknown as { memberRepository: { findOne: jest.Mock } }).memberRepository;
+      members.findOne.mockResolvedValueOnce({ memberId: 5888, franchiseId: 2 });
+      const franchises = (service as unknown as { franchiseService: { getDefaultFranchise: jest.Mock } }).franchiseService;
+
+      await service.getSupportedPaymentGatewaysForCheckout('AED', 5888);
+      expect(findActiveByFranchiseAndCurrency).toHaveBeenLastCalledWith({ franchiseId: 2, currency: 'AED' });
+
+      await service.getSupportedPaymentGatewaysForCheckout('USD');
+      expect(findActiveByFranchiseAndCurrency).toHaveBeenLastCalledWith({ franchiseId: 1, currency: 'USD' });
+
+      franchises.getDefaultFranchise.mockResolvedValueOnce(null);
+      await expect(service.getSupportedPaymentGatewaysForCheckout('USD')).resolves.toEqual([]);
+    });
   });
 
   it('verify with a forged signature leaves the record PENDING and not verified', async () => {

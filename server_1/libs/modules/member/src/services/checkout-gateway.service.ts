@@ -15,6 +15,7 @@ import {
   IPaymentLinkCustomer,
   IPublicCheckoutGatewayPayload,
   PaymentGatewayEnum,
+  PaymentRouteEnum,
 } from '@eatfit247-shared-lib';
 import {
   IGatewayConfirmationResult,
@@ -34,6 +35,8 @@ export interface ICreateCheckoutGatewayOrderInput {
   /** The stored record total, in major units. */
   amount: number;
   requestedGatewayId?: number;
+  /** The payer is outside the franchise's country (see {@link CheckoutGatewayService.isInternationalPayment}). */
+  isInternational?: boolean;
   receipt: string;
   description: string;
   customer: IPaymentLinkCustomer;
@@ -135,7 +138,13 @@ export class CheckoutGatewayService {
 
   /** Creates the gateway order for exactly `amount` and returns the checkout payload. */
   public async createGatewayOrder(input: ICreateCheckoutGatewayOrderInput): Promise<ICheckoutGatewayOrder> {
-    const resolved = await this.resolveGateway(input.franchiseId, input.currency, input.amount, input.requestedGatewayId);
+    const resolved = await this.resolveGateway(
+      input.franchiseId,
+      input.currency,
+      input.amount,
+      input.requestedGatewayId,
+      input.isInternational,
+    );
     const { keyId, keySecret } = await this.getCredentials(resolved.franchisePaymentGatewayId);
     const notes = {
       ...input.notes,
@@ -268,6 +277,7 @@ export class CheckoutGatewayService {
     currency: string;
     amount: number;
     requestedGatewayId?: number;
+    isInternational?: boolean;
     franchisePaymentGatewayId?: number | null;
     gatewayProvider?: string | null;
   }): Promise<IGatewayContext> {
@@ -278,7 +288,13 @@ export class CheckoutGatewayService {
         credentials: await this.getCredentials(input.franchisePaymentGatewayId),
       };
     }
-    const resolved = await this.resolveGateway(input.franchiseId, input.currency, input.amount, input.requestedGatewayId);
+    const resolved = await this.resolveGateway(
+      input.franchiseId,
+      input.currency,
+      input.amount,
+      input.requestedGatewayId,
+      input.isInternational,
+    );
     return {
       franchisePaymentGatewayId: resolved.franchisePaymentGatewayId,
       gatewayCode: resolved.gatewayCode,
@@ -331,6 +347,7 @@ export class CheckoutGatewayService {
       currency: input.currency,
       amount: input.amount,
       requestedGatewayId: input.requestedGatewayId,
+      isInternational: input.isInternational,
     });
     return this.createLinkWith(context, input);
   }
@@ -376,8 +393,25 @@ export class CheckoutGatewayService {
     currency: string,
     amount: number,
     requestedGatewayId?: number,
+    isInternational = false,
   ): Promise<void> {
-    await this.resolveGateway(franchiseId, currency, amount, requestedGatewayId);
+    await this.resolveGateway(franchiseId, currency, amount, requestedGatewayId, isInternational);
+  }
+
+  /**
+   * A payment is international when the payer's billing country is not the franchise's country
+   * (what `supports_domestic` / `supports_international` on a gateway row mean). Without both
+   * countries to compare, a non-DOMESTIC engine route (foreign money) counts as international.
+   */
+  public isInternationalPayment(
+    billingCountryId: number | null | undefined,
+    franchiseCountryId: number | null | undefined,
+    paymentRoute: PaymentRouteEnum | string | null | undefined,
+  ): boolean {
+    if (billingCountryId && franchiseCountryId) {
+      return Number(billingCountryId) !== Number(franchiseCountryId);
+    }
+    return !!paymentRoute && paymentRoute !== PaymentRouteEnum.DOMESTIC;
   }
 
   /** Razorpay payment links start with `plink_`; website checkout orders (`order_…`) have none. */
@@ -411,6 +445,7 @@ export class CheckoutGatewayService {
     currency: string,
     amount: number,
     requestedGatewayId?: number,
+    isInternational = false,
   ): Promise<{ franchisePaymentGatewayId: number; gatewayCode: string }> {
     if (!(amount > 0)) {
       throw new BadRequestException('Order total must be greater than zero');
@@ -420,7 +455,7 @@ export class CheckoutGatewayService {
       resolved = await this.paymentGatewayResolverService.resolve({
         franchiseId,
         currency,
-        isInternational: false,
+        isInternational,
         amount,
       });
     } catch (error) {

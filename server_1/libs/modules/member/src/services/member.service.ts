@@ -321,7 +321,7 @@ export class MemberService {
 
     if (!defaultFranchise) {
       throw new BadRequestException(
-        'No franchise found for the specified country and no default franchise is configured',
+        'No franchise serves this country and no default franchise is configured (set is_default on a franchise in the admin)',
       );
     }
 
@@ -332,12 +332,6 @@ export class MemberService {
     obj: IManageMember,
     cIp: string,
   ): Promise<{ memberId: number; isNew: boolean; checkoutToken: string }> {
-    // Determine franchise based on countryId if not provided
-    let franchiseId = obj.franchiseId;
-    if (!franchiseId && obj.countryId) {
-      franchiseId = await this.determineFranchiseByCountry(obj.countryId);
-    }
-
     // Check if member exists by email or phone
     const existingMember = await this.memberRepository.findOne({
       where: {
@@ -359,6 +353,11 @@ export class MemberService {
       };
     } else {
       // Create new member
+      // The franchise follows the country only for a new member; an existing member keeps theirs
+      let franchiseId = obj.franchiseId;
+      if (!franchiseId && obj.countryId) {
+        franchiseId = await this.determineFranchiseByCountry(obj.countryId);
+      }
       // Generate a temporary password if not provided
       let hashedPassword = '';
       if (obj.password) {

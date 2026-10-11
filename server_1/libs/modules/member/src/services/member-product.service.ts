@@ -272,65 +272,6 @@ export class MemberProductService {
   }
 
   /**
-   * Resolve payment gateway and get credentials
-   * @param franchiseId - Franchise ID
-   * @param currency - Currency code
-   * @param amount - Payment amount
-   * @param requestedGatewayId - Optional specific gateway ID to validate
-   * @returns Resolved gateway and credentials
-   */
-  private async resolveGatewayAndCredentials(
-    franchiseId: number,
-    currency: string,
-    amount: number,
-    requestedGatewayId?: number,
-  ): Promise<{
-    resolvedGateway: any;
-    keyId: string;
-    keySecret: string;
-    gatewayCode: string;
-  }> {
-    // Resolve gateway
-    let resolvedGateway;
-    try {
-      resolvedGateway = await this.paymentGatewayResolverService.resolve({
-        franchiseId,
-        currency,
-        isInternational: false,
-        amount,
-      });
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to resolve payment gateway',
-      );
-    }
-    // Validate requested gateway if provided
-    if (requestedGatewayId && resolvedGateway.franchisePaymentGatewayId !== requestedGatewayId) {
-      throw new BadRequestException(
-        'Selected payment gateway is not available for the given criteria',
-      );
-    }
-    const gatewayCode = resolvedGateway.gatewayCode;
-    // Get credentials
-    const credentialMode = this.appConfigService.getString(ConfigParam.PAYMENT_MODE);
-    const credentials = await this.paymentGatewayCredentialService.getActiveCredentials(
-      resolvedGateway.franchisePaymentGatewayId,
-      credentialMode,
-    );
-    if (!credentials) {
-      throw new BadRequestException(
-        `Payment gateway credentials not found for gateway ID: ${resolvedGateway.franchisePaymentGatewayId} in mode: ${credentialMode}`,
-      );
-    }
-    return {
-      resolvedGateway,
-      keyId: credentials.apiKeyEncrypted,
-      keySecret: credentials.apiSecretEncrypted,
-      gatewayCode,
-    };
-  }
-
-  /**
    * Prepare customer details from member or use provided details
    * @param member - Member record
    * @param providedCustomer - Optional customer details from payload
@@ -1190,6 +1131,11 @@ export class MemberProductService {
           currency: productOrder.currency,
           amount: Number(productOrder.totalAmount),
           requestedGatewayId: obj.franchisePaymentGatewayId,
+          isInternational: this.checkoutGatewayService.isInternationalPayment(
+            memberAddressSnapshot.billingAddress?.countryId,
+            addresses.franchiseAddress?.countryId,
+            route,
+          ),
           receipt: `product_${productOrder.memberProductId}`,
           description: `Payment for products: ${orderItemObjs.map((item) => item.productName).join(', ')}`,
           customer: this.prepareCustomerDetails(member),
@@ -1275,6 +1221,11 @@ export class MemberProductService {
       franchiseId: snapshot.franchiseId,
       currency: snapshot.currency,
       amount,
+      isInternational: this.checkoutGatewayService.isInternationalPayment(
+        snapshot.memberAddress?.billingAddress?.countryId,
+        (await this.addressService.filterByTableIdAndPk(TableEnum.MST_FRANCHISES, snapshot.franchiseId))?.[0]?.countryId,
+        snapshot.paymentRoute,
+      ),
     });
 
     const t = await this.sequelize.transaction();
@@ -1545,6 +1496,11 @@ export class MemberProductService {
         currency,
         amount: Number(productOrder.totalAmount),
         requestedGatewayId: obj.franchisePaymentGatewayId,
+        isInternational: this.checkoutGatewayService.isInternationalPayment(
+          memberAddressSnapshot.billingAddress?.countryId,
+          addresses.franchiseAddress?.countryId,
+          route,
+        ),
         receipt: `product_${productOrder.memberProductId}`,
         description: `Payment for products: ${orderItemObjs.map((item) => item.productName).join(', ')}`,
         customer: this.prepareCustomerDetails(member),

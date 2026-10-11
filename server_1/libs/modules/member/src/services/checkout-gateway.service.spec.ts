@@ -238,6 +238,40 @@ describe('CheckoutGatewayService', () => {
     });
   });
 
+  describe('domestic / international gateway rows (browser-run fix F2)', () => {
+    const input = {
+      franchiseId: 1,
+      currency: 'USD',
+      amount: 250,
+      receipt: 'plan_1',
+      description: 'd',
+      customer: {},
+      notes: {},
+    };
+
+    it('an international payer is matched against supports_international, a domestic one against supports_domestic', async () => {
+      await service.createGatewayOrder({ ...input, isInternational: true });
+      expect(resolve).toHaveBeenLastCalledWith(expect.objectContaining({ franchiseId: 1, currency: 'USD', isInternational: true }));
+
+      await service.createGatewayOrder(input);
+      expect(resolve).toHaveBeenLastCalledWith(expect.objectContaining({ isInternational: false }));
+
+      await service.createGatewayPaymentLink({ ...input, isInternational: true });
+      expect(resolve).toHaveBeenLastCalledWith(expect.objectContaining({ isInternational: true }));
+
+      await service.assertGatewayAvailable(1, 'USD', 250, undefined, true);
+      expect(resolve).toHaveBeenLastCalledWith(expect.objectContaining({ isInternational: true }));
+    });
+
+    it('the flag follows the billing country against the franchise country, else the engine route', () => {
+      expect(service.isInternationalPayment(1, 1, 'INTERNATIONAL_CARD_GATEWAY')).toBe(false); // rupee card, same country
+      expect(service.isInternationalPayment(2, 1, 'DOMESTIC')).toBe(true); // US client paying INR
+      expect(service.isInternationalPayment(2, null, 'DOMESTIC')).toBe(false);
+      expect(service.isInternationalPayment(2, null, 'INTERNATIONAL_CARD_GATEWAY')).toBe(true);
+      expect(service.isInternationalPayment(null, 1, null)).toBe(false);
+    });
+  });
+
   describe('payment links (admin)', () => {
     it('cancels with the stored gateway, or resolves it for records from before 4.5', async () => {
       await expect(

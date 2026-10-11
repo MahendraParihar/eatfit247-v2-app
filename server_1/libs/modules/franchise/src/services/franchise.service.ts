@@ -282,6 +282,16 @@ export class FranchiseService {
     return { taxApplicable };
   }
 
+  /** The franchise public signup assigns to countries without one (`is_default`); null when none is set. */
+  public async getDefaultFranchise(): Promise<IDropdownItem | null> {
+    const found = await this.franchiseRepository.scope('list').findOne({
+      where: { active: true, isDefault: true },
+      raw: true,
+      nest: true,
+    });
+    return found ? { id: found.franchiseId, label: found.companyName, isActive: found.active } : null;
+  }
+
   public async franchiseByBusinessType(businessType: BusinessTypeEnum): Promise<IDropdownItem[]> {
     const tempList = await this.franchiseRepository.scope('list').findAll({
       where: {

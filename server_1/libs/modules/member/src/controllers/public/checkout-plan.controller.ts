@@ -30,11 +30,22 @@ export class PublicCheckoutPlanController {
     return await this.memberPaymentService.calculatePublicTax(memberId, body);
   }
 
+  /** Before the member exists: the default franchise's gateways. */
   @Get('supported-gateways')
   async getSupportedGateways(
     @Query('currency') currency: string = 'INR',
   ): Promise<IPaymentGateway[]> {
     return await this.memberPaymentService.getSupportedPaymentGatewaysForCheckout(currency);
+  }
+
+  /** Once the member exists: the gateways of the member's own franchise (the one the order is created against). */
+  @UseGuards(CheckoutTokenGuard)
+  @Get('member/:memberId/supported-gateways')
+  async getSupportedGatewaysForMember(
+    @Param('memberId') memberId: number,
+    @Query('currency') currency: string = 'INR',
+  ): Promise<IPaymentGateway[]> {
+    return await this.memberPaymentService.getSupportedPaymentGatewaysForCheckout(currency, Number(memberId));
   }
 
   @Get('/:gatewayOrderId')
