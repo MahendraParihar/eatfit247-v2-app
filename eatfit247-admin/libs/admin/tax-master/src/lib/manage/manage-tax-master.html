@@ -43,6 +43,18 @@
             <shared-ui-input-error [control]="formGroup.get('transactionType')"></shared-ui-input-error>
           </mat-form-field>
 
+          @if (showPlanDropdown) {
+            <mat-form-field appearance="outline">
+              <mat-label>Applies to</mat-label>
+              <mat-select formControlName="referenceId">
+                @for (plan of planOptions; track plan.id) {
+                  <mat-option [value]="plan.id">{{ plan.label }}</mat-option>
+                }
+              </mat-select>
+              <mat-hint>A plan-specific rule wins over "All plans"</mat-hint>
+            </mat-form-field>
+          }
+
           @if (showProductDropdown) {
             <mat-form-field appearance="outline">
               <mat-label>Product</mat-label>
@@ -94,6 +106,19 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
+            <mat-label>HSN / SAC code</mat-label>
+            <input matInput formControlName="hsnSacCode" inputmode="numeric" placeholder="999319 or 2106" />
+            <mat-hint>4–8 digits; printed on the invoice line</mat-hint>
+            <shared-ui-input-error [control]="formGroup.get('hsnSacCode')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Legal basis</mat-label>
+            <textarea matInput formControlName="legalBasis" rows="2" placeholder="Notification / article / adviser note Accounts can quote"></textarea>
+            <shared-ui-input-error [control]="formGroup.get('legalBasis')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
             <mat-label>Effective From</mat-label>
             <input matInput [matDatepicker]="fromPicker" formControlName="effectiveFrom" />
             <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
@@ -124,6 +149,13 @@
               Tax Inclusive
             </mat-checkbox>
           </div>
+
+          @if (isEditMode && initialData && !initialData.active) {
+            <p class="staged-hint full-width">
+              <mat-icon inline>schedule</mat-icon>
+              This rule is inactive. Rules staged by migration 144 (e.g. Mahi GST 5% from 22 Sep 2025) are activated from the list once the CA confirms; once active, the newest effective date wins.
+            </p>
+          }
         </div>
       </div>
 

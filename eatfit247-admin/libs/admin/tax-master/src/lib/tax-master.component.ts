@@ -64,6 +64,14 @@ export class TaxMasterComponent implements OnInit {
         align: 'right',
         width: '120px',
       },
+      { key: 'hsnSacCode', label: 'HSN / SAC', dataKey: 'hsnSacCode', sortable: false, width: '110px' },
+      {
+        key: 'legalBasis',
+        label: 'Legal basis',
+        dataKey: 'legalBasis',
+        sortable: false,
+        formatter: (value) => (value ? `${String(value).slice(0, 60)}${String(value).length > 60 ? '…' : ''}` : '—'),
+      },
       {
         key: 'applyOn',
         label: 'Apply On',

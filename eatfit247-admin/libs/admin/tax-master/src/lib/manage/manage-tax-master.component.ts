@@ -18,6 +18,10 @@ import { Subject, takeUntil } from 'rxjs';
 import { TaxMasterApiService } from '../api.service';
 import { FranchiseApiService } from 'franchise';
 import { ProductsApiService } from 'products';
+import { ProgramPlanApiService } from 'program-plan';
+
+/** `reference_id` of a franchise's default SERVICE rule (every plan without its own rule) */
+const SERVICE_DEFAULT_REFERENCE = 1;
 
 @Component({
   selector: 'lib-manage-tax-master',
@@ -49,6 +53,7 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
   private readonly apiService = inject(TaxMasterApiService);
   private readonly franchiseApiService = inject(FranchiseApiService);
   private readonly productsApiService = inject(ProductsApiService);
+  private readonly programPlanApiService = inject(ProgramPlanApiService);
   private readonly snackBar = inject(MatSnackBar);
 
   formGroup!: FormGroup;
@@ -68,7 +73,11 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
   franchiseOptions: IDropdownItem[] = [];
   countryOptions: IDropdownItem[] = [];
   productOptions: IDropdownItem[] = [];
+  /** Service rules: "all plans" (reference 1) or one plan (its id); a plan-specific rule wins */
+  planOptions: IDropdownItem[] = [];
   showProductDropdown = false;
+  showPlanDropdown = false;
+  readonly serviceDefaultReference = SERVICE_DEFAULT_REFERENCE;
 
   async ngOnInit(): Promise<void> {
     this.buildForm();
@@ -95,6 +104,8 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
       applyOn: ['SALE', [Validators.required, Validators.maxLength(20)]],
       isTaxInclusive: [false],
       taxCategory: [TaxCategoryEnum.STANDARD, Validators.required],
+      hsnSacCode: ['', [Validators.pattern(/^\d{4,8}$/)]],
+      legalBasis: ['', [Validators.maxLength(1000)]],
       effectiveFrom: [null, Validators.required],
       effectiveTo: [null],
     });
@@ -104,16 +115,21 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
     // Listen to transaction type changes
     this.formGroup.get('transactionType')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((transactionType) => {
       if (transactionType === TransactionType.SERVICE) {
-        // Set referenceId to 1 for SERVICE
-        this.formGroup.patchValue({ referenceId: 1 }, { emitEvent: false });
+        // Services: the franchise default (reference 1) unless a plan is picked
+        if (!this.formGroup.get('referenceId')?.value) {
+          this.formGroup.patchValue({ referenceId: SERVICE_DEFAULT_REFERENCE }, { emitEvent: false });
+        }
         this.showProductDropdown = false;
+        this.showPlanDropdown = true;
         this.formGroup.get('referenceId')?.clearValidators();
       } else if (transactionType === TransactionType.PRODUCT) {
         // Show product dropdown for PRODUCT
         this.showProductDropdown = true;
+        this.showPlanDropdown = false;
         this.formGroup.get('referenceId')?.setValidators([Validators.required]);
       } else {
         this.showProductDropdown = false;
+        this.showPlanDropdown = false;
         this.formGroup.get('referenceId')?.clearValidators();
       }
       this.formGroup.get('referenceId')?.updateValueAndValidity({ emitEvent: false });
@@ -134,6 +150,15 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
           selected: false,
         }));
 
+      // Plans for service rules: "all plans" first, then each active plan
+      const planList = await this.programPlanApiService.getList({ limit: 1000, page: 0 });
+      this.planOptions = [
+        { id: SERVICE_DEFAULT_REFERENCE, label: 'All plans (franchise default)', selected: false },
+        ...planList.tableData
+          .filter((plan) => plan.active && plan.programPlanId !== SERVICE_DEFAULT_REFERENCE)
+          .map((plan) => ({ id: plan.programPlanId, label: plan.plan, selected: false })),
+      ];
+
       // Load products for dropdown
       const productList = await this.productsApiService.getList({ limit: 1000, page: 0 });
       this.productOptions = productList.tableData
@@ -153,6 +178,7 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
       this.initialData = await this.apiService.getById(id);
       const transactionType = this.initialData.transactionType;
       this.showProductDropdown = transactionType === TransactionType.PRODUCT;
+      this.showPlanDropdown = transactionType === TransactionType.SERVICE;
 
       this.formGroup.patchValue({
         franchiseId: this.initialData.franchiseId,
@@ -166,6 +192,8 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
         applyOn: this.initialData.applyOn,
         isTaxInclusive: this.initialData.isTaxInclusive,
         taxCategory: this.initialData.taxCategory || TaxCategoryEnum.STANDARD,
+        hsnSacCode: this.initialData.hsnSacCode || '',
+        legalBasis: this.initialData.legalBasis || '',
         effectiveFrom: this.initialData.effectiveFrom ? new Date(this.initialData.effectiveFrom) : null,
         effectiveTo: this.initialData.effectiveTo ? new Date(this.initialData.effectiveTo) : null,
       });
@@ -183,10 +211,12 @@ export class ManageTaxMasterComponent implements OnInit, OnDestroy {
     }
 
     const formValue = this.formGroup.value;
-    // Ensure referenceId is set to 1 for SERVICE transaction type
-    if (formValue.transactionType === TransactionType.SERVICE) {
-      formValue.referenceId = 1;
+    // Services without a plan use the franchise default rule (reference 1)
+    if (formValue.transactionType === TransactionType.SERVICE && !formValue.referenceId) {
+      formValue.referenceId = SERVICE_DEFAULT_REFERENCE;
     }
+    formValue.hsnSacCode = (formValue.hsnSacCode || '').trim() || null;
+    formValue.legalBasis = (formValue.legalBasis || '').trim() || null;
 
     // Only the form's fields: the API refuses server-owned ones (id, audit fields)
     const payload: Partial<ITaxMaster> = { ...formValue };

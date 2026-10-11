@@ -253,7 +253,13 @@
           <shared-ui-input-error [control]="formGroup.get('paymentGatewayConfigId')" controlName="Payment Gateway Config ID"></shared-ui-input-error>
         </mat-form-field>
 
-        <div class="row">
+        <!-- Deprecated (spec 2026-10-10-tax-mapping-matrix, G17): the tax engine reads the LUT register tab and
+             Tax Master rules, not these two fields. Kept in the form model so existing values are preserved. -->
+        <p class="deprecated-note">
+          <mat-icon inline>info</mat-icon>
+          LUTs are managed in the <strong>LUT Register</strong> tab and tax treatment in <strong>Tax Master</strong>. The old "LUT number" and "international tax mode" fields are no longer used.
+        </p>
+        <div class="row" style="display: none">
           <mat-form-field class="half-width">
             <mat-label>LUT Number</mat-label>
             <input
