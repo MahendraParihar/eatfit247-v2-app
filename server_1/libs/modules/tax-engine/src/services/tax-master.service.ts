@@ -46,8 +46,9 @@ export class TaxMasterService {
   }
 
   /**
-   * A rule must match its franchise's registration (decision 18): GST needs the franchise's GSTIN,
-   * VAT its TRN; a 0% VAT rule must be zero-rated or exempt (decision 7).
+   * A VAT rule needs its franchise's TRN (4.6 decision 18); a 0% VAT rule must be zero-rated or exempt
+   * (decision 7). A GST rule may exist without a GSTIN: it prices as unregistered until the GSTIN is
+   * added (matrix decision 13).
    */
   private async assertConsistentRule(obj: CreateTaxMasterDto, checkRegistration = true): Promise<void> {
     const category = obj.taxCategory || TaxCategoryEnum.STANDARD;
@@ -58,16 +59,13 @@ export class TaxMasterService {
     if (obj.taxSystem === TaxTypeEnum.VAT && rate > 0 && category !== TaxCategoryEnum.STANDARD) {
       throw new BadRequestException(`A ${rate}% VAT rule is standard-rated; zero-rated, exempt and out-of-scope rules are 0%.`);
     }
-    if (!checkRegistration || (obj.taxSystem !== TaxTypeEnum.GST && obj.taxSystem !== TaxTypeEnum.VAT)) {
+    if (!checkRegistration || obj.taxSystem !== TaxTypeEnum.VAT) {
       return;
     }
     const franchise = await this.franchiseRepository.findByPk(obj.franchiseId, {
-      attributes: ['franchiseId', 'gstNumber', 'vatNumber'],
+      attributes: ['franchiseId', 'vatNumber'],
     });
-    if (obj.taxSystem === TaxTypeEnum.GST && !franchise?.gstNumber?.trim()) {
-      throw new BadRequestException('Add the franchise GSTIN before creating a GST rule (or use tax system NONE if it is not registered).');
-    }
-    if (obj.taxSystem === TaxTypeEnum.VAT && !franchise?.vatNumber?.trim()) {
+    if (!franchise?.vatNumber?.trim()) {
       throw new BadRequestException('Add the franchise TRN before creating a VAT rule (or use tax system NONE if it is not registered).');
     }
   }
@@ -190,7 +188,7 @@ export class TaxMasterService {
     if (!find) {
       throw new NotFoundException('Tax master not found');
     }
-    // A staged (inactive) rule may be edited before the franchise is registered; registration is checked on activation
+    // A staged (inactive) VAT rule may be edited before the TRN exists; the TRN is checked on activation
     await this.assertConsistentRule(
       {
         ...obj,
@@ -229,7 +227,7 @@ export class TaxMasterService {
       throw new NotFoundException('Tax master not found');
     }
     if (active && !find.active) {
-      // Activating a staged rule (e.g. MEMUM GST 5%) needs the franchise registration behind it
+      // Activating a staged VAT rule needs the franchise TRN behind it
       await this.assertConsistentRule(find.get({ plain: true }) as unknown as CreateTaxMasterDto);
     }
     const updateObj = {

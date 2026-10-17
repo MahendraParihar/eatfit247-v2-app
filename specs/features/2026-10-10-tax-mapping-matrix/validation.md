@@ -30,6 +30,7 @@ Row numbers refer to the mapping table in `requirements.md`.
 | A20 | Admin tax-master list shows HSN/SAC and legal basis; program-plan form has the electronic-service toggle; deprecated fields hidden | browser | ✅ 2026-10-11 browser — `/tax-master` lists HSN/SAC 999319 / 3004 and the legal-basis text (staged GST_5 row inactive); `/program-plans/edit/263` shows the "Electronic service" checkbox and the fee rows (USD 250 added there for the checkout test); payment preview shows place of supply + decision reason. Gaps: the list has no Franchise column; the plan form accepts a fee of 0 |
 | A21 | Website shows one consistent tax statement on product, checkout, seasonal plans and FAQ; State field carries the place-of-supply hint | browser (Safari + mobile width) | ✅ Chrome desktop 2026-10-11 — checkout sidebar/total line agree with the server decision for every case (`GST 18%` / `IGST 18%` / `Export – 0% (LUT)` / `VAT 0% (zero-rated)` / `IGST 12% (export)` on the product); State field shows the place-of-supply hint. ⏳ Safari + mobile width not run |
 | A22 | Matrix spec covers every row 1–14 and variant; member jest green | jest | ✅ `tax-engine.matrix.spec.ts` 26 cases; member jest 265 + 26 green |
+| A23 | Decision 13: a MEMUM order with no franchise GSTIN → NO_TAX at the full inclusive price; inter-state / export → 400; a GSTIN added → GST at the rule rate; a VAT rule without a TRN stays a 400; Tax Master saves a GST rule without a GSTIN | jest | ✅ 2026-10-17 `tax-engine.spec.ts` (decision 13 block) + `tax-master.service.spec.ts`; member jest 311/311. ⏳ live run after the local DB has migrations 13x–144 again |
 
 ## Automated Checks
 
@@ -60,7 +61,7 @@ Tracked in `requirements.md § Open Questions`. Rows 3/4 (Mahi 5% activation), 8
 - Diet consultation: 18%, SAC 999319. Row 1/2 is final.
 - Debloat powder: HSN 3004 @ 5%. The 93 MEMUM invoices issued at 12% stay as issued (G19 closed).
 - HCUAE 0% Z on UAE clients: Art 41 basis confirmed. Row 8 is final.
-- Mahi: has not applied for GST, yet the owner wants 5% on future debloat invoices. **Rows 3/4 are blocked** on the owner's choice (requirements decision 5a). Release impact: on production data, migration 144 leaves MEMUM's live GST_12 row active, so debloat keeps being charged 12% until that choice is applied.
+- Mahi: has not applied for GST. Only Mahi sells debloat. The rule stays at 12% and the owner edits it in Tax Master. Until a GSTIN is on the franchise, Mahi invoices go out without GST (decision 13, plan group 12). Release: clear MEMUM's GSTIN, which is EFMUM's, on the franchise form.
 - Razorpay INR international card + e-FIRA as export proceeds: the owner is unsure. It stays open with the CA, and behaviour is unchanged.
 - Still open: electronic-service flag (row 14) and the zero-rating evidence policy (G7).
 
@@ -121,4 +122,4 @@ Code for F1–F9 is pushed on `feature/tax-engine-correctness` (`562bba7f`); not
 - RBAC: a Dubai-scoped admin cannot see or edit EFMUM's tax rules (manual check above, still unticked).
 - Exchange-rate admin screen walked only via API.
 
-**Adviser answers outstanding** (see "Open items for the CA / UAE adviser"; partly answered 2026-10-17): Mahi's GST status vs 5% invoicing (owner choice), the e-FIRA question, the electronic-service flag, the zero-rating evidence policy.
+**Adviser answers outstanding** (see "Open items for the CA / UAE adviser"; partly answered 2026-10-17): the e-FIRA question, the electronic-service flag, the zero-rating evidence policy.

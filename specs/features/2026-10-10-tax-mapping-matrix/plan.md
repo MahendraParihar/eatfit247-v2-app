@@ -119,6 +119,15 @@ Findings from the 2026-10-11 browser run (`validation.md` → Findings). One gro
 
 > **As built (2026-10-11):** `invoice.hbs`: `.total-row td` white on #333 (the `td:first-child` background rule was overriding the row), `.summary-section` is a column so the FX note sits under the totals, city/state line built with explicit separators, "Amount in words" under the totals via the registered helper (`{{amountInWords invoice.pricing.totalAmount invoice.currencyCode}}` — the bare `{{amountInWords}}` resolved to the helper with no arguments and printed "Rupees Zero"), "Remittance reference (FIRC / e-FIRA)" in the payment block. Mapper: plan invoices carry `transactionId` and both carry `remittanceReference` (`IInvoicePayment.remittanceReference`); address parts are trimmed (HCUAE's city was a single space, hence ", Dubai"). Credit note footer says "credit note". Member jest 306/306; shared-library built; both APIs build. Live (Nest context, admin-api module): regenerated 000007 (USD: "Dollars Two Hundred Fifty Only", FX line below the box), 000008 (FIRC-TEST-2026-0001 printed), HCUAE 000006 ("Dubai (AE-DU)", "Dirhams Four Thousand Two Hundred Fifty Two Only") and CN/000004 (credit-note footer); PDFs read back page by page.
 
+## Group 12: Unregistered GST franchise invoices without GST (decision 13; `server_1`)
+
+- [x] 12.1 Tax engine: a GST rule with no franchise GSTIN prices as unregistered. Rate 0 (an inclusive price is charged in full), the domestic branch goes through the NONE path (s.24(i) guard), and the cross-border branch refuses an export. Reason: "No GSTIN on the franchise: invoiced without GST". A VAT rule without a TRN stays a 400.
+- [x] 12.2 Tax Master: create, edit and activate accept a GST rule for a franchise without a GSTIN; a VAT rule still needs the TRN.
+- [x] 12.3 Tests: engine (same-State MEMUM order without a GSTIN → NO_TAX at the full inclusive price; inter-state → 400; export → 400; GSTIN added → GST at the rule rate; VAT without a TRN → 400) and tax-master (GST rule without a GSTIN saved; VAT without a TRN refused). Member jest green.
+- [ ] 12.4 Release runbook: clear MEMUM's GSTIN (it carries EFMUM's `27CSEPS5397E1Z8`) on the admin franchise form; keep MEMUM's GST_12 rule as is. 144's staged GST_5 row stays inactive.
+
+> **As built (2026-10-17):** `TaxEngineService` sets `unregistered` when the rule is GST and the franchise has no GSTIN. The rate becomes 0, so an inclusive price is not split. The domestic branch switches on NONE (the s.24(i) guard runs) and records the reason "No GSTIN on the franchise: invoiced without GST". The cross-border GST branch is skipped, so the existing "not GST-registered … cannot invoice an export" refusal fires. `assertRegistration` now checks VAT/TRN only. `TaxMasterService.assertConsistentRule` checks the TRN for VAT rules only. Tests: 4 new engine cases and 1 tax-master case; the old "GST without a GSTIN → 400" assertions were removed. Member jest 311/311, admin-api and public-api `tsc` clean. Not run live: the local DB is a pre-4.5 copy without migrations 13x–144.
+
 ## Group 6: Close-out
 
 - [ ] 6.1 All checks in `validation.md` pass

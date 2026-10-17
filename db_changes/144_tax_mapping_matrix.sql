@@ -32,11 +32,13 @@
 --                             NONE 0% (active)  — unregistered, CGST s.24(i)
 --                             GST 5% STANDARD (INACTIVE, staged) — Notif 9/2025-CT(R)
 --                             Sch. I (HSN 3004, confirmed 2026-10-17), from 2025-09-22.
---                           **The CA activates the GST_5 rows** (and deactivates
---                           NONE_0 / the old GST_12) once Mahi is registered. No
---                           deployment needed. The staged row is added even when an
---                           older GST rule exists (production has GST 12%); once
---                           active it wins because its effective_from is newer.
+--                           Optional: the owner may activate a GST_5 row from Tax
+--                           Master instead of the existing rule. No deployment needed.
+--                           The staged row is added even when an older GST rule exists
+--                           (production keeps GST 12%, owner decision 2026-10-17); once
+--                           active it wins because its effective_from is newer. While
+--                           MEMUM has no GSTIN, any GST rule prices as no tax
+--                           (matrix decision 13).
 --
 --        Existing EFMUM / HCUAE service rows (production) are skipped by the seeds but
 --        get the confirmed legal_basis when that new column is still NULL.
@@ -177,7 +179,7 @@ INSERT INTO public.mst_tax_master (franchise_id, reference_id, country_code, tra
 SELECT f.franchise_id, p.product_id, 'IN', 'PRODUCT', 'GST', 'GST_5',
        'GST 5%', 5.00, 'SALE', FALSE, 'STANDARD',
        NULLIF(left(regexp_replace(p.hsn_code, '\D', '', 'g'), 8), ''),
-       'STAGED — activate only when the debloat supplier holds a GSTIN (matrix decision 5a). Notif 9/2025-CT(R) Schedule I, effective 22 Sep 2025: HSN 3004 Ayurvedic medicaments 5% (heading confirmed 2026-10-17).',
+       'STAGED, optional — the owner may activate it in place of the current GST rule (matrix decisions 5a, 13). Notif 9/2025-CT(R) Schedule I, effective 22 Sep 2025: HSN 3004 Ayurvedic medicaments 5% (heading confirmed 2026-10-17).',
        DATE '2025-09-22', NULL, FALSE,
        1, 1, now(), now(), ':0', ':0'
 FROM public.mst_franchises f

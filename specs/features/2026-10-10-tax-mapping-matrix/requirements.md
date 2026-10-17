@@ -52,8 +52,9 @@ F = franchise, C = customer, SVC = service, GDS = goods. Engine result = `taxMod
 |---|---|-----------|------|-------------------|---------------|--------------------------|
 | 1 | IN (EFMUM) | IN, same State | SVC | CGST 9% + SGST 9% | DOMESTIC_GST / – / 18 / DOMESTIC | C State name + code, SAC 999319, GSTIN |
 | 2 | IN | IN, other State | SVC | IGST 18% | DOMESTIC_GST / – / 18 / DOMESTIC | same |
-| 3 | IN (MEMUM, once registered; decision 5a) | IN, same State (delivery) | GDS | CGST 2.5% + SGST 2.5% | DOMESTIC_GST / – / 5 / DOMESTIC | delivery State, HSN per line |
-| 4 | IN (MEMUM) | IN, other State | GDS | IGST 5% | DOMESTIC_GST / – / 5 / DOMESTIC | same |
+| 3 | IN (MEMUM, once registered; decisions 5a, 13) | IN, same State (delivery) | GDS | CGST + SGST at the configured rate (12% today) | DOMESTIC_GST / – / rule rate / DOMESTIC | delivery State, HSN per line |
+| 4 | IN (MEMUM, once registered) | IN, other State | GDS | IGST at the configured rate | DOMESTIC_GST / – / rule rate / DOMESTIC | same |
+| 4u | IN (MEMUM, no GSTIN) | IN, same State / other State / abroad | GDS | No GST / refused (s.24(i)) / refused | NO_TAX / – / 0 / DOMESTIC, or 400 | plain "INVOICE", no tax ID (decision 13) |
 | 5 | IN | outside IN, FX / Vostro / NRE-FCNR | SVC | Export of service, 0% under LUT | EXPORT_OF_SERVICE / – / 0 / EXPORT | LUT ARN + endorsement, C country, FX amount + INR at FBIL rate |
 | 5b | IN | outside IN, FX, LUT expired | SVC | Export, IGST 18% paid | EXPORT_OF_SERVICE / – / 18 / EXPORT | "on payment of IGST" endorsement |
 | 6 | IN | outside IN, INR on Indian rails | SVC | Not an export → IGST 18% | DOMESTIC_GST / – / 18 / DOMESTIC | C country; reason stored |
@@ -126,7 +127,7 @@ Already correct in 4.6: rows 1, 2, 5, 5b, 6 service logic; row 7 delivery-countr
 | 3 | **Indian clients under a non-Indian franchise stay refused** (no OIDAR registration for HCUAE). | Owner decision; 4.6 decision 6. |
 | 4 | **Seeds never overwrite admin-edited rows.** `INSERT … WHERE NOT EXISTS` per franchise + reference + country + type (any existing row, active or not, suppresses the seed; the staged MEMUM 5% row is suppressed only by an existing 5% GST row); re-running 144 is a no-op. | Rules are owner data; a migration must not reset a CA-driven change. |
 | 5 | **MEMUM is seeded as `NONE` (active) plus a staged, inactive GST 5% row per product** (HSN from the product, effective 2025-09-22). | Mahi is unregistered today (4.6 decision 18). The CA's answer becomes "activate the staged row", not a deployment. |
-| 5a | **Debloat powder is HSN 3004 @ 5%** (confirmed 2026-10-17). The owner wants future debloat invoices at 5%. The 93 MEMUM invoices issued at 12% (25 Feb – 15 Jun 2026) stay as issued: no credit notes, no data change (closes G19). **Blocked:** Mahi has not applied for GST. An unregistered person may not collect tax (CGST s.32), and MEMUM's local and production data carry EFMUM's GSTIN. The staged GST_5 row is not activated, and the live GST_12 row is not changed, until the owner chooses: register Mahi, sell debloat under EFMUM, or invoice without GST. | Owner answers 2026-10-17. The rate and HSN are settled. Who may charge the tax is not. |
+| 5a | **Debloat powder is HSN 3004; only Mahi Enterprise (MEMUM) sells it** (EFMUM never sells goods). The rule keeps its configured rate (**12% today**); the franchise owner changes the rate from the admin Tax Master screen, with no deployment. The 93 MEMUM invoices issued at 12% (25 Feb – 15 Jun 2026) stay as issued: no credit notes, no data change (closes G19). Mahi has not applied for GST, so **MEMUM invoices go out without GST until a GSTIN is on the franchise** (decision 13). | Owner answers 2026-10-17. |
 | 6 | **HCUAE AE service rule stays 0% ZERO_RATED** with `legal_basis` = "UAE VAT ER Art 41 healthcare zero-rating; basis confirmed by the UAE adviser 2026-10-17". | Keeps 4.6 decision 7 and makes the basis auditable (G6). The adviser confirmed the basis on 2026-10-17. On production the existing row skips the seed, so 144 fills its new `legal_basis` column (the same for EFMUM's 18% row) only while it is NULL. |
 | 7 | **Place of supply is stored at decision time** (`place_of_supply_country_code`, `place_of_supply_state_code`) and the invoice prints the stored value; the address-derived value is only a fallback for pre-144 rows. | Circular 242 and principle 10. |
 | 8 | **Unregistered Indian franchise + delivery State ≠ supplier State (or unknown) → 400**, with config `ALLOW_UNREGISTERED_INTERSTATE_GOODS` (default false) as the CA override; `mst_configs` is read at boot, so the override needs an API restart. Goods only: Notif 10/2017-IT exempts under-threshold inter-state *service* suppliers from s.24(i). | CGST s.24(i). Sales must not continue illegally by default, but the CA may accept the risk explicitly. |
@@ -134,6 +135,7 @@ Already correct in 4.6: rows 1, 2, 5, 5b, 6 service logic; row 7 delivery-countr
 | 10 | **`is_electronic_service` is a stored flag only.** No engine branch reads it yet. | AE-6 needs an adviser decision; capturing the classification now avoids a second data pass. |
 | 11 | **Rounding:** per line to 2 dp; CGST = round(tax/2), SGST = tax − CGST. | Audit M3; totals must equal the sum of the printed lines. |
 | 12 | **Functional currency comes from `mst_countries.currency_code`**, not an `'AE'→'AED'` literal. | G12; a third franchise country must be configuration. |
+| 13 | **A GST rule on a franchise without a GSTIN prices as unregistered** (supersedes 4.6 decision 18 for GST). The checkout gets no tax line and a plain "INVOICE". A tax-inclusive price is charged in full: no tax is backed out of it. The reason stored is "No GSTIN on the franchise: invoiced without GST". The unregistered guards still apply: an inter-state goods sale is refused unless `ALLOW_UNREGISTERED_INTERSTATE_GOODS` is set (decision 8), and an export is refused. Tax Master may save, edit and activate a GST rule for a franchise without a GSTIN. When the GSTIN is added on the franchise form, the configured rate applies from the next order. **VAT is unchanged:** a VAT rule without a TRN is still a 400 at save and at checkout. | Owner 2026-10-17: "Mahi invoices without GST until a GST number is present"; the rate stays editable from the frontend. MEMUM's data currently carries EFMUM's GSTIN, so it must be cleared on the franchise form (release runbook). HCUAE is VAT-registered, so a missing TRN is a data error, not unregistered status. |
 
 ## Technical Constraints
 
@@ -161,10 +163,10 @@ Already correct in 4.6: rows 1, 2, 5, 5b, 6 service logic; row 7 delivery-countr
 ## Open Questions
 
 - [x] **[CA]** SAC and rate for diet consultation: **18%, SAC 999319** (answered 2026-10-17; decision 2).
-- [x] **[CA]** HSN for the debloat powder: **3004 @ 5%** (answered 2026-10-17; decision 5a). `mst_product.hsn_code` already holds 3004.
-- [ ] **[Owner, blocking rows 3/4]** Mahi has **not applied for GST** (2026-10-17), but the owner wants debloat invoiced at 5%. Choose one: register Mahi, sell debloat under EFMUM's GSTIN, or invoice it without GST (decision 5a). Until then the staged GST_5 row stays inactive and inter-state sales stay refused (decision 8).
+- [x] **[CA]** HSN for the debloat powder: **3004** (answered 2026-10-17; decision 5a). `mst_product.hsn_code` already holds 3004. The rate stays at the configured 12%; the owner changes it in Tax Master.
+- [x] **[Owner]** Mahi's GST status: **not applied**. Mahi invoices without GST until a GSTIN is entered, and only Mahi sells debloat (2026-10-17; decisions 5a, 13).
 - [ ] **[CA]** Do Razorpay INR-denominated international-card payments with an e-FIRA count as export proceeds? The owner is unsure (2026-10-17). Behaviour is unchanged: online INR orders are taxed IGST 18%. The offline "International card (e-FIRA)" mode prices as an export.
-- [x] **[CA]** Goods invoices issued 22 Sep 2025 → now at 12%/18%: **leave as issued**, no credit notes. New invoices at 5% (answered 2026-10-17; decision 5a, G19 closed).
+- [x] **[CA]** Goods invoices issued 22 Sep 2025 → now at 12%/18%: **leave as issued**, no credit notes (answered 2026-10-17; decision 5a, G19 closed).
 - [x] **[UAE adviser]** Basis for HCUAE's 0% Z on UAE clients: **Art 41 basis confirmed** (2026-10-17; decision 6). It stays 0% ZERO_RATED.
 - [ ] **[UAE adviser]** Is EatFit247's online coaching an *electronic service* under ER Art 23 when sold to UAE residents by EFMUM? (Row 14, decision 10.)
 - [ ] **[UAE adviser]** Zero-rating evidence policy for HCUAE's foreign clients (G7).

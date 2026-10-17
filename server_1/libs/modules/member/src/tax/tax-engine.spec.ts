@@ -185,6 +185,36 @@ describe('TaxEngineService decision matrix', () => {
       );
     });
 
+    describe('matrix decision 13: GST rule, no GSTIN on the franchise', () => {
+      beforeEach(() => {
+        franchises[MEMUM].gstNumber = null;
+      });
+
+      it('same-State delivery → no tax, the inclusive price charged in full', async () => {
+        const r = await engine.calculate(goods({ deliveryCountryCode: 'IN', deliveryStateCode: 'MH' }));
+        expect(r).toMatchObject({ taxType: TaxTypeEnum.NONE, taxMode: TaxMode.NO_TAX, taxAmount: 0, taxObj: {} });
+        expect(r.totalAmount).toBeCloseTo(1120, 2);
+        expect(r.taxDecisionReason).toBe('No GSTIN on the franchise: invoiced without GST');
+      });
+
+      it('inter-state delivery → refused (CGST s.24(i))', async () => {
+        await expect(engine.calculate(goods({ deliveryCountryCode: 'IN', deliveryStateCode: 'KA' }))).rejects.toThrow('s.24(i)');
+      });
+
+      it('delivery abroad → refused (no LUT without registration)', async () => {
+        await expect(engine.calculate(goods({ customerCountryCode: 'US', deliveryCountryCode: 'US' }))).rejects.toThrow(
+          'not GST-registered',
+        );
+      });
+
+      it('GSTIN added → GST at the configured rule rate again', async () => {
+        franchises[MEMUM].gstNumber = '27AAAAA0000A1Z5';
+        const r = await engine.calculate(goods({ deliveryCountryCode: 'IN', deliveryStateCode: 'MH' }));
+        expect(r.taxMode).toBe(TaxMode.DOMESTIC_GST);
+        expect(r.taxAmount).toBeCloseTo(120, 2);
+      });
+    });
+
     it('A8 delivered in India → GST by the delivery state', async () => {
       const r = await engine.calculate(goods({ deliveryCountryCode: 'IN', deliveryStateCode: 'KA' }));
       expect(r.taxMode).toBe(TaxMode.DOMESTIC_GST);
@@ -254,9 +284,7 @@ describe('TaxEngineService decision matrix', () => {
       expect(r.taxMode).toBe(TaxMode.DOMESTIC_GST);
     });
 
-    it('A22 a GST rule on a franchise without a GSTIN, or a VAT rule without a TRN → 400', async () => {
-      franchises[EFMUM].gstNumber = null;
-      await expect(engine.calculate(service({}))).rejects.toThrow('no GSTIN');
+    it('A22 a VAT rule on a franchise without a TRN → 400', async () => {
       franchises[HCUAE].vatNumber = '';
       await expect(
         engine.calculate(service({ franchiseId: HCUAE, supplierCountryCode: 'AE', customerCountryCode: 'AE' })),

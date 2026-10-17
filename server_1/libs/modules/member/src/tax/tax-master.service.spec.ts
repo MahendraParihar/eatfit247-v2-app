@@ -46,13 +46,20 @@ describe('TaxMasterService rule consistency', () => {
     await expect(service.create(rule({ taxPercent: 5 }), 'ip', 1)).rejects.toThrow('standard-rated');
   });
 
-  it('refuses a VAT rule without a TRN and a GST rule without a GSTIN', async () => {
+  it('refuses a VAT rule without a TRN', async () => {
     franchise = { gstNumber: null, vatNumber: '' };
     await expect(service.create(rule({}), 'ip', 1)).rejects.toThrow('TRN');
-    await expect(
-      service.create(rule({ taxSystem: TaxTypeEnum.GST, taxPercent: 18, taxCategory: TaxCategoryEnum.STANDARD }), 'ip', 1),
-    ).rejects.toThrow('GSTIN');
     expect(create).not.toHaveBeenCalled();
+  });
+
+  it('matrix decision 13: accepts a GST rule for a franchise without a GSTIN (priced as unregistered until added)', async () => {
+    franchise = { gstNumber: null, vatNumber: null };
+    await service.create(
+      rule({ franchiseId: 3, countryCode: 'IN', transactionType: TransactionType.PRODUCT, taxSystem: TaxTypeEnum.GST, taxPercent: 12, taxCategory: TaxCategoryEnum.STANDARD }),
+      'ip',
+      1,
+    );
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({ taxSystem: TaxTypeEnum.GST, taxPercent: 12 }));
   });
 
   it('accepts a NONE rule for an unregistered franchise', async () => {

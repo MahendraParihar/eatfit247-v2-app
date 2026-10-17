@@ -30,6 +30,8 @@ interface ITaxContext {
   rule: MstTaxMaster;
   /** Amount tax is charged on (after discount, tax backed out of inclusive prices) */
   taxable: number;
+  /** GST rule on a franchise without a GSTIN: priced as unregistered (requirements decision 13) */
+  unregistered: boolean;
   supplier: string;
   customer: string;
   supplyDate: string;
@@ -95,15 +97,17 @@ export class TaxEngineService {
       );
     }
     this.assertRegistration(franchise, rule);
+    // Decision 13: no GSTIN → no GST until one is added; an inclusive price is then charged in full
+    const unregistered = rule.taxSystem === TaxTypeEnum.GST && !franchise?.gstNumber?.trim();
 
-    const rate = Number(rule.taxPercent || 0);
+    const rate = unregistered ? 0 : Number(rule.taxPercent || 0);
     const taxable = rule.isTaxInclusive
       ? Math.max(input.baseAmount / (1 + rate / 100) - input.discountAmount, 0)
       : input.baseAmount - input.discountAmount;
     const countries = await this.countryService.findAll({ page: 0, limit: 1000 });
     const countryName = (code: string): string =>
       countries.tableData.find((c) => this.normalize(c.countryCode) === code)?.country || code;
-    const context: ITaxContext = { input, rule, taxable, supplier, customer, supplyDate, countryName };
+    const context: ITaxContext = { input, rule, taxable, unregistered, supplier, customer, supplyDate, countryName };
 
     if (input.transactionType === TransactionType.PRODUCT && !this.normalize(input.deliveryCountryCode)) {
       // Goods are taxed where they are delivered (decision 3); the billing country isn't a substitute
@@ -141,7 +145,7 @@ export class TaxEngineService {
   private async domestic(context: ITaxContext): Promise<TaxResult> {
     const { rule, taxable, input } = context;
     const rate = Number(rule.taxPercent || 0);
-    switch (rule.taxSystem) {
+    switch (context.unregistered ? TaxTypeEnum.NONE : rule.taxSystem) {
       case TaxTypeEnum.GST: {
         const isGoods = input.transactionType === TransactionType.PRODUCT;
         // Goods: the delivery State only (IGST s.10); services: the billing State (s.12(2)(b))
@@ -193,7 +197,10 @@ export class TaxEngineService {
             'Inter-state goods supply needs GST registration (CGST s.24(i)). Ask the CA, or deliver within the franchise state.',
           );
         }
-        return this.noTax(taxable, 'The franchise is not registered for tax');
+        return this.noTax(
+          taxable,
+          context.unregistered ? 'No GSTIN on the franchise: invoiced without GST' : 'The franchise is not registered for tax',
+        );
       }
     }
   }
@@ -210,7 +217,7 @@ export class TaxEngineService {
   /** Place of supply outside the supplier's country. */
   private async crossBorder(context: ITaxContext, destination: string): Promise<TaxResult> {
     const { rule, taxable, input, supplier } = context;
-    if (supplier === INDIA_COUNTRY_CODE && rule.taxSystem === TaxTypeEnum.GST) {
+    if (supplier === INDIA_COUNTRY_CODE && rule.taxSystem === TaxTypeEnum.GST && !context.unregistered) {
       if (input.transactionType === TransactionType.PRODUCT) {
         return this.indianExport(context, TaxMode.EXPORT_OF_GOODS, `Goods delivered to ${context.countryName(destination)}`);
       }
@@ -327,19 +334,14 @@ export class TaxEngineService {
     };
   }
 
-  /** A GST rule needs the franchise's GSTIN; a VAT rule its TRN (decision 18). */
+  /**
+   * A VAT rule needs the franchise's TRN (4.6 decision 18). A GST rule without a GSTIN is not an
+   * error: it prices as unregistered (requirements decision 13).
+   */
   private assertRegistration(
     franchise: Pick<MstFranchise, 'gstNumber' | 'vatNumber'> | null,
     rule: MstTaxMaster,
   ): void {
-    if (rule.taxSystem !== TaxTypeEnum.GST && rule.taxSystem !== TaxTypeEnum.VAT) {
-      return;
-    }
-    if (rule.taxSystem === TaxTypeEnum.GST && !franchise?.gstNumber?.trim()) {
-      throw new BadRequestException(
-        'This franchise has a GST tax rule but no GSTIN. Add the GSTIN, or set its rule to "no tax" if it is not registered.',
-      );
-    }
     if (rule.taxSystem === TaxTypeEnum.VAT && !franchise?.vatNumber?.trim()) {
       throw new BadRequestException(
         'This franchise has a VAT tax rule but no TRN. Add the TRN, or set its rule to "no tax" if it is not registered.',
