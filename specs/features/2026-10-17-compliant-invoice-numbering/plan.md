@@ -176,5 +176,19 @@
 ## Group 6: Close-out
 
 - [ ] 6.1 All checks in `validation.md` pass.
-- [ ] 6.2 Status → Implemented, release pending. Roadmap: 4.7 entry notes the format change and the 138 retirement; 4.11 notes the turnover warning.
-- [ ] 6.3 Replanning notes: the mission.md principle 2 exception wording, and the roadmap 4.9 credit notes reuse type `C`.
+  - 2026-10-17: every scorecard row, automated check and manual check passes (A6 is service-level only: HCUAE has no TRN locally; A10 is to be re-run on production at release). Still open: the Review checklist (diff review against decisions 1–15, the deep subagent review, and the owner's sign-off).
+- [x] 6.2 Status → Implemented, release pending. Roadmap: 4.7 entry notes the format change and the 138 retirement; 4.11 notes the turnover warning.
+- [x] 6.3 Replanning notes: the mission.md principle 2 exception wording, and the roadmap 4.9 credit notes reuse type `C`.
+
+> **As built (group 6, 2026-10-17):** requirements status is "Implemented, release pending". Roadmap notes were added to 4.7 (format change, 138 retired), 4.11 (turnover warning) and 4.13 (Table 13 built early), and the "Later" 16-character item is struck through. mission.md is **not** edited here: constitution changes go on a `replan/` branch (CLAUDE.md), so the wording below is the input for that branch.
+
+## Replanning notes (for a `replan/invoice-numbering` branch)
+
+1. **mission.md principle 2, exception wording.** Today it reads "*Exception:* Q1 FY 2026-27 numbers stay as filed, with foreign clients in the domestic series." Proposed:
+   > *Exception:* FY 2026-27 numbers issued before the 4.5–4.7 go-live stay as issued: the long format (`EFMUM/2026-27/S/000491`), foreign clients in the domestic series, and legacy rows dated by payment date, so some of them are out of date order (EFMUM 461–464; August and September interleaved). From go-live, a number's date is its issue date and its format is the franchise's template (≤16 characters in India).
+
+   Principle 2 under "Compliance by construction" (line 74) can drop "(in progress: roadmap 4.5–4.13)" once this ships.
+2. **Roadmap 4.9 credit and debit notes.** Reuse type letter `C` and the existing `credit` counter with the franchise template (`EFM/2627/C/00001`); this is already live in `generateCreditNoteNumber`. Debit notes need a new type letter (suggest `D`), added to `InvoiceTypeLetter`, the type-letter list and validation, and Table 13 ("Debit Note"). Receipt and refund vouchers are not tax invoices, but they still need their own series; give them their own letters only if Accounts wants them in Table 13.
+3. **RBAC backlog** (group 5b): scoped admins still see every franchise in `franchise/list` / `dropdown`, and `franchise_admin` holds Franchise `create`.
+4. **Accounts decisions** (validation.md Review): how the pre-go-live gaps of FY 2026-27 are reported in Table 13 (quarter: 461–462 / 463–464; months: August and September interleaved).
+5. **Mahi go-live configuration** (runbook step 2): clear MEMUM's GSTIN locally and in production if it stays unregistered. The turnover warning applies only without a GSTIN, and the local DB still holds `27CSEPS5397E1Z8` on all three franchises.

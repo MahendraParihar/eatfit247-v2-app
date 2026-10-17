@@ -44,6 +44,7 @@ Build in this order: each item depends on the ones above it. Audit finding IDs a
 - 🚧 **4.7 Invoice series and proforma.** Was 4.1. Built 2026-10-10, ships together with 4.6 (release pending). Spec: [specs/features/2026-10-10-invoice-number-non-gst](../features/2026-10-10-invoice-number-non-gst/).
   - Separate export series; the invoice number is issued when the payment becomes PAID and is never removed.
   - Edits that would move an invoice between series are blocked.
+  - 2026-10-17, [compliant invoice numbering](../features/2026-10-17-compliant-invoice-numbering/): the number format is per-franchise configuration, max 16 characters for Indian franchises (Rule 46), e.g. `EFM/2627/S/00492`. The counter continues, and EXPORT is now type letter `E` (`X` for products, `C` for credit notes). Migration **138 (Q2 renumbering) is retired**: issued invoices are never changed. Run 145 in its place.
   - Proforma PDF for unpaid entries.
   - Invoice date and financial year taken from the franchise's local date.
   - Renumber invoices from July 2026 (FY 2026-27 Q2) onward.
@@ -55,8 +56,10 @@ Build in this order: each item depends on the ones above it. Audit finding IDs a
   - Invoice shows place of supply, LUT number and export wording, reverse-charge line, amount in words and per-line tax.
   - [H1, H9, L3, M6]
 - 🚧 **4.11 Rate and classification master.** Data half built on `feature/tax-mapping-matrix` ([spec](../features/2026-10-10-tax-mapping-matrix/requirements.md)): seeded tax rules per franchise × country × type with HSN/SAC and legal basis, GST 2.0 (22 Sep 2025) 5% goods rows staged for the CA, per-plan rule reference, stored place-of-supply State (Circular 242/36/2024), s.24(i) guard for unregistered inter-state goods, electronic-service flag, and a table-driven test of the full franchise × customer × goods/services mapping. **Still open, blocked on the CA / UAE adviser:** the consulting SAC/rate decision, Mahi's registration, HCUAE's zero-rating basis, and the recheck of invoices issued since 22 Sep 2025. [H5, M3]
+  - 2026-10-17, [compliant invoice numbering](../features/2026-10-17-compliant-invoice-numbering/): registration-threshold warning for a franchise without a GSTIN (Mahi: ₹40 lakh). FY turnover on the franchise list, details and dashboard (amber at 80%, red at 100%), plus a daily email to super admins once per level. Checkout is never blocked. The figure covers platform sales only, so it is a lower bound.
 - 📋 **4.12 Explicit seller entity.** Name the selling franchise for products and for the checkout gateway, instead of taking the first match alphabetically. [H2]
 - 📋 **4.13 Filing reports.** GSTR-1 workbook (B2B, B2CL, B2CS and EXP split; HSN summary; documents issued) and a UAE VAT-201 extract. [H4]
+  - Documents issued (GSTR-1 Table 13) was built early by [compliant invoice numbering](../features/2026-10-17-compliant-invoice-numbering/) (decision 13): admin Reports, one row per series, gap check, CSV. The rest of the workbook stays here.
 
 ## Phase 5: Engineering Foundation 📋
 
@@ -115,5 +118,5 @@ These need a mission-level decision before they become a phase: SMS; cloud objec
 Finance follow-ups from the [accounting audit](../backlog/2026-10-10-accounting-audit.md), to be scheduled after Phase 4:
 - an inventory/stock ledger for Mahi [M7]
 - version master data (prices, HSN) instead of hard-deleting it [M8]
-- a 16-character invoice number format from FY 2027-28 (GST Rule 46) [C6]
+- ~~a 16-character invoice number format from FY 2027-28 (GST Rule 46) [C6]~~ Done from go-live of 4.5–4.7 by [compliant invoice numbering](../features/2026-10-17-compliant-invoice-numbering/) (2026-10-17)
 - e-invoicing readiness: India IRN if annual turnover passes ₹5 crore; UAE service-provider (ASP) appointment by 31 Mar 2027 if HCUAE makes B2B sales [M6]

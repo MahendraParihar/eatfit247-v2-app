@@ -46,7 +46,7 @@
 
 - [ ] Diff reviewed against requirements decisions 1–15
 - [ ] Deep review by subagents (numbering gaps and races, franchise leakage, conventions). Findings fixed or logged
-- [ ] Specs and code in sync; 4.7 and the runbook updated (plan group 0)
+- [x] Specs and code in sync; 4.7 and the runbook updated (plan group 0). Every deviation was written into plan.md / requirements.md before the code (2.1 `{PREFIX}` required, 3.4 prefix uniqueness, 4.1 payment-date fallback and email template, 4b.1 nature by source table, 5.1 counters endpoint, 5b scope)
 - [ ] I can explain the change
 
 - **2026-10-17 Table 13 live run (Accounts / CA to decide):** EFMUM `EFMUM/2026-27/S/000463` (payment 5246, paid 30 Sep) and `…000464` (payment 5247, paid 25 Aug) were entered and numbered on 8 Oct, after `…000461` / `…000462` (7 Oct). By payment date, Q2 runs `000203…000464` missing 461–462 and October runs `000461…000491` missing 463–464. Nothing is changed (decision 1); Accounts decide which return lists 463–464 and, if the Q2 return is already filed, whether it needs an amendment.

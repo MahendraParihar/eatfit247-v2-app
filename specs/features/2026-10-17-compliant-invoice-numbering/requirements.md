@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Approved 2026-10-17; in progress (plan groups 0–1 done) |
+| Status | **Implemented 2026-10-17, release pending** (ships with 4.5 / 4.6 / 4.7 / 4.11 on `feature/tax-engine-correctness`; runbook in [the 4.6 validation](../2026-10-10-tax-engine-correctness/validation.md#release-runbook-45--47--46-ship-together)). Open before merge: the Review checklist in [validation.md](./validation.md) |
 | Branch | `feature/tax-engine-correctness` (owner decision 2026-10-17: stays on the branch that holds the unreleased 4.5 / 4.6 / 4.7 / 4.11 work and ships with it) |
 | Roadmap | Phase 4: amends **4.7** (invoice series) and adds the turnover warning to **4.11** |
 | References | [Tax & invoice series matrix, §7 external validation](https://claude.ai/artifact/Mg89mVds7Dyjx1hvwd8N8v) (V1, V2, V3, V4, V9); [4.7 requirements](../2026-10-10-invoice-number-non-gst/requirements.md) decisions 3, 13–17; [tax mapping matrix](../2026-10-10-tax-mapping-matrix/requirements.md) decisions 5a, 13; CGST Rule 46(b), Rule 53(1A)(c); e-invoice schema v1.03 `DocDtls.No`; CGST s.22, s.24 |
