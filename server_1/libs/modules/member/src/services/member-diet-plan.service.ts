@@ -380,9 +380,8 @@ export class MemberDietPlanService {
     // Convert to IMemberDietPlan format
     const planList: IMemberDietPlan[] = rows.map((s: any) => this.convertDBObject(s));
     // Fetch diet plan details and related data in parallel
-    const [categoryList, recipeList, dpDetails, dietTemplateList] = await Promise.all([
+    const [categoryList, dpDetails, dietTemplateList] = await Promise.all([
       this.recipeCategoryService.getRecipeCategoryList(),
-      this.getRecipeDropdownList(),
       this.memberDietPlanDetailRepository.findAll({
         attributes: [
           'memberDietDetailId',
@@ -407,6 +406,11 @@ export class MemberDietPlanService {
       }),
       this.getDietTemplateDropdownList(),
     ]);
+    // Resolve labels for exactly the recipes these plans reference; the top-N
+    // dropdown misses most recipes saved on older plans.
+    const recipeList = await this.recipeService.findDropdownByIds(
+      this.collectRecipeIds(dpDetails.map((s: any) => s.dietPlan)),
+    );
     // Convert diet plan details
     const dietPlanDetailList: IMemberDietDetail[] = dpDetails.map((s: any) => ({
       memberDietDetailId: s.memberDietDetailId,
@@ -631,6 +635,27 @@ export class MemberDietPlanService {
     return dietCategory;
   }
 
+  /** Unique numeric recipe IDs referenced by the given stored `diet_plan` JSON arrays. */
+  private collectRecipeIds(dietPlans: unknown[]): number[] {
+    const ids = new Set<number>();
+    for (const dietPlan of dietPlans) {
+      if (!Array.isArray(dietPlan)) {
+        continue;
+      }
+      for (const item of dietPlan) {
+        if (item && Array.isArray(item.recipeIds)) {
+          for (const rid of item.recipeIds) {
+            const numericId = Number(rid);
+            if (!Number.isNaN(numericId)) {
+              ids.add(numericId);
+            }
+          }
+        }
+      }
+    }
+    return [...ids];
+  }
+
   private async getRecipeDropdownList(): Promise<IDropdownItem[]> {
     const result = await this.recipeService.findAll({ page: 0, limit: 200 });
     return result.tableData.map((recipe: any) => ({
@@ -733,21 +758,11 @@ export class MemberDietPlanService {
       throw new NotFoundException('Diet plan not found');
     }
     // Backfill recipe labels for any saved IDs that fall outside the top-N dropdown
-    if (dietDetail && Array.isArray(dietDetail.dietPlan)) {
+    if (dietDetail) {
       const knownIds = new Set(recipeList.map((r) => Number(r.id)));
-      const missingIds = new Set<number>();
-      for (const item of dietDetail.dietPlan) {
-        if (item && Array.isArray(item.recipeIds)) {
-          for (const rid of item.recipeIds) {
-            const numericId = Number(rid);
-            if (!Number.isNaN(numericId) && !knownIds.has(numericId)) {
-              missingIds.add(numericId);
-            }
-          }
-        }
-      }
-      if (missingIds.size > 0) {
-        const extras = await this.recipeService.findDropdownByIds([...missingIds]);
+      const missingIds = this.collectRecipeIds([dietDetail.dietPlan]).filter((id) => !knownIds.has(id));
+      if (missingIds.length > 0) {
+        const extras = await this.recipeService.findDropdownByIds(missingIds);
         recipeList.push(...extras);
       }
     }

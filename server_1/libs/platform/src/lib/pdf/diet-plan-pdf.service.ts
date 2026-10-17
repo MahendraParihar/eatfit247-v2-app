@@ -246,6 +246,15 @@ export class DietPlanPdfService {
         return a === b;
       });
     }
+    // Logical OR helper (array args count as truthy only when non-empty, like #if)
+    if (!hbs.helpers['or']) {
+      hbs.registerHelper('or', (...args: unknown[]) => {
+        // Last argument is the Handlebars options object
+        return args
+          .slice(0, -1)
+          .some((value) => (Array.isArray(value) ? value.length > 0 : !!value));
+      });
+    }
     // Length helper
     if (!hbs.helpers['length']) {
       hbs.registerHelper('length', (arr: any[]) => {
