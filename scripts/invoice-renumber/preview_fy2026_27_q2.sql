@@ -1,4 +1,10 @@
 -- =============================================================================
+-- RETIRED 2026-10-17: migration 138 is retired by
+-- specs/features/2026-10-17-compliant-invoice-numbering decision 1 (issued
+-- invoices are never changed), so this preview no longer feeds a sign-off. It
+-- is read-only and harmless, and kept for reference only. Its classification
+-- block matches 138 as of commit db0918bd.
+-- =============================================================================
 -- preview_fy2026_27_q2.sql — READ-ONLY preview of db_changes/138
 -- Invoice series (roadmap 4.7). Changes nothing.
 -- =============================================================================
