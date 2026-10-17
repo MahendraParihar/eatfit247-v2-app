@@ -1,0 +1,75 @@
+.invoice-numbering {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  h3 {
+    margin: 8px 0 0;
+  }
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.prefix-field {
+  flex: 0 0 200px;
+}
+
+.format-field {
+  flex: 1;
+}
+
+.threshold-field {
+  max-width: 360px;
+}
+
+.helper,
+.legacy-note,
+.preview-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.format-errors {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--status-error);
+  font-size: 0.8125rem;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.preview-table {
+  max-width: 560px;
+
+  .number {
+    font-family: monospace;
+  }
+
+  .too-long {
+    color: var(--status-error);
+    font-weight: 600;
+  }
+}
+
+@media (max-width: 720px) {
+  .row {
+    flex-direction: column;
+  }
+
+  .prefix-field {
+    flex: 1 1 auto;
+  }
+}

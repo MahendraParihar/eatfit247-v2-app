@@ -3,6 +3,7 @@ import { PaymentReportComponent } from './payment-report/payment-report.componen
 import { ContactFormReportComponent } from './contact-us-report/contact-form-report.component';
 import { MemberProductReportComponent } from './member-product-report/member-product-report.component';
 import { MemberIssuesReportComponent } from './member-issues-report/member-issues-report.component';
+import { DocumentsIssuedReportComponent } from './documents-issued-report/documents-issued-report.component';
 
 export const reportsRoutes: Route[] = [
   {
@@ -24,6 +25,11 @@ export const reportsRoutes: Route[] = [
     path: 'member-issues',
     component: MemberIssuesReportComponent,
     title: 'Member Issues Report',
+  },
+  {
+    path: 'documents-issued',
+    component: DocumentsIssuedReportComponent,
+    title: 'Documents Issued (GSTR-1 Table 13)',
   },
   {
     path: '',

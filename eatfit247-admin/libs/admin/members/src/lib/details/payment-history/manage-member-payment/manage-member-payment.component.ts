@@ -25,6 +25,7 @@ import {
   IMemberPayment,
   IMemberPaymentMasterData,
   InputLengthEnum,
+  PaymentRouteEnum,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TaxMode
@@ -743,6 +744,20 @@ export class ManageMemberPaymentComponent implements OnInit {
     return code ? code !== 'IN' : !!name && name !== 'india';
   }
 
+  /**
+   * Decision 10 (compliant invoice numbering): a client billed outside India with a domestic payment mode
+   * selected; the hint points to the remittance modes so a payment from abroad is priced as an export.
+   */
+  get showRemittanceHint(): boolean {
+    const modeId = this.formGroup.get('paymentModeId')?.value;
+    if (!modeId || !this.isForeignManualPayment()) {
+      return false;
+    }
+    const mode = this.paymentModeOptions.find((option) => option.id === modeId);
+    const route = (mode?.metadata as { paymentRoute?: string } | undefined)?.paymentRoute;
+    return route === PaymentRouteEnum.DOMESTIC;
+  }
+
   /** Stored with the decision (Circular 242/36/2024): country and, for a domestic supply, the State code */
   get placeOfSupplyLabel(): string | null {
     const result = this.taxCalculationResult();
@@ -771,7 +786,7 @@ export class ManageMemberPaymentComponent implements OnInit {
       warnings.push('No valid LUT for this date: the export is charged IGST. Add the LUT in the franchise LUT register.');
     }
     if (result.taxMode === TaxMode.DOMESTIC_GST && this.isForeignManualPayment()) {
-      warnings.push('INR received over Indian payment methods from a client outside India is not an export, so IGST applies. If the money came from abroad, pick the matching payment mode (SWIFT, international card, NRE/FCNR, Vostro, PayPal).');
+      warnings.push('INR received over Indian payment methods from a client outside India is not an export, so IGST applies. If the money came from abroad, pick the matching payment mode (SWIFT, exchange house / RDA, Remitly / Wise, international card, NRE/FCNR, Vostro, PayPal).');
     }
     return warnings;
   }

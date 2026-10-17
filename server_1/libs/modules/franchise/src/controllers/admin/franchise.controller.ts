@@ -16,6 +16,7 @@ import {
   IAuthUser,
   IDropdownItem,
   IFranchise,
+  IFranchiseInvoiceCounters,
   IFranchiseTurnover,
   ITableList,
 } from '@eatfit247-shared-lib';
@@ -44,11 +45,16 @@ export class FranchiseController {
   @Get(':id/turnover')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Franchise)
   async turnover(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: IAuthUser): Promise<IFranchiseTurnover> {
-    // Empty franchiseIds = unscoped (Super Admin), as in CaslAbilityFactory
-    if (currentUser.franchiseIds?.length && !currentUser.franchiseIds.includes(id)) {
-      throw new ForbiddenException('You do not have access to this franchise.');
-    }
+    this.assertFranchiseScope(id, currentUser);
     return await this.turnoverService.forFranchiseId(id);
+  }
+
+  /** Current FY invoice counters, for the number-format preview on the franchise form */
+  @Get(':id/invoice-counters')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Franchise)
+  async invoiceCounters(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: IAuthUser): Promise<IFranchiseInvoiceCounters> {
+    this.assertFranchiseScope(id, currentUser);
+    return await this.service.invoiceCounters(id);
   }
 
   @Post('manage')
@@ -94,5 +100,11 @@ export class FranchiseController {
   async getMasterData(): Promise<{ taxApplicable: boolean }> {
     return await this.service.getMasterData();
   }
-}
 
+  /** Empty franchiseIds = unscoped (Super Admin), as in CaslAbilityFactory */
+  private assertFranchiseScope(id: number, currentUser: IAuthUser): void {
+    if (currentUser.franchiseIds?.length && !currentUser.franchiseIds.includes(id)) {
+      throw new ForbiddenException('You do not have access to this franchise.');
+    }
+  }
+}

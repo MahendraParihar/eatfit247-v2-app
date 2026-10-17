@@ -15,6 +15,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { FranchiseApiService } from '../api.service';
 import { FINANCIAL_YEAR_OPTIONS } from '../financial-year.util';
+import { InvoiceNumberingComponent } from './invoice-numbering/invoice-numbering.component';
 import {
   BusinessTypeEnum,
   CommonUtil,
@@ -42,7 +43,8 @@ import {
     MatSnackBarModule,
     InputErrorComponent,
     UploadFormComponent,
-    AddressFormComponent
+    AddressFormComponent,
+    InvoiceNumberingComponent
   ],
   templateUrl: './manage-franchise.html',
   styleUrl: './manage-franchise.scss'
@@ -111,7 +113,11 @@ export class ManageFranchise implements OnInit, OnDestroy {
     isPrimary: [false, [Validators.required]],
     isDefault: [false, [Validators.required]],
     businessType: [[]],
-    active: [true, [Validators.required]]
+    active: [true, [Validators.required]],
+    // Invoice numbering (compliant invoice numbering); validated by InvoiceNumberingComponent
+    invoicePrefix: [''],
+    invoiceNumberFormat: [''],
+    registrationThresholdAmount: [null, [Validators.min(0)]]
   });
   initialData!: IFranchise;
   isEditMode = false;
@@ -172,7 +178,10 @@ export class ManageFranchise implements OnInit, OnDestroy {
         isPrimary: (this.initialData as any).isPrimary !== undefined ? (this.initialData as any).isPrimary : false,
         isDefault: (this.initialData as any).isDefault !== undefined ? (this.initialData as any).isDefault : false,
         businessType: (this.initialData as any).businessType || [],
-        active: this.initialData.active !== undefined ? this.initialData.active : true
+        active: this.initialData.active !== undefined ? this.initialData.active : true,
+        invoicePrefix: this.initialData.invoicePrefix || '',
+        invoiceNumberFormat: this.initialData.invoiceNumberFormat || '',
+        registrationThresholdAmount: this.initialData.registrationThresholdAmount ?? null
       });
       
       // Address will be bound by AddressFormComponent when address input is set
@@ -248,6 +257,10 @@ export class ManageFranchise implements OnInit, OnDestroy {
       // Format dates to avoid timezone conversion issues
       formValue.startDate = CommonUtil.formatDateForAPI(formValue.startDate) || undefined;
       formValue.endDate = CommonUtil.formatDateForAPI(formValue.endDate) || undefined;
+      formValue.invoicePrefix = String(formValue.invoicePrefix || '').trim().toUpperCase() || null;
+      formValue.invoiceNumberFormat = String(formValue.invoiceNumberFormat || '').trim() || null;
+      const threshold = formValue.registrationThresholdAmount;
+      formValue.registrationThresholdAmount = threshold === null || threshold === undefined || threshold === '' ? null : Number(threshold);
       
       // Handle logo from upload form
       const logoControl = this.formGroup.get('logo');

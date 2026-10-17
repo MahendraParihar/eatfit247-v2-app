@@ -7,6 +7,7 @@ import {
   IBasicSearch,
   IDropdownItem,
   IFranchise,
+  IFranchiseInvoiceCounters,
   IManageAddress,
   IManageFranchise,
   InvoiceNumberFormatUtil,
@@ -14,7 +15,14 @@ import {
   TableEnum,
 } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, MstFranchise, SearchUtil, TableListSortUtil } from '@server_1/core';
-import { AddressService, CountryService, INDIA_COUNTRY_CODE, InvoiceSeriesUtil } from '@server_1/platform';
+import {
+  AddressService,
+  CountryService,
+  FranchiseDateUtil,
+  INDIA_COUNTRY_CODE,
+  InvoiceSequenceModel,
+  InvoiceSeriesUtil,
+} from '@server_1/platform';
 
 /** The franchise columns that hold the invoice number format and the turnover threshold. */
 interface IFranchiseNumberingFields {
@@ -296,6 +304,30 @@ export class FranchiseService {
     } catch {
       return null;
     }
+  }
+
+  /** The franchise's counters for its current FY (number-format preview, compliant invoice numbering 5.1). */
+  public async invoiceCounters(id: number): Promise<IFranchiseInvoiceCounters> {
+    const franchise = await this.franchiseRepository.findOne({
+      attributes: ['franchiseId', 'financialYear', 'timeZone'],
+      where: { franchiseId: id },
+      raw: true,
+    });
+    if (!franchise) {
+      throw new NotFoundException('Franchise not found');
+    }
+    const invoiceDate = FranchiseDateUtil.localDate(new Date(), franchise.timeZone || FranchiseDateUtil.DEFAULT_TIME_ZONE);
+    const financialYear = FranchiseDateUtil.financialYear(invoiceDate, Number(franchise.financialYear));
+    const rows = await InvoiceSequenceModel.findAll({
+      attributes: ['invoiceType', 'series', 'currentNumber'],
+      where: { franchiseId: id, financialYear },
+      raw: true,
+    });
+    return {
+      financialYear,
+      invoiceDate,
+      counters: rows.map((row) => ({ invoiceType: row.invoiceType, series: row.series, currentNumber: Number(row.currentNumber) })),
+    };
   }
 
   public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {

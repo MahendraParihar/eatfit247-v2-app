@@ -141,20 +141,30 @@
 
 ## Group 5: Admin CMS (`eatfit247-admin`)
 
-- [ ] 5.1 Franchise form, "Invoice numbering" section:
+- [x] 5.1 Franchise form, "Invoice numbering" section:
   - prefix, template, a live preview of the next service / export / product / credit-note numbers with their lengths;
+  - (added 2026-10-17) server support for the preview: `GET franchise/:id/invoice-counters` (Franchise read, franchise-scoped) returns the current FY's counters (`IFranchiseInvoiceCounters`), so the preview shows the real next number; country dropdown items carry `metadata.countryCode`, so the form applies the 16-character limit for India exactly as the server does;
   - validation errors from the shared util;
   - helper text: "Indian GST invoices: at most 16 characters (Rule 46). Changing this does not change issued invoices; the counter continues."
-- [ ] 5.2 Franchise form: registration threshold field (₹), shown when there is no GSTIN.
-- [ ] 5.3 Franchise list, details and dashboard: a turnover card or badge (amber / red) with "Platform sales only; include any other sales under the same PAN".
-- [ ] 5.4 Add-payment and edit-payment form: the remittance hint (decision 10) when the billing country is not India and the selected mode's route is DOMESTIC.
-- [ ] 5.5 Reports → "Documents issued (GSTR-1 Table 13)":
+- [x] 5.2 Franchise form: registration threshold field (₹), shown when there is no GSTIN.
+- [x] 5.3 Franchise list, details and dashboard: a turnover card or badge (amber / red) with "Platform sales only; include any other sales under the same PAN".
+- [x] 5.4 Add-payment and edit-payment form: the remittance hint (decision 10) when the billing country is not India and the selected mode's route is DOMESTIC.
+- [x] 5.5 Reports → "Documents issued (GSTR-1 Table 13)":
   - franchise and period pickers (month / quarter);
   - Material table with columns matching the portal (Nature of document, Sr. No. From, Sr. No. To, Total number, Cancelled, Net issued);
   - a gap warning chip per row;
   - CSV download;
   - a "not a tax invoice" banner for a franchise without a GSTIN.
-- [ ] 5.6 Development build green; browser check of the four screens.
+- [x] 5.6 Development build green; browser check of the four screens.
+
+> **As built (group 5, 2026-10-17):**
+> - Server support: `GET franchise/:id/invoice-counters` (`IFranchiseInvoiceCounters`, scoped like the turnover endpoint; both share `assertFranchiseScope`); country dropdown items carry `metadata.countryCode`; payment-mode dropdown items carry `metadata.paymentRoute`.
+> - Franchise form: `manage/invoice-numbering/` section (prefix upper-cased as typed, template, errors from `InvoiceNumberFormatUtil.validate` with the 16-character limit when the address country is IN, a validator on the format control so the form can't submit, a preview table of the next S/E/P/X/C numbers from the real counters, helper text) and the registration threshold field while there is no GSTIN. The preview rows are cached (a getter bound to `dataSource` would trip dev-mode change detection) and the counters load when the parent's async `franchiseId` arrives.
+> - `turnover-badge/` (chip from 80% in the list next to the company name; card on the details summary) loads its own turnover only for a tracked franchise in the user's scope; `GstThresholdAlertsComponent` on the annual dashboard (super / franchise admins) and as widget `gst-threshold-alerts` (Franchise read) for the widget grid.
+> - Payment form: `showRemittanceHint` under Payment Mode; the IGST warning now lists exchange house / RDA and Remitly / Wise.
+> - Reports → "Documents Issued (GSTR-1)": franchise, FY, Month / Quarter toggle (default: last month / current quarter), portal columns, gap chip with the missing numbers in a tooltip, CSV download, "not a tax invoice; not reported" banner. Context comes from `reports/payment/context` (Report read).
+> - Checks: admin `tsc` and development build green; ESLint on the changed files 0 errors (warnings are older `any`s); server suites member 321, franchise 30, reports 17, platform 24; both API builds green.
+> - Browser (Chrome, local admin-api + admin, 2026-10-17): EFMUM form previews `EFM/2627/S/00492`, `…/E/00001`, `…/P/00001`, `…/X/00001`, `…/C/00001` at 16 characters; typing `efmum` gives `EFMUM` and "The longest number, EFMUM/2627/S/99999, has 18 characters…" (not saved). With MEMUM temporarily set to no GSTIN and a ₹90,000 threshold (restored afterwards): amber "GST threshold 89%" chip in the list, amber card on the details page and on the dashboard (₹79,900 of ₹90,000, 88.78%), threshold field on its form, `MEM/2627/P/00065` preview, report banner. Payment dialog for a US-billed member (6392, not saved): "Cash" shows the remittance hint, "Remittance via exchange house (RDA)" removes it. Report: EFMUM Q3 `000461…000491`, 2 missing; September `000377…000463`, 35 missing (see validation Review). No console errors.
 
 ## Group 6: Close-out
 

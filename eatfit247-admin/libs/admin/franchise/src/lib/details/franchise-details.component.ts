@@ -11,6 +11,7 @@ import { LoaderComponent } from '@shared';
 import { IFranchise } from '@eatfit247-shared-lib';
 import { FranchiseApiService } from '../api.service';
 import { financialYearLabel } from '../financial-year.util';
+import { TurnoverBadgeComponent } from '../turnover-badge/turnover-badge.component';
 import { Subject, takeUntil } from 'rxjs';
 
 interface MenuItem {
@@ -32,6 +33,7 @@ interface MenuItem {
     MatChipsModule,
     MatSnackBarModule,
     LoaderComponent,
+    TurnoverBadgeComponent,
   ],
   templateUrl: './franchise-details.html',
   styleUrl: './franchise-details.scss',

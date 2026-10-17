@@ -38,6 +38,20 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
       ),
   },
 
+  // ---- GST registration threshold (franchises without a GSTIN) ----
+  {
+    id: 'gst-threshold-alerts',
+    title: 'GST registration threshold',
+    requiredSubjects: [AdminSubjectEnum.Franchise],
+    matchMode: 'all',
+    size: 'full',
+    order: 9,
+    load: () =>
+      import('./components/gst-threshold-alerts/gst-threshold-alerts.component').then(
+        (m) => m.GstThresholdAlertsComponent,
+      ),
+  },
+
   // ---- Nutritionist KPIs ----
   {
     id: 'kpi-nutritionist',

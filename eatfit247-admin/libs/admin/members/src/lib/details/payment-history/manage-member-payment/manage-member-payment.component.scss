@@ -298,3 +298,7 @@ mat-stepper { background: transparent; }
   background: var(--mat-sys-tertiary-container);
   color: var(--mat-sys-on-tertiary-container);
 }
+
+.remittance-hint {
+  color: var(--status-warning);
+}

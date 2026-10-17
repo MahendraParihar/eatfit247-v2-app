@@ -356,6 +356,13 @@
           ></shared-ui-address-form>
         </div>
 
+        <div class="full-width">
+          <lib-invoice-numbering
+            [formGroup]="formGroup"
+            [franchiseId]="isEditMode && initialData ? initialData.franchiseId : null"
+          ></lib-invoice-numbering>
+        </div>
+
       </div>
 
       <div class="form-actions">

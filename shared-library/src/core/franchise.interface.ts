@@ -61,3 +61,21 @@ export interface IFranchiseTurnover {
   percent: number | null;
   level: TurnoverAlertLevel;
 }
+
+/** One invoice counter of a franchise for a financial year (`mst_invoice_sequences`). */
+export interface IFranchiseInvoiceCounter {
+  /** `service`, `product` or `credit` */
+  invoiceType: string;
+  /** `DOMESTIC` or `EXPORT` */
+  series: string;
+  /** Last number issued; the next one is currentNumber + 1 */
+  currentNumber: number;
+}
+
+/** The franchise's counters for its current financial year, for the number-format preview. */
+export interface IFranchiseInvoiceCounters {
+  financialYear: string;
+  /** Today in the franchise's timezone, `YYYY-MM-DD` */
+  invoiceDate: string;
+  counters: IFranchiseInvoiceCounter[];
+}

@@ -127,7 +127,8 @@ export class CountryService {
       nest: true,
     });
     return tempList.map((t) => {
-      return <IDropdownItem>{ id: t.countryId, label: t.country, selected: false };
+      // countryCode lets forms apply country rules (e.g. the Indian 16-character invoice number limit)
+      return <IDropdownItem>{ id: t.countryId, label: t.country, selected: false, metadata: { countryCode: t.countryCode } };
     });
   }
 

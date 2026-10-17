@@ -1,0 +1,83 @@
+.report-card {
+  width: 100%;
+  background-color: var(--md-sys-color-surface);
+}
+
+mat-card-header {
+  margin-bottom: 16px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.filter-field {
+  min-width: 180px;
+}
+
+.period-toggle {
+  margin-bottom: 20px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.not-reportable {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px 16px;
+  background: var(--status-warning-bg);
+  color: var(--status-warning);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  padding: 24px;
+}
+
+.empty {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.documents-table {
+  width: 100%;
+
+  .number {
+    font-family: monospace;
+    white-space: nowrap;
+  }
+
+  .num {
+    text-align: right;
+  }
+}
+
+.gap-chip,
+.ok-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.gap-chip {
+  background: var(--status-warning-bg);
+  color: var(--status-warning);
+}
+
+.ok-chip {
+  background: var(--status-success-bg);
+  color: var(--status-success);
+}

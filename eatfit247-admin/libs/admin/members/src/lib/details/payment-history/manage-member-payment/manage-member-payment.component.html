@@ -290,6 +290,9 @@
                           <mat-option [value]="mode.id">{{ mode.label }}</mat-option>
                         }
                       </mat-select>
+                      @if (showRemittanceHint) {
+                        <mat-hint class="remittance-hint">Paid from abroad? Pick the remittance mode so it is priced as an export.</mat-hint>
+                      }
                       <shared-ui-input-error [control]="formGroup.get('paymentModeId')"></shared-ui-input-error>
                     </mat-form-field>
 
