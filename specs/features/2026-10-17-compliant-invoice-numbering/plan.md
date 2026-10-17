@@ -117,14 +117,14 @@
 
 ## Group 4b: Documents issued, GSTR-1 Table 13 (`server_1` admin-only reports)
 
-- [ ] 4b.1 Pure helper `DocumentSeriesUtil.split(invoiceId)` → `{ seriesKey, sequence }` (trailing digit run). Credit-note detection: type letter `C` in a templated number, or `/CN/` in a legacy one.
-- [ ] 4b.2 `DocumentsIssuedService.report(franchiseId, from, to)`:
+- [x] 4b.1 Pure helper `DocumentSeriesUtil.split(invoiceId)` → `{ seriesKey, sequence, width }` (trailing digit run). Nature of document comes from the source table: `txn_credit_notes` rows are "Credit Note", plan payments and product orders "Invoices for outward supply" (review 2026-10-17: exact for any template, where guessing the type letter from an arbitrary template is not; legacy `/CN/` and templated `/C/` numbers both live only in `txn_credit_notes`).
+- [x] 4b.2 `DocumentsIssuedService.report(franchiseId, from, to)`:
   - reads plan payments, product orders and credit notes with a number, dated by `invoice_date` (else `payment_date`) in the period;
   - groups by nature of document + `seriesKey`;
   - per row: from / to (min / max sequence), total issued, cancelled (`active = false` or status not PAID), net issued, missing numbers (gap check);
   - marks the whole report "not reported" for a franchise without a GSTIN.
-- [ ] 4b.3 `GET reports/documents-issued` + CSV (`@RequireAbility(read, Report)`, franchise-scoped). Contract `IDocumentsIssuedRow` in shared-library.
-- [ ] 4b.4 Unit tests:
+- [x] 4b.3 `GET reports/documents-issued` + CSV (`@RequireAbility(read, Report)`, franchise-scoped). Contract `IDocumentsIssuedRow` in shared-library.
+- [x] 4b.4 Unit tests:
   - old and new format of one counter give two rows;
   - S / E / P / C split;
   - a cancelled row is counted in issued and in cancelled;
@@ -132,6 +132,12 @@
   - month vs quarter period;
   - a legacy row with no `invoice_date` uses `payment_date`;
   - another franchise's rows never appear.
+
+> **As built (group 4b, 2026-10-17):**
+> - shared-library `documents-issued.interface.ts`: `DocumentNatureEnum` (portal labels "Invoices for outward supply", "Credit Note"), `IDocumentsIssuedRow` (adds `seriesKey`, `missingNumbers`, `missingTruncated`), `IDocumentsIssuedReport` (`reportable` = has a GSTIN).
+> - reports lib: `utils/document-series.util.ts` (`split`, `join`); `DocumentsIssuedService` (`report`, static `buildRows`, `toCsv`, `assertPeriod`: `YYYY-MM-DD`, from ≤ to, ≤ 366 days) scoped through `FinancialYearService.resolveFranchise` (403 before any read); one UNION query over payments, products (payment timestamp in the franchise's timezone) and credit notes; cancelled = `active = false` or not PAID (credit notes: `active = false`); missing numbers listed up to 50 per row. `GET reports/documents-issued?franchiseId&from&to` and `…/csv` (UTF-8 BOM), both `Report` read.
+> - New reports jest project (`jest.config.ts`, `tsconfig.spec.json`): the `@server_1/modules/member/models` mapping is placed before the `modules/*` wildcard, which jest would otherwise match first. 17/17.
+> - Live (local `eatfit`, 2–48 ms per report): EFMUM Q1 `000001…000202` (202, 1 cancelled, no gap); MEMUM Q1 `000001…000064`; HCUAE Q3 `000006…000009`; another franchise's admin → 403. **Finding for Accounts:** EFMUM Q2 shows `000203…000464` with `000461`, `000462` missing, and October shows `000461…000491` with `000463`, `000464` missing — payments 5246 (paid 30 Sep) and 5247 (paid 25 Aug) were entered and numbered on 8 Oct after 461–462 (7 Oct). Legacy invoices print the payment date, so those two invoices carry September / August dates. The report flags it as designed (decision 13 gap check); which period lists them in Table 13 is an Accounts / CA decision (validation.md).
 
 ## Group 5: Admin CMS (`eatfit247-admin`)
 

@@ -47,4 +47,4 @@ export * from './member/index';
 export * from './courier/warehouse.interface';
 export * from './admin-rbac.interface';
 export * from './google-review.interface';
-
+export * from './documents-issued.interface';

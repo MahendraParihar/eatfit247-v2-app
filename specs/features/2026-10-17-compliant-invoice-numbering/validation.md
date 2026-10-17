@@ -22,10 +22,10 @@
 | A14 | Given AMBER already emailed this FY, when the cron runs again at the same level, then no email is sent. When it crosses to RED, exactly one email is sent. In a new FY the level restarts | jest | ✅ jest (cron spec: once per level, red once, new FY restarts, failed send retried) |
 | A15 | Given a franchise with a GSTIN, then no turnover warning is shown or emailed | jest | ✅ jest (service and cron) |
 | A16 | A franchise admin of another franchise cannot read MEMUM's turnover (403 / scoped) | curl | ☐ |
-| A17 | Given EFMUM issued `EFMUM/2026-27/S/000480…000491` and then `EFM/2627/S/00492…00495` in October, when Documents issued runs for October, then there are two "Invoices for outward supply" rows with those exact from/to values and correct totals | jest + live | ☐ |
-| A18 | Given an issued invoice later made inactive or no longer PAID, then it counts in Total number and in Cancelled, and Net issued = Total − Cancelled | jest | ☐ |
-| A19 | Given a missing sequence inside a series in the period, then the row is flagged and lists the missing number | jest | ☐ |
-| A20 | The CSV matches the screen. A user without Report read gets 403. Another franchise's admin sees only their own franchise. MEMUM without a GSTIN shows the "not a tax invoice; not reported" banner | curl + browser | ☐ |
+| A17 | Given EFMUM issued `EFMUM/2026-27/S/000480…000491` and then `EFM/2627/S/00492…00495` in October, when Documents issued runs for October, then there are two "Invoices for outward supply" rows with those exact from/to values and correct totals | jest + live | ✅ jest (old 480–491 + new 492–495 → two rows); live: old format only so far (no new-format invoice issued yet) |
+| A18 | Given an issued invoice later made inactive or no longer PAID, then it counts in Total number and in Cancelled, and Net issued = Total − Cancelled | jest | ✅ jest; live EFMUM Q1 202 issued / 1 cancelled / 201 net |
+| A19 | Given a missing sequence inside a series in the period, then the row is flagged and lists the missing number | jest | ✅ jest; live flagged real gaps (see Review: EFMUM 461–464) |
+| A20 | The CSV matches the screen. A user without Report read gets 403. Another franchise's admin sees only their own franchise. MEMUM without a GSTIN shows the "not a tax invoice; not reported" banner | curl + browser | API ✅ (CSV = rows, 403 for another franchise's admin, `reportable=false` without GSTIN, via service live + jest); curl without Report read and the browser banner pending (group 5) |
 | A21 | Given go-live, when a plan is bought on the website (gateway webhook) and another is entered in admin, then both get new-format numbers from the same counter, in issue order; no row issued before go-live changes | jest (payment-confirmation + invoice-on-paid) + live | ☐ |
 
 ## Automated Checks
@@ -48,3 +48,5 @@
 - [ ] Deep review by subagents (numbering gaps and races, franchise leakage, conventions). Findings fixed or logged
 - [ ] Specs and code in sync; 4.7 and the runbook updated (plan group 0)
 - [ ] I can explain the change
+
+- **2026-10-17 Table 13 live run (Accounts / CA to decide):** EFMUM `EFMUM/2026-27/S/000463` (payment 5246, paid 30 Sep) and `…000464` (payment 5247, paid 25 Aug) were entered and numbered on 8 Oct, after `…000461` / `…000462` (7 Oct). By payment date, Q2 runs `000203…000464` missing 461–462 and October runs `000461…000491` missing 463–464. Nothing is changed (decision 1); Accounts decide which return lists 463–464 and, if the Q2 return is already filed, whether it needs an amendment.
