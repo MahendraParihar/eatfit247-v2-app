@@ -8,13 +8,13 @@
 |---|---------------------------------|--------------|--------|
 | A1 | Given migrations 137–145 applied, when 145 runs a second time, then there is no error and no duplicate payment modes, and EFMUM/MEMUM keep any prefix or template already set | SQL | ✅ 2026-10-17 clone `eatfit_rh145`: re-run clean, 21 modes / 21 distinct, owner-set prefix/template/threshold kept |
 | A2 | When 138 is run, then it aborts with the "retired" message and no row or counter changes | SQL | ✅ 2026-10-17 clone: aborts "Retired…", md5 of counters and invoice numbers identical before/after |
-| A3 | Given EFMUM's domestic service counter for 2026-27 is N, when a domestic plan payment becomes PAID, then its number is `EFM/2627/S/{N+1, 5 digits}` and the counter is N+1 | jest + live | ☐ |
-| A4 | Given no EFMUM export counter for 2026-27, when an export of service (LUT or IGST-paid) becomes PAID, then its number is `EFM/2627/E/00001` | jest + live | ☐ |
-| A5 | When a MEMUM product order becomes PAID, then the number is `MEM/2627/P/{next}`, continuing MEMUM's counter | jest | ☐ |
-| A6 | When an HCUAE payment becomes PAID, then the number keeps the legacy format `HCUAE/2026/S/{6 digits}` | jest + live | ☐ |
-| A7 | Every number issued for EFMUM and MEMUM is at most 16 characters and matches `^[A-Za-z1-9][A-Za-z0-9/-]{0,15}$` | jest (property over all type letters and sequence 1…99999) | ☐ |
-| A8 | Given a template that can exceed 16 characters (e.g. `{PREFIX}-{FY}-{TYPE}-{SEQ7}` with `EFMUM`), when it is saved for an Indian franchise, then the API returns 400 listing the reason, and the form shows it before submit | jest + browser | ☐ |
-| A9 | Given an invalid template forced into the DB, when an invoice is issued, then issuing fails, the transaction rolls back, and the counter is unchanged (no gap) | jest | ☐ |
+| A3 | Given EFMUM's domestic service counter for 2026-27 is N, when a domestic plan payment becomes PAID, then its number is `EFM/2627/S/{N+1, 5 digits}` and the counter is N+1 | jest + live | ✅ jest; live service-level (rolled back) `EFM/2627/S/00492` after 491 — real PAID payment pending |
+| A4 | Given no EFMUM export counter for 2026-27, when an export of service (LUT or IGST-paid) becomes PAID, then its number is `EFM/2627/E/00001` | jest + live | ✅ jest; live service-level `EFM/2627/E/00001` — real PAID payment pending |
+| A5 | When a MEMUM product order becomes PAID, then the number is `MEM/2627/P/{next}`, continuing MEMUM's counter | jest | ✅ jest `MEM/2627/P/00065` (and live service-level) |
+| A6 | When an HCUAE payment becomes PAID, then the number keeps the legacy format `HCUAE/2026/S/{6 digits}` | jest + live | ✅ jest; live service-level `HCUAE/2026/S/000012` — real PAID payment pending |
+| A7 | Every number issued for EFMUM and MEMUM is at most 16 characters and matches `^[A-Za-z1-9][A-Za-z0-9/-]{0,15}$` | jest (property over all type letters and sequence 1…99999) | ✅ util spec: EFM/MEM × S/E/P/X/C × 1…99999 |
+| A8 | Given a template that can exceed 16 characters (e.g. `{PREFIX}-{FY}-{TYPE}-{SEQ7}` with `EFMUM`), when it is saved for an Indian franchise, then the API returns 400 listing the reason, and the form shows it before submit | jest + browser | API ✅ (jest + live 400); form check pending (group 5) |
+| A9 | Given an invalid template forced into the DB, when an invoice is issued, then issuing fails, the transaction rolls back, and the counter is unchanged (no gap) | jest | ✅ jest: guard throws before the counter is saved; live: refused number not consumed |
 | A10 | After go-live, no invoice issued before 145 has a changed `invoice_id`, `invoice_series`, `invoice_date` or tax column (row hash before and after) | SQL | ☐ |
 | A11 | A foreign client paying INR over Indian rails (IGST, `DOMESTIC_GST`) gets an `S` number, and a foreign-remittance payment gets an `E` number | jest + live | ☐ |
 | A12 | New payment modes exist with route `FOREIGN_REMITTANCE`. Picking one for a foreign client prices the payment as an export, and the domestic-mode hint shows when the billing country is not India | live + browser | ☐ |

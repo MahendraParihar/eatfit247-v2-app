@@ -184,6 +184,145 @@ describe('InvoiceSequenceService', () => {
   });
 });
 
+describe('InvoiceSequenceService with a franchise template (compliant invoice numbering)', () => {
+  const trx = { LOCK: { UPDATE: 'UPDATE' } } as unknown as Transaction;
+  const EFM = { franchiseId: 1, franchiseCode: 'EFMUM', invoicePrefix: 'EFM', invoiceNumberFormat: '{PREFIX}/{FY}/{TYPE}/{SEQ5}', gstLimit: true };
+
+  const serviceWith = (currentNumber: number) => {
+    const sequence = { currentNumber, save: jest.fn().mockResolvedValue(undefined) };
+    const findOrCreate = jest.fn().mockResolvedValue([sequence, false]);
+    const service = new InvoiceSequenceService({ findOrCreate } as unknown as typeof InvoiceSequenceModel);
+    return { service, findOrCreate, sequence };
+  };
+
+  it('continues EFMUM\'s counter: after 491 the next domestic service number is EFM/2627/S/00492', async () => {
+    const { service, findOrCreate, sequence } = serviceWith(491);
+    const issued = await service.generateInvoiceNumber(
+      { ...EFM, fyStartMonth: 4, invoiceType: BusinessTypeEnum.SERVICE, series: InvoiceSeriesEnum.DOMESTIC, invoiceDate: '2026-10-18' },
+      trx,
+    );
+    expect(issued).toEqual({ invoiceId: 'EFM/2627/S/00492', invoiceSeries: 'DOMESTIC', invoiceDate: '2026-10-18' });
+    // Same counter key as the legacy format (decision 5)
+    expect(findOrCreate.mock.calls[0][0].where).toEqual({
+      franchiseId: 1,
+      invoiceType: BusinessTypeEnum.SERVICE,
+      financialYear: '2026-27',
+      series: 'DOMESTIC',
+    });
+    expect(findOrCreate.mock.calls[0][0].lock).toBe('UPDATE');
+    expect(sequence.currentNumber).toBe(492);
+    expect(sequence.save).toHaveBeenCalledWith({ transaction: trx });
+  });
+
+  it('starts the first export at EFM/2627/E/00001', async () => {
+    const { service, findOrCreate } = serviceWith(0);
+    const issued = await service.generateInvoiceNumber(
+      { ...EFM, fyStartMonth: 4, invoiceType: BusinessTypeEnum.SERVICE, series: InvoiceSeriesEnum.EXPORT, invoiceDate: '2026-10-18' },
+      trx,
+    );
+    expect(issued.invoiceId).toBe('EFM/2627/E/00001');
+    expect(findOrCreate.mock.calls[0][0].where.series).toBe('EXPORT');
+  });
+
+  it('numbers MEMUM products MEM/2627/P/00065 after 64, and export products with X', async () => {
+    const mem = { franchiseId: 3, franchiseCode: 'MEMUM', invoicePrefix: 'MEM', invoiceNumberFormat: '{PREFIX}/{FY}/{TYPE}/{SEQ5}', gstLimit: true };
+    const domestic = await serviceWith(64).service.generateInvoiceNumber(
+      { ...mem, fyStartMonth: 4, invoiceType: BusinessTypeEnum.PRODUCT, series: InvoiceSeriesEnum.DOMESTIC, invoiceDate: '2026-10-18' },
+      trx,
+    );
+    expect(domestic.invoiceId).toBe('MEM/2627/P/00065');
+    const exported = await serviceWith(0).service.generateInvoiceNumber(
+      { ...mem, fyStartMonth: 4, invoiceType: BusinessTypeEnum.PRODUCT, series: InvoiceSeriesEnum.EXPORT, invoiceDate: '2026-10-18' },
+      trx,
+    );
+    expect(exported.invoiceId).toBe('MEM/2627/X/00001');
+  });
+
+  it('keeps HCUAE (no template) on the legacy format: HCUAE/2026/S/000012', async () => {
+    const issued = await serviceWith(11).service.generateInvoiceNumber(
+      {
+        franchiseId: 2,
+        franchiseCode: 'HCUAE',
+        fyStartMonth: 1,
+        invoiceType: BusinessTypeEnum.SERVICE,
+        series: InvoiceSeriesEnum.DOMESTIC,
+        invoiceDate: '2026-10-18',
+        invoicePrefix: null,
+        invoiceNumberFormat: null,
+        gstLimit: false,
+      },
+      trx,
+    );
+    expect(issued.invoiceId).toBe('HCUAE/2026/S/000012');
+  });
+
+  it('a template without a prefix falls back to the legacy format', async () => {
+    const issued = await serviceWith(491).service.generateInvoiceNumber(
+      { ...EFM, invoicePrefix: null, fyStartMonth: 4, invoiceType: BusinessTypeEnum.SERVICE, series: InvoiceSeriesEnum.DOMESTIC, invoiceDate: '2026-10-18' },
+      trx,
+    );
+    expect(issued.invoiceId).toBe('EFMUM/2026-27/S/000492');
+  });
+
+  it('numbers a credit note with type C from the template, and keeps the legacy CN format without one', async () => {
+    const templated = serviceWith(0);
+    expect(await templated.service.generateCreditNoteNumber({ ...EFM, fyStartMonth: 4, invoiceDate: '2026-10-18' }, trx)).toBe('EFM/2627/C/00001');
+    expect(templated.findOrCreate.mock.calls[0][0].where).toEqual({
+      franchiseId: 1,
+      invoiceType: 'credit',
+      financialYear: '2026-27',
+      series: 'DOMESTIC',
+    });
+    const legacy = serviceWith(3);
+    expect(
+      await legacy.service.generateCreditNoteNumber(
+        { franchiseId: 2, franchiseCode: 'HCUAE', fyStartMonth: 1, invoiceDate: '2026-10-18' },
+        trx,
+      ),
+    ).toBe('HCUAE/2026/CN/000004');
+  });
+
+  it('guard (decision 7): a number over 16 characters for an Indian franchise throws and consumes no number', async () => {
+    const { service, sequence } = serviceWith(491);
+    const errorLog = jest.spyOn((service as unknown as { logger: { error: () => void } }).logger, 'error').mockImplementation(() => undefined);
+    await expect(
+      service.generateInvoiceNumber(
+        { ...EFM, invoicePrefix: 'EFMUM', fyStartMonth: 4, invoiceType: BusinessTypeEnum.SERVICE, series: InvoiceSeriesEnum.DOMESTIC, invoiceDate: '2026-10-18' },
+        trx,
+      ),
+    ).rejects.toThrow('EFMUM/2627/S/00492 breaks the GST limit of 16 characters');
+    expect(sequence.currentNumber).toBe(491);
+    expect(sequence.save).not.toHaveBeenCalled();
+    expect(errorLog).toHaveBeenCalledWith(expect.stringContaining('Refused invoice number EFMUM/2627/S/00492 for franchise 1'));
+  });
+
+  it('guard: the same credit-note render is refused too, and a non-Indian franchise is not held to 16', async () => {
+    const india = serviceWith(0);
+    jest.spyOn((india.service as unknown as { logger: { error: () => void } }).logger, 'error').mockImplementation(() => undefined);
+    await expect(
+      india.service.generateCreditNoteNumber({ ...EFM, invoicePrefix: 'EFMUM', fyStartMonth: 4, invoiceDate: '2026-10-18' }, trx),
+    ).rejects.toThrow('breaks the GST limit');
+    expect(india.sequence.save).not.toHaveBeenCalled();
+
+    const uae = serviceWith(0);
+    const issued = await uae.service.generateInvoiceNumber(
+      {
+        franchiseId: 2,
+        franchiseCode: 'HCUAE',
+        invoicePrefix: 'HCUAE',
+        invoiceNumberFormat: '{PREFIX}/{FY}/{TYPE}/{SEQ8}',
+        gstLimit: false,
+        fyStartMonth: 1,
+        invoiceType: BusinessTypeEnum.SERVICE,
+        series: InvoiceSeriesEnum.DOMESTIC,
+        invoiceDate: '2026-10-18',
+      },
+      trx,
+    );
+    expect(issued.invoiceId).toBe('HCUAE/2026/S/00000001');
+  });
+});
+
 describe('InvoiceIssueService', () => {
   const trx = {} as Transaction;
   let generateInvoiceNumber: jest.Mock;
@@ -231,6 +370,36 @@ describe('InvoiceIssueService', () => {
       invoiceSeries: InvoiceSeriesEnum.EXPORT,
       invoiceDate: '2026-10-01',
     });
+  });
+
+  it('passes the franchise prefix, template and the Indian Rule 46 limit to the sequence service', async () => {
+    const withFormat = new InvoiceIssueService(
+      { generateInvoiceNumber } as unknown as InvoiceSequenceService,
+      {
+        fetchById: jest.fn().mockResolvedValue({
+          financialYear: 4,
+          franchiseCode: 'EFMUM',
+          timeZone: 'Asia/Kolkata',
+          invoicePrefix: 'EFM',
+          invoiceNumberFormat: '{PREFIX}/{FY}/{TYPE}/{SEQ5}',
+        }),
+      } as unknown as FranchiseService,
+      { filterByTableIdAndPk: jest.fn().mockResolvedValue([{ countryId: 101 }]) } as unknown as AddressService,
+      { fetchById: countryFetchById, findAll: countryFindAll } as unknown as CountryService,
+      { findRate: jest.fn().mockResolvedValue(null) } as unknown as ExchangeRateService,
+    );
+    await withFormat.issue(record({ memberAddress: null }), 'plan', 1, trx);
+    expect(generateInvoiceNumber.mock.calls[0][0]).toMatchObject({
+      invoicePrefix: 'EFM',
+      invoiceNumberFormat: '{PREFIX}/{FY}/{TYPE}/{SEQ5}',
+      gstLimit: true,
+    });
+  });
+
+  it('a non-Indian franchise without a template issues with no format and no 16-character limit', async () => {
+    countryFetchById.mockResolvedValue({ countryCode: 'AE' });
+    await service.issue(record({ memberAddress: null }), 'plan', 2, trx);
+    expect(generateInvoiceNumber.mock.calls[0][0]).toMatchObject({ invoicePrefix: null, invoiceNumberFormat: null, gstLimit: false });
   });
 
   it('never changes an issued number', async () => {

@@ -6,8 +6,10 @@ import {
   CountryService,
   FranchiseDateUtil,
   IIssuedInvoiceNumber,
+  INDIA_COUNTRY_CODE,
   InvoiceSequenceService,
   InvoiceSeriesUtil,
+  ICreditNoteNumberRequest,
 } from '@server_1/platform';
 import { FranchiseService } from '@server_1/modules/franchise';
 import { ExchangeRateService, IResolvedRate } from '@server_1/modules/tax-engine';
@@ -67,6 +69,18 @@ export class InvoiceIssueService {
   }
 
   /**
+   * The franchise's number format for the sequence service (compliant invoice numbering 3.3):
+   * its prefix and template (null = legacy format), and the Rule 46 limit for an Indian franchise.
+   */
+  public numberFormat(context: IInvoiceFranchiseContext): Pick<ICreditNoteNumberRequest, 'invoicePrefix' | 'invoiceNumberFormat' | 'gstLimit'> {
+    return {
+      invoicePrefix: context.franchise.invoicePrefix ?? null,
+      invoiceNumberFormat: context.franchise.invoiceNumberFormat ?? null,
+      gstLimit: context.countryCode === INDIA_COUNTRY_CODE,
+    };
+  }
+
+  /**
    * Issues the record's invoice number if it has none, inside the caller's transaction, and sets
    * `invoiceId`, `invoiceSeries` and `invoiceDate` on the record (the caller saves it).
    * An issued number is never changed: returns null when the record already has one.
@@ -96,6 +110,7 @@ export class InvoiceIssueService {
         invoiceType: recordType === 'product' ? BusinessTypeEnum.PRODUCT : BusinessTypeEnum.SERVICE,
         series,
         invoiceDate: FranchiseDateUtil.localDate(issuedAt, franchiseContext.timeZone),
+        ...this.numberFormat(franchiseContext),
       },
       transaction,
     );

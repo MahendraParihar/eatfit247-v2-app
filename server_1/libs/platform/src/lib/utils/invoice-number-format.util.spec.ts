@@ -52,6 +52,21 @@ describe('InvoiceNumberFormatUtil (compliant invoice numbering, decisions 3–6)
       expect(max.length).toBeLessThanOrEqual(16);
     });
 
+    it('A7: every EFM and MEM number, all type letters, sequence 1…99999, satisfies Rule 46', () => {
+      const failures: string[] = [];
+      for (const prefix of ['EFM', 'MEM']) {
+        for (const typeLetter of Object.values(InvoiceTypeLetter)) {
+          for (let sequence = 1; sequence <= 99999; sequence++) {
+            const number = InvoiceNumberFormatUtil.render({ template: TEMPLATE, prefix, fyStartMonth: 4, invoiceDate: '2026-10-17', typeLetter, sequence });
+            if (!RULE46_INVOICE_NUMBER.test(number)) {
+              failures.push(number);
+            }
+          }
+        }
+      }
+      expect(failures).toEqual([]);
+    });
+
     it('a template with - separators renders as written', () => {
       const number = InvoiceNumberFormatUtil.render({
         template: '{PREFIX}-{FY}-{TYPE}-{SEQ5}',

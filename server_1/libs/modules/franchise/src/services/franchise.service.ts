@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op, Sequelize } from 'sequelize';
 import {
@@ -9,11 +9,19 @@ import {
   IFranchise,
   IManageAddress,
   IManageFranchise,
+  InvoiceNumberFormatUtil,
   ITableList,
   TableEnum,
 } from '@eatfit247-shared-lib';
 import { AppConfigService, CommonFunctionsUtil, MstFranchise, SearchUtil, TableListSortUtil } from '@server_1/core';
-import { AddressService } from '@server_1/platform';
+import { AddressService, CountryService, INDIA_COUNTRY_CODE, InvoiceSeriesUtil } from '@server_1/platform';
+
+/** The franchise columns that hold the invoice number format and the turnover threshold. */
+interface IFranchiseNumberingFields {
+  invoicePrefix?: string | null;
+  invoiceNumberFormat?: string | null;
+  registrationThresholdAmount?: number | null;
+}
 
 @Injectable()
 export class FranchiseService {
@@ -21,6 +29,7 @@ export class FranchiseService {
     @InjectModel(MstFranchise) private readonly franchiseRepository: typeof MstFranchise,
     private appConfigService: AppConfigService,
     private addressService: AddressService,
+    private countryService: CountryService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IFranchise>> {
@@ -87,6 +96,12 @@ export class FranchiseService {
       brandName: item.brandName,
       lutNumber: item.lutNumber,
       timeZone: item.timeZone,
+      invoicePrefix: item.invoicePrefix ?? null,
+      invoiceNumberFormat: item.invoiceNumberFormat ?? null,
+      registrationThresholdAmount:
+        item.registrationThresholdAmount === null || item.registrationThresholdAmount === undefined
+          ? null
+          : Number(item.registrationThresholdAmount),
       internationalTaxMode: item.internationalTaxMode,
       startDate: item.startDate,
       endDate: item.endDate,
@@ -121,7 +136,9 @@ export class FranchiseService {
   }
 
   public async create(obj: IManageFranchise, cIp: string, adminId: number): Promise<void> {
+    const numbering = await this.numberingFields(null, obj, null);
     const createObj = {
+      ...numbering,
       franchiseCode: obj.franchiseCode,
       financialYear: obj.financialYear,
       companyName: obj.companyName,
@@ -171,7 +188,9 @@ export class FranchiseService {
     if (!find) {
       throw new NotFoundException('Franchise not found');
     }
+    const numbering = await this.numberingFields(id, obj, find);
     const updateObj = {
+      ...numbering,
       franchiseCode: obj.franchiseCode,
       financialYear: obj.financialYear,
       companyName: obj.companyName,
@@ -210,6 +229,72 @@ export class FranchiseService {
         pkOfTable: id,
       };
       await this.addressService.createOrUpdate(addressData, cIp, adminId);
+    }
+  }
+
+  /**
+   * The numbering columns to save (compliant invoice numbering 3.4). Only keys present in the payload
+   * are written, so a client that doesn't send them keeps the stored format. The effective prefix and
+   * template are validated on every save (decision 6): the Rule 46 limit applies when the franchise's
+   * country is India, and the prefix must not equal another franchise's prefix or code, because
+   * invoice numbers are unique across franchises. Both empty = the legacy format.
+   */
+  private async numberingFields(
+    franchiseId: number | null,
+    obj: IManageFranchise,
+    stored: MstFranchise | null,
+  ): Promise<IFranchiseNumberingFields> {
+    const fields: IFranchiseNumberingFields = {};
+    const clean = (value: string | null | undefined): string | null => (value ?? '').trim() || null;
+    if (obj.invoicePrefix !== undefined) {
+      fields.invoicePrefix = clean(obj.invoicePrefix)?.toUpperCase() ?? null;
+    }
+    if (obj.invoiceNumberFormat !== undefined) {
+      fields.invoiceNumberFormat = clean(obj.invoiceNumberFormat);
+    }
+    if (obj.registrationThresholdAmount !== undefined) {
+      fields.registrationThresholdAmount = obj.registrationThresholdAmount ?? null;
+    }
+    const prefix = 'invoicePrefix' in fields ? fields.invoicePrefix : clean(stored?.invoicePrefix);
+    const template = 'invoiceNumberFormat' in fields ? fields.invoiceNumberFormat : clean(stored?.invoiceNumberFormat);
+    if (!prefix && !template) {
+      return fields;
+    }
+    const countryCode = await this.franchiseCountryCode(franchiseId, obj);
+    const errors = InvoiceNumberFormatUtil.validate(template, prefix, { gstLimit: countryCode === INDIA_COUNTRY_CODE });
+    if (prefix) {
+      const clash = await this.franchiseRepository.findOne({
+        attributes: ['franchiseId', 'franchiseCode'],
+        where: {
+          ...(franchiseId ? { franchiseId: { [Op.ne]: franchiseId } } : {}),
+          [Op.or]: [
+            Sequelize.where(Sequelize.fn('upper', Sequelize.col('invoice_prefix')), prefix.toUpperCase()),
+            Sequelize.where(Sequelize.fn('upper', Sequelize.col('franchise_code')), prefix.toUpperCase()),
+          ],
+        },
+      });
+      if (clash) {
+        errors.push(`Prefix ${prefix} is already used by franchise ${clash.franchiseCode}; invoice numbers must be unique across franchises.`);
+      }
+    }
+    if (errors.length > 0) {
+      throw new BadRequestException(errors.join(' '));
+    }
+    return fields;
+  }
+
+  /** Country of the franchise: the address in the payload, else the stored one. */
+  private async franchiseCountryCode(franchiseId: number | null, obj: IManageFranchise): Promise<string | null> {
+    const countryId =
+      obj.addressObj?.countryId ??
+      (franchiseId ? (await this.addressService.findByTableIdAndPk(TableEnum.MST_FRANCHISES, franchiseId))?.countryId : null);
+    if (!countryId) {
+      return null;
+    }
+    try {
+      return InvoiceSeriesUtil.normalize((await this.countryService.fetchById(Number(countryId)))?.countryCode);
+    } catch {
+      return null;
     }
   }
 

@@ -60,14 +60,14 @@
 
 ## Group 3: Backend numbering (`server_1`, platform + member)
 
-- [ ] 3.1 `InvoiceSequenceService.generateInvoiceNumber` / `generateCreditNoteNumber`:
+- [x] 3.1 `InvoiceSequenceService.generateInvoiceNumber` / `generateCreditNoteNumber`:
   - the request carries `invoicePrefix`, `invoiceNumberFormat` and `gstLimit` (Indian franchise);
   - with a template, render through the util, otherwise use the legacy format, unchanged;
   - same counter key, same `FOR UPDATE`.
-- [ ] 3.2 Issue-time guard (decision 7): with `gstLimit`, a render failing `RULE46_INVOICE_NUMBER` throws `BadRequestException` and logs at error level. The transaction rolls back, so no number is consumed.
-- [ ] 3.3 `InvoiceIssueService.franchiseContext` and `issue`, and `CreditNoteService`: pass the franchise's prefix, template and `gstLimit` (country IN).
-- [ ] 3.4 Franchise DTO and service: validate prefix and template with `InvoiceNumberFormatUtil.validate` (the limit applies when the franchise address country is IN), return 400 with the listed errors, and persist both. The prefix must also be unique among franchises, and must not equal another franchise's `franchise_code` (case-insensitive), for the same global-uniqueness reason.
-- [ ] 3.5 Unit tests:
+- [x] 3.2 Issue-time guard (decision 7): with `gstLimit`, a render failing `RULE46_INVOICE_NUMBER` throws `BadRequestException` and logs at error level. The transaction rolls back, so no number is consumed.
+- [x] 3.3 `InvoiceIssueService.franchiseContext` and `issue`, and `CreditNoteService`: pass the franchise's prefix, template and `gstLimit` (country IN).
+- [x] 3.4 Franchise DTO and service: validate prefix and template with `InvoiceNumberFormatUtil.validate` (the limit applies when the franchise address country is IN), return 400 with the listed errors, and persist both. The prefix must also be unique among franchises, and must not equal another franchise's `franchise_code` (case-insensitive), for the same global-uniqueness reason.
+- [x] 3.5 Unit tests:
   - EFMUM next number after counter 491 is `EFM/2627/S/00492`;
   - the first export is `EFM/2627/E/00001`;
   - MEMUM gives `MEM/2627/P/00065`;
@@ -77,6 +77,13 @@
   - the franchise save rejects a too-long template.
 
   The existing numbering specs (`invoice-numbering.spec.ts`, invoice-on-paid, payment-confirmation) stay green. Run member, platform and franchise jest.
+
+> **As built (group 3, 2026-10-17):**
+> - `InvoiceSequenceService`: `IInvoiceNumberRequest` / `ICreditNoteNumberRequest` carry `invoicePrefix`, `invoiceNumberFormat`, `gstLimit`. Both generators share `nextNumber`, which locks the same counter row, renders `current + 1`, runs the Rule 46 guard, and only then saves the counter, so a refused number is not consumed even if a caller committed after catching the error (all four `issue` callers and the credit-note path roll back anyway). A template without a prefix falls back to the legacy format.
+> - `InvoiceIssueService.numberFormat(context)` gives prefix, template and `gstLimit` (franchise country IN); used by `issue` and `CreditNoteService`. `FranchiseService.convertToModel` returns the three new fields.
+> - `FranchiseService.numberingFields` (create and update): writes a key only when the payload has it, so the current admin form (group 5 not built yet) keeps the seeded format; validates the effective prefix + template on every save with the country from the payload address, else the stored one; rejects a prefix equal to another franchise's prefix or code; errors joined into one 400 message. DTO: `invoicePrefix`, `invoiceNumberFormat` (≤40), `registrationThresholdAmount` (≥0, 2 decimals).
+> - Tests: member 321/321 (numbering spec +10 cases; the credit-note spec mock gained `numberFormat` and asserts it is passed), new franchise jest project (`jest.config.ts`, `tsconfig.spec.json`) with `franchise.service.spec.ts` 8/8, platform util spec 24/24 incl. the A7 property test. `admin-api` + `public-api` builds green.
+> - Live (local `eatfit`, admin-api Nest context, one transaction rolled back, counter md5 identical after): EFMUM `EFM/2627/S/00492`, `EFM/2627/E/00001`, `EFM/2627/C/00001`; guard refused `EFMUM/2627/S/00493` and the next issue was still `…/00493`; HCUAE `HCUAE/2026/S/000012`, `HCUAE/2026/CN/000001`; MEMUM `MEM/2627/P/00065`, `MEM/2627/X/00001`, `MEM/2627/C/00001`; franchise save of `EFMUM` + `{SEQ6}` → 400 (19 characters), `MEM` on EFMUM → 400. Not yet done: a real PAID payment through the running admin-api / website (A3, A4, A6 "live"), to run with the group 5 browser check.
 
 ## Group 4: Turnover warning (`server_1`)
 

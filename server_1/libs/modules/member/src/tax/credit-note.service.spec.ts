@@ -57,6 +57,7 @@ describe('CreditNoteService', () => {
           countryCode: 'AE',
           timeZone: 'Asia/Dubai',
         }),
+        numberFormat: jest.fn().mockReturnValue({ invoicePrefix: null, invoiceNumberFormat: null, gstLimit: false }),
       } as unknown as InvoiceIssueService,
       {} as InvoicePdfService,
       {} as MemberPlanService,
@@ -76,7 +77,8 @@ describe('CreditNoteService', () => {
     const note = await credit();
     expect(note).toMatchObject({ creditNoteNumber: 'HCUAE/2026/CN/000001', totalAmount: 525, taxAmount: 25, taxableAmount: 500, taxCategory: 'STANDARD' });
     expect(generateCreditNoteNumber).toHaveBeenCalledWith(
-      expect.objectContaining({ franchiseId: 2, franchiseCode: 'HCUAE', fyStartMonth: 1 }),
+      // The franchise's number format is passed through (none for HCUAE: legacy CN format)
+      expect.objectContaining({ franchiseId: 2, franchiseCode: 'HCUAE', fyStartMonth: 1, invoiceNumberFormat: null, gstLimit: false }),
       transaction,
     );
     expect(created).toMatchObject({ originalInvoiceId: 'HCUAE/2026/S/000005', originalInvoiceDate: '2026-10-01', lateIssue: false });

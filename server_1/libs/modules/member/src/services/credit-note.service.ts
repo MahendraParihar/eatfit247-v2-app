@@ -96,6 +96,7 @@ export class CreditNoteService {
           franchiseCode: context.franchise.franchiseCode,
           fyStartMonth: Number(context.franchise.financialYear),
           invoiceDate: creditNoteDate,
+          ...this.invoiceIssueService.numberFormat(context),
         },
         t,
       );
