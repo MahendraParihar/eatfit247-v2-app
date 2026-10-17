@@ -23,6 +23,7 @@
     - EFMUM → `EFM`, `{PREFIX}/{FY}/{TYPE}/{SEQ5}`;
     - MEMUM → `MEM`, same template, threshold 4000000.00.
   - Payment modes "Remittance via exchange house (RDA)" and "Remittance app (Remitly / Wise)", `payment_route = 'FOREIGN_REMITTANCE'`, guarded by `WHERE NOT EXISTS`.
+  - (added in group 4) email template `admin_franchise_turnover_alert`, guarded by `WHERE NOT EXISTS`.
   - A header comment explaining why 138 is retired.
 - [x] 1.2 `db_changes/138_fy2026_27_q2_invoice_renumber.sql`: replace the body with a `DO` block that raises an exception ("Retired by specs/features/2026-10-17-compliant-invoice-numbering decision 1. Do not run.") so nothing changes. Keep the old body in the git history only.
 - [x] 1.3 `scripts/invoice-renumber/preview_fy2026_27_q2.sql`: add a retired header (the query is harmless and read-only, so it stays).
@@ -87,23 +88,32 @@
 
 ## Group 4: Turnover warning (`server_1`)
 
-- [ ] 4.1 `FranchiseTurnoverService.forFranchise(id)`:
+- [x] 4.1 `FranchiseTurnoverService.forFranchise(id)`:
   - current FY from the franchise's `financial_year` and `time_zone`;
-  - sum of `coalesce(functional_total_amount, total_amount)` over plan payments and product orders with `invoice_id` set and `invoice_date` in that FY;
+  - sum of `coalesce(functional_total_amount, total_amount)` over plan payments and product orders with `invoice_id` set and `coalesce(invoice_date, payment_date)` in that FY (review 2026-10-17: every FY 2026-27 row issued before 137 has no `invoice_date`; product `payment_date` is a timestamp, taken in the franchise's timezone);
   - percent and level against `registration_threshold_amount`;
   - `level = NONE` when there is no threshold or the franchise has a GSTIN.
-- [ ] 4.2 `GET franchise/:id/turnover` (admin, `@RequireAbility(read, Franchise)`, franchise-scoped).
-- [ ] 4.3 `franchise-turnover.cron.ts` (daily), for each franchise with a threshold and no GSTIN:
+- [x] 4.2 `GET franchise/:id/turnover` (admin, `@RequireAbility(read, Franchise)`, franchise-scoped).
+- [x] 4.3 `franchise-turnover.cron.ts` (daily), for each franchise with a threshold and no GSTIN:
   - compute the level;
   - when it is above `turnover_alert_level` for the same FY, or the FY changed, email super admins once and store `turnover_alert_fy` / `turnover_alert_level`;
-  - the template states the platform-only lower bound.
-- [ ] 4.4 Unit tests:
+  - the template states the platform-only lower bound;
+  - recipients: active admins holding an active role with `grant_all_on_new_subject` (the super-admin role, read from data, not a role code);
+  - email template row `admin_franchise_turnover_alert` (file `admin/franchise-turnover-alert.ejs`) is added to migration 145 (`WHERE NOT EXISTS`); a PostgreSQL advisory lock keeps one process per run, as in `invoice-fx.cron.ts`.
+- [x] 4.4 Unit tests:
   - FY boundary (31 Mar / 1 Apr, IST);
   - a franchise with a GSTIN shows no warning;
   - amber at 80%, red at 100%;
   - the cron emails once per level;
   - a new FY resets the level;
   - an FX-pending row falls back to `total_amount`.
+
+> **As built (group 4, 2026-10-17):**
+> - `FranchiseTurnoverService` (franchise module, raw SQL on the txn tables so it needs no member import): `financialYearRange`, `levelFor`, `forFranchise` / `forFranchiseId`, `turnoverBetween`. The level uses the exact share and only the shown percent is rounded, so ₹39,99,999.99 of ₹40 lakh shows 100.00% but stays amber (found by the tests). Inactive or no-longer-PAID issued rows are counted, as the spec says (issued = `invoice_id` set); for a lower-bound warning that errs early.
+> - `GET franchise/:id/turnover` (`Franchise` read; 403 when the caller's `franchiseIds` exclude it, empty = unscoped).
+> - `FranchiseTurnoverCron` (`30 9 * * *` IST, advisory lock `franchise-turnover-cron`): sends only when the level rises within the FY, or on a new FY above none; a new FY at none stores the reset silently; a failed send is not stored. `EmailNotificationService.sendEmailFromTemplate` now returns `true` only when the mail reached the transport (existing callers ignore it). Template `templates/admin/franchise-turnover-alert.ejs` + row `admin_franchise_turnover_alert` in 145 (re-applied locally; idempotent).
+> - Tests: franchise jest 30/30 (turnover 16, cron 6, franchise save 8; incl. IST 31 Mar 23:59 / 1 Apr 00:00), member 321/321, platform 24/24; both API builds green.
+> - Live (local `eatfit`): EFMUM FY 2026-27 ₹1,20,38,018.84, MEMUM ₹79,900 (2% of ₹40 lakh, NONE), HCUAE 2026 AED 92,710 — each equal to a hand-written SQL sum. Locally every franchise still has a GSTIN, so the cron would skip them all; no email was sent. The email renders. Not done: the 403 `curl` (A16), with the group 5 browser session.
 
 ## Group 4b: Documents issued, GSTR-1 Table 13 (`server_1` admin-only reports)
 

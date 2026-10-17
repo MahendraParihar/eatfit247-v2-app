@@ -18,9 +18,9 @@
 | A10 | After go-live, no invoice issued before 145 has a changed `invoice_id`, `invoice_series`, `invoice_date` or tax column (row hash before and after) | SQL | ☐ |
 | A11 | A foreign client paying INR over Indian rails (IGST, `DOMESTIC_GST`) gets an `S` number, and a foreign-remittance payment gets an `E` number | jest + live | ☐ |
 | A12 | New payment modes exist with route `FOREIGN_REMITTANCE`. Picking one for a foreign client prices the payment as an export, and the domestic-mode hint shows when the billing country is not India | live + browser | ☐ |
-| A13 | Given MEMUM with no GSTIN and a ₹40 lakh threshold, when FY turnover is 79% / 80% / 100%, then the level is NONE / AMBER / RED on the endpoint and the UI | jest + browser | ☐ |
-| A14 | Given AMBER already emailed this FY, when the cron runs again at the same level, then no email is sent. When it crosses to RED, exactly one email is sent. In a new FY the level restarts | jest | ☐ |
-| A15 | Given a franchise with a GSTIN, then no turnover warning is shown or emailed | jest | ☐ |
+| A13 | Given MEMUM with no GSTIN and a ₹40 lakh threshold, when FY turnover is 79% / 80% / 100%, then the level is NONE / AMBER / RED on the endpoint and the UI | jest + browser | jest ✅ (79.99 / 80 / 100, plus 99.99… stays amber); live endpoint values ✅; UI pending (group 5) |
+| A14 | Given AMBER already emailed this FY, when the cron runs again at the same level, then no email is sent. When it crosses to RED, exactly one email is sent. In a new FY the level restarts | jest | ✅ jest (cron spec: once per level, red once, new FY restarts, failed send retried) |
+| A15 | Given a franchise with a GSTIN, then no turnover warning is shown or emailed | jest | ✅ jest (service and cron) |
 | A16 | A franchise admin of another franchise cannot read MEMUM's turnover (403 / scoped) | curl | ☐ |
 | A17 | Given EFMUM issued `EFMUM/2026-27/S/000480…000491` and then `EFM/2627/S/00492…00495` in October, when Documents issued runs for October, then there are two "Invoices for outward supply" rows with those exact from/to values and correct totals | jest + live | ☐ |
 | A18 | Given an issued invoice later made inactive or no longer PAID, then it counts in Total number and in Cancelled, and Net issued = Total − Cancelled | jest | ☐ |

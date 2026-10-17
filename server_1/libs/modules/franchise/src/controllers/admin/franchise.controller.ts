@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, ParseIntPipe, Patch, Post, Put, Query, UseGuards } from '@nestjs/common';
 import {
   AbilitiesGuard,
   BasicSearchDto,
@@ -8,7 +8,7 @@ import {
   RequireAbility,
   UpdateActiveDto,
 } from '@server_1/core';
-import { FranchiseService } from '../../services';
+import { FranchiseService, FranchiseTurnoverService } from '../../services';
 import { CreateFranchiseDto } from '../../dto';
 import {
   AdminActionEnum,
@@ -16,13 +16,17 @@ import {
   IAuthUser,
   IDropdownItem,
   IFranchise,
+  IFranchiseTurnover,
   ITableList,
 } from '@eatfit247-shared-lib';
 
 @Controller('franchise')
 @UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class FranchiseController {
-  constructor(private readonly service: FranchiseService) {}
+  constructor(
+    private readonly service: FranchiseService,
+    private readonly turnoverService: FranchiseTurnoverService,
+  ) {}
 
   @Get('list')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Franchise)
@@ -34,6 +38,17 @@ export class FranchiseController {
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Franchise)
   async getById(@Param('id') id: number): Promise<IFranchise> {
     return await this.service.fetchById(id);
+  }
+
+  /** FY turnover against the registration threshold (turnover warning); scoped to the caller's franchises */
+  @Get(':id/turnover')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Franchise)
+  async turnover(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: IAuthUser): Promise<IFranchiseTurnover> {
+    // Empty franchiseIds = unscoped (Super Admin), as in CaslAbilityFactory
+    if (currentUser.franchiseIds?.length && !currentUser.franchiseIds.includes(id)) {
+      throw new ForbiddenException('You do not have access to this franchise.');
+    }
+    return await this.turnoverService.forFranchiseId(id);
   }
 
   @Post('manage')

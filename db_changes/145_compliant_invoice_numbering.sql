@@ -32,6 +32,10 @@
 --   4. Payment modes "Remittance via exchange house (RDA)" and
 --      "Remittance app (Remitly / Wise)", routed FOREIGN_REMITTANCE (decision 10).
 --
+--   5. Email template admin_franchise_turnover_alert (templates/admin/
+--      franchise-turnover-alert.ejs): the daily turnover cron emails super admins
+--      when an unregistered franchise reaches 80% / 100% of its threshold.
+--
 -- Run after 137 and 139–144, with public-api and admin-api STOPPED: the first
 -- invoice issued after start-up uses the new format (decision 14). Idempotent.
 -- =============================================================================
@@ -86,5 +90,18 @@ SELECT m.payment_mode, 'FOREIGN_REMITTANCE'::public.payment_route, true, 1, 1
 FROM (VALUES ('Remittance via exchange house (RDA)'),
              ('Remittance app (Remitly / Wise)')) AS m(payment_mode)
 WHERE NOT EXISTS (SELECT 1 FROM public.mst_payment_modes p WHERE lower(p.payment_mode) = lower(m.payment_mode));
+
+-- 5. Turnover warning email
+INSERT INTO public.mst_email_templates
+    (template_name, subject, email_template_file, whatspp_template_file,
+     send_email_notification, send_whatsapp_notification, active, created_by, modified_by)
+SELECT 'admin_franchise_turnover_alert',
+       'GST registration threshold: {{franchiseName}} at {{percent}}%',
+       'admin/franchise-turnover-alert',
+       NULL,
+       true, false, true, 1, 1
+WHERE NOT EXISTS (
+    SELECT 1 FROM public.mst_email_templates WHERE template_name = 'admin_franchise_turnover_alert'
+);
 
 COMMIT;
