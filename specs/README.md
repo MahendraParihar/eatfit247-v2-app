@@ -7,6 +7,7 @@ Every non-trivial change starts as a written spec, gets reviewed, and only then 
 ```
 specs/
 ├── README.md                 ← this file (the workflow)
+├── prompts.md                ← copy-paste prompts for each step of the loop
 ├── product/                  ← the CONSTITUTION: project-level, read first
 │   ├── mission.md            ← why: users, problem, product principles, non-goals
 │   ├── tech-stack.md         ← with what: stack, versions, layering, conventions
@@ -26,6 +27,8 @@ specs/
 `docs/BRD.md` and `docs/PRD*.md` remain the long-form business record. Specs reference them by section (for example `BR-10`, `PRD §3 story 21`) instead of copying them.
 
 ## The Loop
+
+Ready-made prompts for every step are in [prompts.md](./prompts.md).
 
 ```
 Constitution ──► [ Plan ─► Implement ─► Validate ─► Merge ] ──► Replan ──► next feature …
