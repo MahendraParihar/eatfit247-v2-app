@@ -182,6 +182,40 @@
 
 > **As built (group 6, 2026-10-17):** requirements status is "Implemented, release pending". Roadmap notes were added to 4.7 (format change, 138 retired), 4.11 (turnover warning) and 4.13 (Table 13 built early), and the "Later" 16-character item is struck through. mission.md is **not** edited here: constitution changes go on a `replan/` branch (CLAUDE.md), so the wording below is the input for that branch.
 
+## Group 7: Review fixes (subagent review, 2026-10-17)
+
+Four reviewers (numbering, isolation and security, turnover and Table 13, spec and conventions). Every finding below was re-verified against the code and local data. Owner decisions on 2026-10-17: cancelled = inactive only; an Indian franchise must keep a format.
+
+- [x] 7.1 (R2, R3, R4) `InvoiceNumberFormatUtil.validate`: require `{FY}`; the template starts with `{PREFIX}` plus `/` or `-`; it ends with `{SEQn}` preceded by `/` or `-`. Tests for each rule.
+- [x] 7.2 (R1) Guard every number of an Indian franchise (`gstLimit`) at issue time, templated or legacy. The franchise save refuses an empty prefix or template for an Indian franchise.
+- [x] 7.3 (R4, R9) Franchise save: refuse a prefix seen in another franchise's issued invoice or credit-note numbers; apply the 16-character limit when the country is unknown. Migration 145 gets a unique index on `upper(invoice_prefix)` (unreleased, idempotent).
+- [x] 7.4 (R5, R6, R3 backstop) Documents issued: cancelled = `active = false`; numbers without a separator before the trailing counter go in a "legacy numbering" row (no gap check, `legacy: true`, flagged in the UI); the gap loop is bounded by a span cap and safe integers.
+- [x] 7.5 (R7) Turnover: count rows in the functional currency or with a functional amount; return `fxPendingCount`; the card notes pending rows.
+- [x] 7.6 (R8) Alert recipients: super admins with no franchise (`franchise_id IS NULL` and no `txn_admin_franchises` row).
+- [x] 7.7 (R10) CSV filename sanitised; `CREDIT_NOTE_SEQUENCE_TYPE` and `INDIA_COUNTRY_CODE` live in shared-library and are used by server and admin; decision 6 / 7 text (done in requirements); validation.md Review claim corrected.
+- [x] 7.8 Unit tests, all suites and builds, live re-check (form errors, Table 13 legacy period, turnover endpoint), commit.
+> **As built (group 7, 2026-10-17):**
+> - **Format rules:** `validate` requires `{FY}`, `{PREFIX}` first with a separator, and `{SEQn}` last after a separator, for every country. `INDIA_COUNTRY_CODE` and `CREDIT_NOTE_SEQUENCE_TYPE` moved to shared-library; the server re-exports them and the admin imports them.
+> - **Issue guard and franchise save:** the issue guard checks every number when `gstLimit`, templated or legacy. The franchise save refuses an empty format for India, applies the limit when the country is unknown, and refuses a prefix found at the start of another franchise's issued numbers (`prefixIssuedByAnotherFranchise`). Migration 145 adds `ux_mst_franchises_invoice_prefix` on `upper(invoice_prefix)`, re-applied locally.
+> - **Table 13:**
+>   - `DocumentSeriesUtil.split` returns `separated`: the counter is set off by `/` or `-` and is a safe integer.
+>   - Other numbers go in one `legacy` row per nature, last, with no gap check: CSV "legacy numbering: not checked", UI chip "Legacy numbering: check by hand".
+>   - Cancelled = `active = false`.
+> - **Turnover:** a CTE reads the franchise's currency from its address country. Only rows with a functional amount or in that currency are summed, and `fxPendingCount` counts the rest (shown on the card). Alert recipients exclude super admins tied to a franchise. The CSV filename keeps only `[A-Za-z0-9_-]`. The admin form shows the India / legacy rule and the new format hint.
+> - **Tests:** util 26 (FY, start, end rules, the 17-digit case), member 322 (legacy number refused for India), franchise 36 (clear refused for India and allowed for HCUAE, prefix history, unknown country, recipients SQL), reports 20 (legacy row, safe-integer split, cancelled SQL, legacy CSV). Both APIs, the admin dev build and the web `tsc` are green; ESLint shows 0 errors.
+> - **Live re-check** (QA super admin token, `PUT franchise/manage/1`), every case 400 with `mst_franchises` unchanged:
+>   - empty format: "An Indian franchise needs…";
+>   - no `{FY}`: "must contain {FY}";
+>   - `{SEQ5}` not last: "must end with {SEQn}";
+>   - `{TYPE}{SEQ5}` glued together: "must end with {SEQn}".
+> - **Live re-check, data:**
+>   - Turnover: EFMUM ₹1,21,51,298.84, the earlier figure plus today's four test payments, with `fxPendingCount` 0.
+>   - Table 13, Q1 FY 2025-26: one legacy row `EF24B7446720250402…EF24B7459220250729`, 106 issued, 3 cancelled, no gaps listed.
+>   - Table 13, Q2 FY 2026-27: 260 issued, 0 cancelled (REFUND `S/000311` no longer counted), real gaps 461–462 still flagged.
+
+- Backlog (pre-existing, not changed): an admin with no franchise assignment is treated as unscoped everywhere, not only super admins; the admin `FranchiseController` is also mounted in public-api (same guards).
+- Accepted and recorded: counter overflow past the `{SEQn}` width (guard stops issuing, no number skipped); a prefix changed and changed back mid-year shows a false gap; the 80% badge boundary uses the exact share while the shown percent is rounded; an alert is re-sent if saving the level fails after a successful send; some report tests assert SQL text rather than running SQL (no DB test harness; behaviour proven live).
+
 ## Replanning notes (for a `replan/invoice-numbering` branch)
 
 1. **mission.md principle 2, exception wording.** Today it reads "*Exception:* Q1 FY 2026-27 numbers stay as filed, with foreign clients in the domestic series." Proposed:

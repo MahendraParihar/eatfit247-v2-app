@@ -15,14 +15,19 @@ const range = (prefix: string, fromSeq: number, toSeq: number, width: number): I
 
 describe('DocumentSeriesUtil.split (decision 13)', () => {
   it.each([
-    ['EFMUM/2026-27/S/000491', 'EFMUM/2026-27/S/', 491, 6],
-    ['EFMUM/EXP/2026-27/S/000007', 'EFMUM/EXP/2026-27/S/', 7, 6],
-    ['EFM/2627/S/00492', 'EFM/2627/S/', 492, 5],
-    ['EFM2627C00000001', 'EFM2627C', 1, 8],
-    ['HCUAE/2026/CN/000004', 'HCUAE/2026/CN/', 4, 6],
-    ['NO-COUNTER', 'NO-COUNTER', null, 0],
-  ])('%s → %s + %s', (number, seriesKey, sequence, width) => {
-    expect(DocumentSeriesUtil.split(number)).toEqual({ seriesKey, sequence, width });
+    ['EFMUM/2026-27/S/000491', 'EFMUM/2026-27/S/', 491, 6, true],
+    ['EFMUM/EXP/2026-27/S/000007', 'EFMUM/EXP/2026-27/S/', 7, 6, true],
+    ['EFM/2627/S/00492', 'EFM/2627/S/', 492, 5, true],
+    ['EFM2627C00000001', 'EFM2627C', 1, 8, false],
+    ['HCUAE/2026/CN/000004', 'HCUAE/2026/CN/', 4, 6, true],
+    ['EF24B7446720250402', 'EF24B', 7446720250402, 13, false],
+    ['NO-COUNTER', 'NO-COUNTER', null, 0, false],
+  ])('%s → %s + %s', (number, seriesKey, sequence, width, separated) => {
+    expect(DocumentSeriesUtil.split(number)).toEqual({ seriesKey, sequence, width, separated });
+  });
+
+  it('a 17-digit run is not a safe integer, so it is never treated as a counter', () => {
+    expect(DocumentSeriesUtil.split('S/99999262700000001').separated).toBe(false);
   });
 });
 
@@ -71,6 +76,27 @@ describe('DocumentsIssuedService.buildRows (GSTR-1 Table 13)', () => {
     expect(row.missingTruncated).toBe(true);
   });
 
+  it('group 7: older EF24B7… numbers go in one legacy row with no gap check, apart from the series rows', () => {
+    const rows = DocumentsIssuedService.buildRows([
+      doc('EF24B7446720250402'),
+      doc('EF24B7459220250729'),
+      doc('EF24B73645'),
+      doc('EFMUM/2026-27/S/000001'),
+      doc('EFMUM/2026-27/S/000003'),
+    ]);
+    expect(rows).toEqual([
+      expect.objectContaining({ seriesKey: 'EFMUM/2026-27/S/', totalIssued: 2, missingNumbers: ['EFMUM/2026-27/S/000002'], legacy: false }),
+      expect.objectContaining({
+        seriesKey: '',
+        fromNumber: 'EF24B73645',
+        toNumber: 'EF24B7459220250729',
+        totalIssued: 3,
+        missingNumbers: [],
+        legacy: true,
+      }),
+    ]);
+  });
+
   it('returns no rows for an empty period', () => {
     expect(DocumentsIssuedService.buildRows([])).toEqual([]);
   });
@@ -90,6 +116,11 @@ describe('DocumentsIssuedService.buildRows (GSTR-1 Table 13)', () => {
       'Invoices for outward supply,EFM/2627/S/00492,EFM/2627/S/00494,2,1,1,EFM/2627/S/00493',
       '',
     ]);
+    const legacy = DocumentsIssuedService.toCsv({
+      franchiseId: 1, franchiseCode: 'EFMUM', companyName: 'EAT FIT 247', from: '2025-04-01', to: '2025-06-30', reportable: true,
+      rows: DocumentsIssuedService.buildRows([doc('EF24B73645'), doc('EF24B73646')]),
+    });
+    expect(legacy.split('\r\n')[1]).toBe('Invoices for outward supply,EF24B73645,EF24B73646,2,0,2,legacy numbering: not checked');
   });
 });
 
@@ -128,12 +159,15 @@ describe('DocumentsIssuedService.report', () => {
       [CREDIT, 'EFM/2627/C/00001', 0],
     ]);
     const [sql, options] = query.mock.calls[0];
-    expect(options.replacements).toEqual({ franchiseId: 1, from: '2026-10-01', to: '2026-10-31', timeZone: 'Asia/Kolkata', paid: 1 });
+    expect(options.replacements).toEqual({ franchiseId: 1, from: '2026-10-01', to: '2026-10-31', timeZone: 'Asia/Kolkata' });
     expect(sql.match(/franchise_id = :franchiseId/g)).toHaveLength(3);
     expect(sql).toContain('COALESCE(p.invoice_date, p.payment_date)');
     expect(sql).toContain('COALESCE(m.invoice_date, (m.payment_date AT TIME ZONE :timeZone)::date)');
     expect(sql).toContain('c.credit_note_date BETWEEN');
-    expect(sql).toContain('p.active = false OR p.payment_status_id <> :paid');
+    // Decision 13 as amended: cancelled = soft-deleted only; refunded or pending invoices stay issued
+    expect(sql).toContain('(p.active = false) AS cancelled');
+    expect(sql).toContain('(m.active = false)');
+    expect(sql).not.toContain('payment_status_id');
   });
 
   it('accepts a month and a quarter, refuses a reversed or over-long period', async () => {

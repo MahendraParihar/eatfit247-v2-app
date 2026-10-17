@@ -14,13 +14,18 @@ export interface IDocumentsIssuedRow {
   toNumber: string;
   /** Total number: every issued number, cancelled included */
   totalIssued: number;
-  /** Issued numbers whose row is now inactive or no longer PAID */
+  /** Issued numbers whose row is now inactive (soft-deleted); refunds are corrected by credit notes */
   cancelled: number;
   netIssued: number;
   /** Numbers between From and To that were never issued in the period (audit flag; should be empty) */
   missingNumbers: string[];
   /** More missing numbers than listed */
   missingTruncated: boolean;
+  /**
+   * Pre-FY 2026-27 numbering (e.g. `EF24B7…`), whose counter can't be read from the number:
+   * one row per nature, From / To by number, no gap check; check by hand
+   */
+  legacy: boolean;
 }
 
 export interface IDocumentsIssuedReport {

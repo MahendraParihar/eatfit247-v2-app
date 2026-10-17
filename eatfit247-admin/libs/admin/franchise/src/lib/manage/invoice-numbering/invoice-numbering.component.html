@@ -15,7 +15,7 @@
     <mat-form-field class="format-field">
       <mat-label>Number format</mat-label>
       <input matInput formControlName="invoiceNumberFormat" [maxlength]="formatMaxLength" placeholder="{PREFIX}/{FY}/{TYPE}/{SEQ5}" />
-      <mat-hint>Tokens: {{ '{PREFIX}' }} {{ '{FY}' }} {{ '{TYPE}' }} {{ '{SEQn}' }} (n = 3 to 8); separators / and -. Leave both empty for the legacy format.</mat-hint>
+      <mat-hint>Tokens: {{ '{PREFIX}' }} {{ '{FY}' }} {{ '{TYPE}' }} {{ '{SEQn}' }} (n = 3 to 8); start with {{ '{PREFIX}' }}/, end with /{{ '{SEQn}' }}, include {{ '{FY}' }}. Outside India both may be left empty (legacy format).</mat-hint>
     </mat-form-field>
   </div>
 

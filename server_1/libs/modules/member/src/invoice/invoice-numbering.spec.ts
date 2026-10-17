@@ -256,12 +256,25 @@ describe('InvoiceSequenceService with a franchise template (compliant invoice nu
     expect(issued.invoiceId).toBe('HCUAE/2026/S/000012');
   });
 
-  it('a template without a prefix falls back to the legacy format', async () => {
+  it('a template without a prefix falls back to the legacy format (non-Indian franchise)', async () => {
     const issued = await serviceWith(491).service.generateInvoiceNumber(
-      { ...EFM, invoicePrefix: null, fyStartMonth: 4, invoiceType: BusinessTypeEnum.SERVICE, series: InvoiceSeriesEnum.DOMESTIC, invoiceDate: '2026-10-18' },
+      { ...EFM, invoicePrefix: null, gstLimit: false, fyStartMonth: 4, invoiceType: BusinessTypeEnum.SERVICE, series: InvoiceSeriesEnum.DOMESTIC, invoiceDate: '2026-10-18' },
       trx,
     );
     expect(issued.invoiceId).toBe('EFMUM/2026-27/S/000492');
+  });
+
+  it('group 7: an Indian franchise without a format is refused the 22-character legacy number, and no number is consumed', async () => {
+    const { service, sequence } = serviceWith(491);
+    jest.spyOn((service as unknown as { logger: { error: () => void } }).logger, 'error').mockImplementation(() => undefined);
+    await expect(
+      service.generateInvoiceNumber(
+        { ...EFM, invoicePrefix: null, invoiceNumberFormat: null, fyStartMonth: 4, invoiceType: BusinessTypeEnum.SERVICE, series: InvoiceSeriesEnum.DOMESTIC, invoiceDate: '2026-10-18' },
+        trx,
+      ),
+    ).rejects.toThrow('EFMUM/2026-27/S/000492 breaks the GST limit of 16 characters');
+    expect(sequence.save).not.toHaveBeenCalled();
+    expect(sequence.currentNumber).toBe(491);
   });
 
   it('numbers a credit note with type C from the template, and keeps the legacy CN format without one', async () => {

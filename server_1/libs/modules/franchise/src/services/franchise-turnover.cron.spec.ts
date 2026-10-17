@@ -28,7 +28,7 @@ describe('FranchiseTurnoverCron (turnover warning, decision 12)', () => {
 
   const at = (level: TurnoverAlertLevel, financialYear = '2026-27'): void => {
     const percent = level === TurnoverAlertLevel.RED ? 100 : level === TurnoverAlertLevel.AMBER ? 80 : 10;
-    turnover = { financialYear, turnover: percent * 40000, threshold: 4000000, percent, level };
+    turnover = { financialYear, turnover: percent * 40000, threshold: 4000000, percent, level, fxPendingCount: 0 };
   };
 
   beforeEach(() => {
@@ -58,6 +58,15 @@ describe('FranchiseTurnoverCron (turnover warning, decision 12)', () => {
       }),
     );
     expect(franchises[0]).toMatchObject({ turnoverAlertFy: '2026-27', turnoverAlertLevel: TurnoverAlertLevel.AMBER });
+  });
+
+  it('group 7: recipients are unscoped super admins only (no franchise on the user, no franchise assignment)', async () => {
+    at(TurnoverAlertLevel.AMBER);
+    await cron.run();
+    const sql = (cron as unknown as { sequelize: { query: jest.Mock } }).sequelize.query.mock.calls[0][0] as string;
+    expect(sql).toContain('r.grant_all_on_new_subject = true');
+    expect(sql).toContain('u.franchise_id IS NULL');
+    expect(sql).toContain('NOT EXISTS (SELECT 1 FROM public.txn_admin_franchises af WHERE af.admin_id = u.admin_id)');
   });
 
   it('emails once per level: amber again sends nothing, crossing to red sends exactly one', async () => {

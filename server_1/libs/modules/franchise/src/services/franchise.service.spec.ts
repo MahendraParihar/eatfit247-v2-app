@@ -4,7 +4,7 @@ import { AddressService, CountryService } from '@server_1/platform';
 import { FranchiseService } from './franchise.service';
 
 describe('FranchiseService invoice numbering fields (compliant invoice numbering 3.4)', () => {
-  let franchiseRepository: { findOne: jest.Mock; create: jest.Mock; update: jest.Mock };
+  let franchiseRepository: { findOne: jest.Mock; create: jest.Mock; update: jest.Mock; sequelize: { query: jest.Mock } };
   let addressService: { findByTableIdAndPk: jest.Mock; createOrUpdate: jest.Mock };
   let countryService: { fetchById: jest.Mock };
   let service: FranchiseService;
@@ -21,6 +21,8 @@ describe('FranchiseService invoice numbering fields (compliant invoice numbering
       findOne: jest.fn(),
       create: jest.fn().mockResolvedValue({ franchiseId: 9 }),
       update: jest.fn().mockResolvedValue([1]),
+      // Prefix history: no other franchise has issued numbers with the prefix
+      sequelize: { query: jest.fn().mockResolvedValue([]) },
     };
     addressService = {
       findByTableIdAndPk: jest.fn().mockResolvedValue({ countryId: 101 }),
@@ -84,10 +86,34 @@ describe('FranchiseService invoice numbering fields (compliant invoice numbering
     expect(saved).not.toHaveProperty('registrationThresholdAmount');
   });
 
-  it('clearing both fields returns the franchise to the legacy format', async () => {
+  it('group 7: an Indian franchise cannot clear its format; a non-Indian one returns to the legacy format', async () => {
     franchiseRepository.findOne.mockResolvedValueOnce(stored());
-    await service.update(1, payload({ invoicePrefix: '', invoiceNumberFormat: null }), '::1', 1);
+    await expect(service.update(1, payload({ invoicePrefix: '', invoiceNumberFormat: null }), '::1', 1)).rejects.toThrow(
+      'An Indian franchise needs an invoice prefix and number format',
+    );
+    expect(franchiseRepository.update).not.toHaveBeenCalled();
+
+    franchiseRepository.findOne.mockResolvedValueOnce(stored({ franchiseId: 2, franchiseCode: 'HCUAE' }));
+    addressService.findByTableIdAndPk.mockResolvedValueOnce({ countryId: 202 });
+    await service.update(2, payload({ invoicePrefix: '', invoiceNumberFormat: null }), '::1', 1);
     expect(franchiseRepository.update.mock.calls[0][0]).toMatchObject({ invoicePrefix: null, invoiceNumberFormat: null });
+  });
+
+  it('group 7: refuses a prefix that starts numbers another franchise has issued', async () => {
+    franchiseRepository.findOne.mockResolvedValueOnce(stored()).mockResolvedValueOnce(null);
+    franchiseRepository.sequelize.query.mockResolvedValueOnce([{ found: 1 }]);
+    await expect(service.update(1, payload({ invoicePrefix: 'EFX' }), '::1', 1)).rejects.toThrow(
+      'Prefix EFX starts invoice numbers already issued by another franchise',
+    );
+    expect(franchiseRepository.sequelize.query.mock.calls[0][1].replacements).toEqual({ slash: 'EFX/%', dash: 'EFX-%', franchiseId: 1 });
+  });
+
+  it('group 7: with no known country the 16-character limit still applies', async () => {
+    franchiseRepository.findOne.mockResolvedValueOnce(null);
+    addressService.findByTableIdAndPk.mockResolvedValue(null);
+    await expect(
+      service.create(payload({ invoicePrefix: 'NEWFR', invoiceNumberFormat: '{PREFIX}/{FY}/{TYPE}/{SEQ6}' }), '::1', 1),
+    ).rejects.toThrow('Indian GST invoices allow at most 16');
   });
 
   it('a template without a prefix is refused', async () => {

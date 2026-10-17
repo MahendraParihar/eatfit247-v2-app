@@ -6,6 +6,11 @@ export interface IDocumentSeriesParts {
   sequence: number | null;
   /** Digits in the trailing run (the zero padding) */
   width: number;
+  /**
+   * The counter is set off by `/` or `-` and is a safe integer: true for every templated number
+   * (decision 3) and the 4.7 long format; false for older formats such as `EF24B7…`
+   */
+  separated: boolean;
 }
 
 const TRAILING_DIGITS = /^(.*?)(\d+)$/;
@@ -20,9 +25,15 @@ export class DocumentSeriesUtil {
     const value = (invoiceId || '').trim();
     const match = TRAILING_DIGITS.exec(value);
     if (!match) {
-      return { seriesKey: value, sequence: null, width: 0 };
+      return { seriesKey: value, sequence: null, width: 0, separated: false };
     }
-    return { seriesKey: match[1], sequence: Number(match[2]), width: match[2].length };
+    const sequence = Number(match[2]);
+    return {
+      seriesKey: match[1],
+      sequence,
+      width: match[2].length,
+      separated: /[\/-]$/.test(match[1]) && Number.isSafeInteger(sequence),
+    };
   }
 
   static join(seriesKey: string, sequence: number, width: number): string {

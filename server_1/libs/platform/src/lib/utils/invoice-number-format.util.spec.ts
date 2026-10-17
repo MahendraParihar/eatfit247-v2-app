@@ -122,21 +122,43 @@ describe('InvoiceNumberFormatUtil (compliant invoice numbering, decisions 3–6)
     });
 
     it('rejects a space and an underscore as separators', () => {
-      expect(InvoiceNumberFormatUtil.validate('{PREFIX} {FY}/{TYPE}/{SEQ5}', 'EFM', IN_LIMIT)).toEqual([
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{FY} {TYPE}/{SEQ5}', 'EFM', IN_LIMIT)).toEqual([
         'Only / and - may separate the tokens (found space).',
       ]);
-      expect(InvoiceNumberFormatUtil.validate('{PREFIX}_{FY}/{TYPE}/{SEQ5}', 'EFM', IN_LIMIT)).toEqual([
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{FY}_{TYPE}/{SEQ5}', 'EFM', IN_LIMIT)).toEqual([
         'Only / and - may separate the tokens (found "_").',
       ]);
     });
 
-    it('rejects a leading 0: a prefix starting with 0, or a template starting with the counter', () => {
+    it('rejects a leading 0 in the prefix', () => {
       expect(InvoiceNumberFormatUtil.validate(TEMPLATE, '0EF', IN_LIMIT)[0]).toContain('must start with a letter or a digit 1-9');
-      expect(InvoiceNumberFormatUtil.validate('{SEQ5}/{TYPE}/{PREFIX}', 'EF', IN_LIMIT)[0]).toContain('00001/');
     });
 
-    it('rejects a template starting with a separator', () => {
-      expect(InvoiceNumberFormatUtil.validate('/{PREFIX}/{TYPE}/{SEQ5}', 'EF', IN_LIMIT)[0]).toContain('Rule 46');
+    it('group 7: requires {FY}, so numbers never repeat when the counter restarts next FY', () => {
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{TYPE}/{SEQ5}', 'EFM', IN_LIMIT)).toEqual(['Number format must contain {FY}.']);
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{TYPE}/{SEQ5}', 'HCU', { gstLimit: false })).toEqual([
+        'Number format must contain {FY}.',
+      ]);
+    });
+
+    it('group 7: requires {PREFIX} first with a separator, so two franchises can never render the same number', () => {
+      const startError = 'Number format must start with {PREFIX} followed by / or -.';
+      expect(InvoiceNumberFormatUtil.validate('/{PREFIX}/{FY}/{TYPE}/{SEQ5}', 'EF', IN_LIMIT)).toEqual([startError]);
+      expect(InvoiceNumberFormatUtil.validate('{FY}/{PREFIX}/{TYPE}/{SEQ5}', 'EF', IN_LIMIT)).toEqual([startError]);
+      // 'EF' + SEQ glued vs 'EF00' + SEQ glued could collide; a separator after the prefix prevents it
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}{FY}/{TYPE}/{SEQ5}', 'EF', IN_LIMIT)).toEqual([startError]);
+    });
+
+    it('group 7: requires {SEQn} last after a separator, so Table 13 reads the counter from the trailing digits', () => {
+      const endError = 'Number format must end with {SEQn}, after a / or -.';
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{SEQ5}/{FY}/{TYPE}', 'EF', IN_LIMIT)).toEqual([endError]);
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{FY}/{TYPE}{SEQ5}', 'EF', IN_LIMIT)).toEqual([endError]);
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{TYPE}/{FY}{SEQ5}', 'EF', IN_LIMIT)).toEqual([endError]);
+      // A non-Indian template can't build a 17-digit trailing run either
+      expect(InvoiceNumberFormatUtil.validate('{TYPE}{PREFIX}{FY}{SEQ8}', '99999', { gstLimit: false })).toEqual([
+        'Number format must start with {PREFIX} followed by / or -.',
+        'Number format must end with {SEQn}, after a / or -.',
+      ]);
     });
 
     it('rejects unknown, repeated and missing tokens, and n outside 3–8', () => {
@@ -147,12 +169,14 @@ describe('InvoiceNumberFormatUtil (compliant invoice numbering, decisions 3–6)
       expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{FY}/{SEQ5}', 'EFM', IN_LIMIT)).toEqual(['Number format must contain {TYPE}.']);
       expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{FY}/{TYPE}', 'EFM', IN_LIMIT)).toEqual(['Number format must contain {SEQn}.']);
       expect(InvoiceNumberFormatUtil.validate('EF/{FY}/{TYPE}/{SEQ5}', 'EFM', IN_LIMIT)).toContain('Number format must contain {PREFIX}.');
-      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{TYPE}/{SEQ2}', 'EFM', IN_LIMIT)).toEqual(['{SEQn} must have 3 to 8 digits.']);
-      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{TYPE}/{SEQ9}', 'EFM', IN_LIMIT)).toEqual(['{SEQn} must have 3 to 8 digits.']);
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{FY}/{TYPE}/{SEQ2}', 'EFM', IN_LIMIT)).toEqual(['{SEQn} must have 3 to 8 digits.']);
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{FY}/{TYPE}/{SEQ9}', 'EFM', IN_LIMIT)).toEqual(['{SEQn} must have 3 to 8 digits.']);
     });
 
     it('rejects literal text outside tokens and unmatched braces', () => {
-      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/INV/{TYPE}/{SEQ5}', 'EF', IN_LIMIT)[0]).toContain('"I", "N", "V"');
+      expect(InvoiceNumberFormatUtil.validate('{PREFIX}/INV/{FY}/{TYPE}/{SEQ5}', 'EF', IN_LIMIT)).toEqual([
+        'Only / and - may separate the tokens (found "I", "N", "V").',
+      ]);
       expect(InvoiceNumberFormatUtil.validate('{PREFIX}/{TYPE}/{SEQ5', 'EF', IN_LIMIT)).toContain('Number format must contain {SEQn}.');
     });
 

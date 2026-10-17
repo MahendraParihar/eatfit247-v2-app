@@ -19,6 +19,8 @@
 --      counter key and its value are unchanged, so the next number continues
 --      the current sequence (EFMUM/2026-27/S/000491 → EFM/2627/S/00492).
 --
+--      A prefix belongs to one franchise: unique index on upper(invoice_prefix).
+--
 --   2. mst_franchises.registration_threshold_amount, turnover_alert_fy,
 --      turnover_alert_level
 --      Turnover warning for franchises without a GSTIN (decision 12). The two
@@ -65,6 +67,11 @@ BEGIN
     END IF;
 END
 $$;
+
+-- Invoice numbers are unique across franchises, so a prefix belongs to one franchise (case-insensitive)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_mst_franchises_invoice_prefix
+    ON public.mst_franchises (upper(invoice_prefix))
+    WHERE invoice_prefix IS NOT NULL;
 
 -- 3. Seeds
 UPDATE public.mst_franchises

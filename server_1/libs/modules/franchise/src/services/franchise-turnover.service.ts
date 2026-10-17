@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
-import { IFranchiseTurnover, TurnoverAlertLevel } from '@eatfit247-shared-lib';
+import { IFranchiseTurnover, TableEnum, TurnoverAlertLevel } from '@eatfit247-shared-lib';
 import { MstFranchise } from '@server_1/core';
 import { FranchiseDateUtil } from '@server_1/platform';
 
@@ -53,7 +53,7 @@ export class FranchiseTurnoverService {
       FranchiseDateUtil.localDate(asOf, timeZone),
       Number(franchise.financialYear),
     );
-    const turnover = await this.turnoverBetween(franchise.franchiseId, range, timeZone);
+    const { turnover, fxPendingCount } = await this.turnoverBetween(franchise.franchiseId, range, timeZone);
     const threshold = FranchiseTurnoverService.positiveOrNull(franchise.registrationThresholdAmount);
     // The level uses the exact share; only the shown percent is rounded (99.9999% must not read as red)
     const exactPercent = threshold ? (turnover / threshold) * 100 : null;
@@ -64,6 +64,7 @@ export class FranchiseTurnoverService {
       threshold,
       percent: exactPercent === null ? null : Math.round(exactPercent * 100) / 100,
       level: hasGstin ? TurnoverAlertLevel.NONE : FranchiseTurnoverService.levelFor(exactPercent),
+      fxPendingCount,
     };
   }
 
@@ -91,35 +92,58 @@ export class FranchiseTurnoverService {
   }
 
   /**
-   * Issued plan payments and product orders dated in the range, in the functional currency (else
-   * the invoice amount for an FX-pending row). Rows issued before migration 137 have no
-   * invoice_date and use their payment date; a product's payment timestamp is read in the
-   * franchise's timezone.
+   * Issued plan payments and product orders dated in the range, in the functional currency. A row
+   * counts when it has its functional amount, or is already in the franchise's currency (its
+   * country's `currency_code`); an FX-pending row in another currency is left out and counted in
+   * `fxPendingCount`, so USD is never added to INR (group 7). Rows issued before migration 137 have
+   * no invoice_date and use their payment date; a product's payment timestamp is read in the
+   * franchise's timezone. Without a known franchise currency every row counts, as before.
    */
-  public async turnoverBetween(franchiseId: number, range: IFinancialYearRange, timeZone: string): Promise<number> {
-    const [row] = await this.sequelize.query<{ total: string | number | null }>(
-      `SELECT COALESCE(SUM(COALESCE(t.functional_total_amount, t.total_amount)), 0) AS total
-       FROM (
-           SELECT p.functional_total_amount, p.total_amount
+  public async turnoverBetween(
+    franchiseId: number,
+    range: IFinancialYearRange,
+    timeZone: string,
+  ): Promise<{ turnover: number; fxPendingCount: number }> {
+    const [row] = await this.sequelize.query<{ total: string | number | null; pending: string | number | null }>(
+      `WITH fc AS (
+           SELECT upper(trim(c.currency_code)) AS currency
+           FROM public.txn_addresses a
+           JOIN public.mst_countries c ON c.country_id = a.country_id
+           WHERE a.table_id = :franchiseTable AND a.pk_of_table = :franchiseId AND a.active = true
+           ORDER BY a.address_id
+           LIMIT 1
+       ),
+       rows AS (
+           SELECT COALESCE(t.functional_total_amount, t.total_amount) AS amount,
+                  (t.functional_total_amount IS NOT NULL
+                      OR (SELECT currency FROM fc) IS NULL
+                      OR t.currency IS NULL
+                      OR upper(trim(t.currency)) = (SELECT currency FROM fc)) AS counted
+           FROM (
+           SELECT p.functional_total_amount, p.total_amount, p.currency
            FROM public.txn_member_payments p
            WHERE p.franchise_id = :franchiseId
              AND p.invoice_id IS NOT NULL
              AND COALESCE(p.invoice_date, p.payment_date) >= CAST(:from AS DATE)
              AND COALESCE(p.invoice_date, p.payment_date) < CAST(:to AS DATE)
            UNION ALL
-           SELECT m.functional_total_amount, m.total_amount
+           SELECT m.functional_total_amount, m.total_amount, m.currency
            FROM public.txn_member_products m
            WHERE m.franchise_id = :franchiseId
              AND m.invoice_id IS NOT NULL
              AND COALESCE(m.invoice_date, (m.payment_date AT TIME ZONE :timeZone)::date) >= CAST(:from AS DATE)
              AND COALESCE(m.invoice_date, (m.payment_date AT TIME ZONE :timeZone)::date) < CAST(:to AS DATE)
-       ) t`,
+           ) t
+       )
+       SELECT COALESCE(SUM(amount) FILTER (WHERE counted), 0) AS total,
+              COUNT(*) FILTER (WHERE NOT counted) AS pending
+       FROM rows`,
       {
         type: QueryTypes.SELECT,
-        replacements: { franchiseId, from: range.from, to: range.to, timeZone },
+        replacements: { franchiseId, from: range.from, to: range.to, timeZone, franchiseTable: TableEnum.MST_FRANCHISES },
       },
     );
-    return Math.round(Number(row?.total || 0) * 100) / 100;
+    return { turnover: Math.round(Number(row?.total || 0) * 100) / 100, fxPendingCount: Number(row?.pending || 0) };
   }
 
   private static positiveOrNull(value: number | string | null | undefined): number | null {

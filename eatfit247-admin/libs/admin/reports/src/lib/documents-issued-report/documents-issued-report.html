@@ -94,7 +94,12 @@
         <ng-container matColumnDef="gap">
           <th mat-header-cell *matHeaderCellDef>Gap check</th>
           <td mat-cell *matCellDef="let row">
-            @if (row.missingNumbers.length > 0) {
+            @if (row.legacy) {
+              <span class="gap-chip" matTooltip="Older numbering (e.g. EF24B7…): the counter can't be read from the number, so check this range by hand.">
+                <mat-icon inline>history</mat-icon>
+                Legacy numbering: check by hand
+              </span>
+            } @else if (row.missingNumbers.length > 0) {
               <span class="gap-chip" [matTooltip]="gapTooltip(row)">
                 <mat-icon inline>warning</mat-icon>
                 {{ row.missingNumbers.length }}{{ row.missingTruncated ? '+' : '' }} missing

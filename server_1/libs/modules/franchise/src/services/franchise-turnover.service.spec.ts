@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize-typescript';
-import { TurnoverAlertLevel } from '@eatfit247-shared-lib';
+import { TableEnum, TurnoverAlertLevel } from '@eatfit247-shared-lib';
 import { MstFranchise } from '@server_1/core';
 import { FranchiseTurnoverService, ITurnoverFranchise } from './franchise-turnover.service';
 
@@ -38,7 +38,13 @@ describe('FranchiseTurnoverService (turnover warning, decision 12)', () => {
 
   it('FY boundary in IST: 23:59 on 31 March is still FY 2026-27, midnight starts FY 2027-28', async () => {
     await service.forFranchise(memum(), new Date('2027-03-31T18:29:00Z'));
-    expect(query.mock.calls[0][1].replacements).toEqual({ franchiseId: 3, from: '2026-04-01', to: '2027-04-01', timeZone: 'Asia/Kolkata' });
+    expect(query.mock.calls[0][1].replacements).toEqual({
+      franchiseId: 3,
+      from: '2026-04-01',
+      to: '2027-04-01',
+      timeZone: 'Asia/Kolkata',
+      franchiseTable: TableEnum.MST_FRANCHISES,
+    });
     const next = await service.forFranchise(memum(), new Date('2027-03-31T18:30:00Z'));
     expect(next.financialYear).toBe('2027-28');
     expect(query.mock.calls[1][1].replacements).toMatchObject({ from: '2027-04-01', to: '2028-04-01' });
@@ -61,6 +67,7 @@ describe('FranchiseTurnoverService (turnover warning, decision 12)', () => {
       threshold: 4_000_000,
       percent,
       level,
+      fxPendingCount: 0,
     });
   });
 
@@ -80,7 +87,18 @@ describe('FranchiseTurnoverService (turnover warning, decision 12)', () => {
     });
   });
 
-  it('sums functional amounts, falling back to the invoice amount (FX pending) and to the payment date (rows before 137)', async () => {
+  it('group 7: an FX-pending row in another currency is left out of turnover and counted separately', async () => {
+    query.mockResolvedValue([{ total: '79900', pending: '2' }]);
+    expect(await service.forFranchise(memum())).toMatchObject({ turnover: 79900, fxPendingCount: 2 });
+    const sql = query.mock.calls[0][0] as string;
+    // Counted: functional amount known, or already in the franchise's currency (its country's currency_code)
+    expect(sql).toContain('t.functional_total_amount IS NOT NULL');
+    expect(sql).toContain('upper(trim(t.currency)) = (SELECT currency FROM fc)');
+    expect(sql).toContain('JOIN public.mst_countries c ON c.country_id = a.country_id');
+    expect(sql).toContain('SUM(amount) FILTER (WHERE counted)');
+  });
+
+  it('sums functional amounts, else the invoice amount of a same-currency row, dated by payment date for rows before 137', async () => {
     withTurnover(null);
     expect((await service.forFranchise(memum())).turnover).toBe(0);
     const sql = query.mock.calls[0][0] as string;

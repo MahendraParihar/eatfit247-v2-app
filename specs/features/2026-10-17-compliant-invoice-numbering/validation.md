@@ -44,9 +44,9 @@
 
 ## Review
 
-- [ ] Diff reviewed against requirements decisions 1–15
-- [ ] Deep review by subagents (numbering gaps and races, franchise leakage, conventions). Findings fixed or logged
-- [x] Specs and code in sync; 4.7 and the runbook updated (plan group 0). Every deviation was written into plan.md / requirements.md before the code (2.1 `{PREFIX}` required, 3.4 prefix uniqueness, 4.1 payment-date fallback and email template, 4b.1 nature by source table, 5.1 counters endpoint, 5b scope)
+- [x] Diff reviewed against requirements decisions 1–15 (2026-10-17, spec-conformance reviewer): 1, 2, 4, 5, 8–11, 14 and 15 satisfied as written; gaps in 3, 6, 7 and 13, and the currency issue in 12, fixed in group 7
+- [x] Deep review by subagents (2026-10-17: numbering, isolation and security, turnover and Table 13, spec and conventions). Every finding re-verified, R1–R10 fixed in group 7, pre-existing RBAC items and accepted risks logged in plan group 7
+- [x] Specs and code in sync; 4.7 and the runbook updated (plan group 0). Deviations found while building went into plan.md / requirements.md before the code: 2.1 `{PREFIX}` required, 3.4 prefix uniqueness, 4.1 payment-date fallback and email template, 4b.1 nature by source table, 5.1 counters endpoint, 5b scope. The review found gaps that had not been recorded: the guard skipped legacy numbers, and `{FY}` and the `{SEQn}` position were not required. These were amended in decisions 3, 6, 7, 12 and 13 and fixed in group 7.
 - [ ] I can explain the change
 
 - **2026-10-17 Table 13 live run (Accounts / CA to decide):** EFMUM `EFMUM/2026-27/S/000463` (payment 5246, paid 30 Sep) and `…000464` (payment 5247, paid 25 Aug) were entered and numbered on 8 Oct, after `…000461` / `…000462` (7 Oct). By payment date, Q2 runs `000203…000464` missing 461–462 and October runs `000461…000491` missing 463–464. Nothing is changed (decision 1); Accounts decide which return lists 463–464 and, if the Q2 return is already filed, whether it needs an amendment.

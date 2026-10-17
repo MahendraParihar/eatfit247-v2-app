@@ -115,7 +115,10 @@ export class FranchiseTurnoverCron {
     return sentOk;
   }
 
-  /** Active admins holding an active role that is granted every subject (the super-admin role, from data). */
+  /**
+   * Active admins holding an active role that is granted every subject (the super-admin role, from
+   * data) and assigned to no franchise: a franchise-scoped admin never gets another franchise's figures.
+   */
   private async superAdminEmails(): Promise<string[]> {
     const rows = await this.sequelize.query<{ email_id: string }>(
       `SELECT DISTINCT u.email_id
@@ -123,6 +126,8 @@ export class FranchiseTurnoverCron {
        JOIN public.txn_admin_user_roles ur ON ur.admin_id = u.admin_id AND ur.active = true
        JOIN public.mst_admin_roles r ON r.role_id = ur.role_id AND r.grant_all_on_new_subject = true
        WHERE u.active = true AND COALESCE(u.email_id, '') <> ''
+         AND u.franchise_id IS NULL
+         AND NOT EXISTS (SELECT 1 FROM public.txn_admin_franchises af WHERE af.admin_id = u.admin_id)
        ORDER BY u.email_id`,
       { type: QueryTypes.SELECT },
     );

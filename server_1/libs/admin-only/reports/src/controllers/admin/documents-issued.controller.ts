@@ -21,7 +21,9 @@ export class DocumentsIssuedController {
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Report)
   async csv(@Query() query: DocumentsIssuedQueryDto, @CurrentUser() user: IAuthUser, @Res() res: Response): Promise<void> {
     const report = await this.documentsIssuedService.report(user, query.franchiseId, query.from, query.to);
-    const filename = `documents-issued_${report.franchiseCode}_${query.from.replace(/-/g, '')}_to_${query.to.replace(/-/g, '')}.csv`;
+    // The franchise code is free text (2–10 characters): keep only filename-safe characters
+    const code = (report.franchiseCode || 'franchise').replace(/[^A-Za-z0-9_-]/g, '') || 'franchise';
+    const filename = `documents-issued_${code}_${query.from.replace(/-/g, '')}_to_${query.to.replace(/-/g, '')}.csv`;
     res.set({
       'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': `attachment; filename="${filename}"`,

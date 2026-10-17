@@ -6,7 +6,6 @@ import {
   IAuthUser,
   IDocumentsIssuedReport,
   IDocumentsIssuedRow,
-  PaymentStatusEnum,
 } from '@eatfit247-shared-lib';
 import { FranchiseDateUtil } from '@server_1/platform';
 import { FinancialYearService } from './financial-year.service';
@@ -16,7 +15,7 @@ import { DocumentSeriesUtil } from '../utils/document-series.util';
 export interface IIssuedDocument {
   nature: DocumentNatureEnum;
   number: string;
-  /** The row is now inactive or no longer PAID (decision 9 of 4.7: the number stays issued) */
+  /** The row is now inactive, i.e. soft-deleted (decision 13 as amended 2026-10-17; the number stays issued) */
   cancelled: boolean;
 }
 
@@ -76,7 +75,7 @@ export class DocumentsIssuedService {
         row.totalIssued,
         row.cancelled,
         row.netIssued,
-        row.missingNumbers.join(' ') + (row.missingTruncated ? ' …' : ''),
+        row.legacy ? 'legacy numbering: not checked' : row.missingNumbers.join(' ') + (row.missingTruncated ? ' …' : ''),
       ]
         .map(escape)
         .join(','),
@@ -84,29 +83,37 @@ export class DocumentsIssuedService {
     return [header.map(escape).join(','), ...lines].join('\r\n') + '\r\n';
   }
 
-  /** Groups numbers by nature and series; from / to are the lowest and highest counter in the period. */
+  /**
+   * Groups numbers by nature and series; from / to are the lowest and highest counter in the period.
+   * Numbers whose counter can't be read (older `EF24B7…` formats) share one legacy row per nature,
+   * ordered by number, without a gap check.
+   */
   static buildRows(documents: IIssuedDocument[]): IDocumentsIssuedRow[] {
-    const groups = new Map<string, { nature: DocumentNatureEnum; seriesKey: string; items: Array<IIssuedDocument & { sequence: number | null; width: number }> }>();
+    type Item = IIssuedDocument & { sequence: number | null; width: number };
+    const groups = new Map<string, { nature: DocumentNatureEnum; seriesKey: string; legacy: boolean; items: Item[] }>();
     for (const document of documents) {
       const parts = DocumentSeriesUtil.split(document.number);
-      // A number without a trailing counter is its own series
-      const seriesKey = parts.sequence === null ? document.number : parts.seriesKey;
-      const key = `${document.nature}\u0000${seriesKey}`;
+      const legacy = !parts.separated;
+      const seriesKey = legacy ? '' : parts.seriesKey;
+      const key = `${document.nature}\u0000${legacy ? 'legacy' : seriesKey}`;
       if (!groups.has(key)) {
-        groups.set(key, { nature: document.nature, seriesKey, items: [] });
+        groups.set(key, { nature: document.nature, seriesKey, legacy, items: [] });
       }
-      groups.get(key)?.items.push({ ...document, sequence: parts.sequence, width: parts.width });
+      groups.get(key)?.items.push({ ...document, sequence: legacy ? null : parts.sequence, width: parts.width });
     }
 
     const rows: IDocumentsIssuedRow[] = [];
     for (const group of groups.values()) {
-      const items = [...group.items].sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0) || a.number.localeCompare(b.number));
+      const items = [...group.items].sort(
+        (a, b) =>
+          (a.sequence ?? 0) - (b.sequence ?? 0) || a.number.length - b.number.length || a.number.localeCompare(b.number),
+      );
       const first = items[0];
       const last = items[items.length - 1];
       const cancelled = items.filter((item) => item.cancelled).length;
       const missingNumbers: string[] = [];
       let missingTruncated = false;
-      if (first.sequence !== null && last.sequence !== null) {
+      if (!group.legacy && first.sequence !== null && last.sequence !== null) {
         const present = new Set(items.map((item) => item.sequence));
         for (let sequence = first.sequence + 1; sequence < last.sequence; sequence++) {
           if (!present.has(sequence)) {
@@ -128,11 +135,13 @@ export class DocumentsIssuedService {
         netIssued: items.length - cancelled,
         missingNumbers,
         missingTruncated,
+        legacy: group.legacy,
       });
     }
     return rows.sort(
       (a, b) =>
         NATURE_ORDER.indexOf(a.natureOfDocument) - NATURE_ORDER.indexOf(b.natureOfDocument) ||
+        Number(a.legacy) - Number(b.legacy) ||
         a.seriesKey.localeCompare(b.seriesKey) ||
         a.fromNumber.localeCompare(b.fromNumber),
     );
@@ -155,15 +164,13 @@ export class DocumentsIssuedService {
   /** Every number of the franchise issued in the period, from all three document tables. */
   private async issuedDocuments(franchiseId: number, from: string, to: string, timeZone: string): Promise<IIssuedDocument[]> {
     const rows = await this.sequelize.query<{ kind: 'INVOICE' | 'CREDIT_NOTE'; number: string; cancelled: boolean }>(
-      `SELECT 'INVOICE' AS kind, p.invoice_id AS number,
-              (p.active = false OR p.payment_status_id <> :paid) AS cancelled
+      `SELECT 'INVOICE' AS kind, p.invoice_id AS number, (p.active = false) AS cancelled
        FROM public.txn_member_payments p
        WHERE p.franchise_id = :franchiseId
          AND p.invoice_id IS NOT NULL
          AND COALESCE(p.invoice_date, p.payment_date) BETWEEN CAST(:from AS DATE) AND CAST(:to AS DATE)
        UNION ALL
-       SELECT 'INVOICE', m.invoice_id,
-              (m.active = false OR m.payment_status_id <> :paid)
+       SELECT 'INVOICE', m.invoice_id, (m.active = false)
        FROM public.txn_member_products m
        WHERE m.franchise_id = :franchiseId
          AND m.invoice_id IS NOT NULL
@@ -175,7 +182,7 @@ export class DocumentsIssuedService {
          AND c.credit_note_date BETWEEN CAST(:from AS DATE) AND CAST(:to AS DATE)`,
       {
         type: QueryTypes.SELECT,
-        replacements: { franchiseId, from, to, timeZone, paid: PaymentStatusEnum.PAID },
+        replacements: { franchiseId, from, to, timeZone },
       },
     );
     return rows.map((row) => ({

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op, Sequelize } from 'sequelize';
+import { Op, QueryTypes, Sequelize } from 'sequelize';
 import {
   BusinessTypeEnum,
   ConfigParam,
@@ -243,9 +243,11 @@ export class FranchiseService {
   /**
    * The numbering columns to save (compliant invoice numbering 3.4). Only keys present in the payload
    * are written, so a client that doesn't send them keeps the stored format. The effective prefix and
-   * template are validated on every save (decision 6): the Rule 46 limit applies when the franchise's
-   * country is India, and the prefix must not equal another franchise's prefix or code, because
-   * invoice numbers are unique across franchises. Both empty = the legacy format.
+   * template are validated on every save (decision 6, amended in group 7): the Rule 46 limit applies
+   * when the franchise's country is India or unknown, an Indian franchise must have both, and the
+   * prefix must not equal another franchise's prefix or code nor start another franchise's issued
+   * numbers, because invoice numbers are unique across franchises. Both empty = the legacy format
+   * (non-Indian franchises only).
    */
   private async numberingFields(
     franchiseId: number | null,
@@ -265,11 +267,18 @@ export class FranchiseService {
     }
     const prefix = 'invoicePrefix' in fields ? fields.invoicePrefix : clean(stored?.invoicePrefix);
     const template = 'invoiceNumberFormat' in fields ? fields.invoiceNumberFormat : clean(stored?.invoiceNumberFormat);
+    const countryCode = await this.franchiseCountryCode(franchiseId, obj);
     if (!prefix && !template) {
+      if (countryCode === INDIA_COUNTRY_CODE) {
+        throw new BadRequestException(
+          'An Indian franchise needs an invoice prefix and number format (GST invoices allow at most 16 characters, Rule 46).',
+        );
+      }
       return fields;
     }
-    const countryCode = await this.franchiseCountryCode(franchiseId, obj);
-    const errors = InvoiceNumberFormatUtil.validate(template, prefix, { gstLimit: countryCode === INDIA_COUNTRY_CODE });
+    // Unknown country: hold the format to the Indian limit rather than skip it
+    const gstLimit = countryCode === INDIA_COUNTRY_CODE || countryCode === null;
+    const errors = InvoiceNumberFormatUtil.validate(template, prefix, { gstLimit });
     if (prefix) {
       const clash = await this.franchiseRepository.findOne({
         attributes: ['franchiseId', 'franchiseCode'],
@@ -283,12 +292,34 @@ export class FranchiseService {
       });
       if (clash) {
         errors.push(`Prefix ${prefix} is already used by franchise ${clash.franchiseCode}; invoice numbers must be unique across franchises.`);
+      } else if (await this.prefixIssuedByAnotherFranchise(prefix, franchiseId)) {
+        errors.push(`Prefix ${prefix} starts invoice numbers already issued by another franchise; choose another prefix.`);
       }
     }
     if (errors.length > 0) {
       throw new BadRequestException(errors.join(' '));
     }
     return fields;
+  }
+
+  /** True when another franchise has issued an invoice or credit note numbered `{prefix}/…` or `{prefix}-…`. */
+  private async prefixIssuedByAnotherFranchise(prefix: string, franchiseId: number | null): Promise<boolean> {
+    const sequelize = this.franchiseRepository.sequelize as Sequelize;
+    const [row] = await sequelize.query<{ found: number }>(
+      `SELECT 1 AS found FROM (
+           SELECT invoice_id AS number, franchise_id FROM public.txn_member_payments WHERE invoice_id IS NOT NULL
+           UNION ALL SELECT invoice_id, franchise_id FROM public.txn_member_products WHERE invoice_id IS NOT NULL
+           UNION ALL SELECT credit_note_number, franchise_id FROM public.txn_credit_notes
+       ) t
+       WHERE (upper(t.number) LIKE :slash OR upper(t.number) LIKE :dash)
+         AND t.franchise_id IS DISTINCT FROM :franchiseId
+       LIMIT 1`,
+      {
+        type: QueryTypes.SELECT,
+        replacements: { slash: `${prefix.toUpperCase()}/%`, dash: `${prefix.toUpperCase()}-%`, franchiseId },
+      },
+    );
+    return !!row;
   }
 
   /** Country of the franchise: the address in the payload, else the stored one. */

@@ -60,6 +60,8 @@ export interface IFranchiseTurnover {
   /** turnover / threshold × 100, rounded to 2 decimals; null without a threshold */
   percent: number | null;
   level: TurnoverAlertLevel;
+  /** Invoices in another currency still waiting for an exchange rate; not in `turnover` */
+  fxPendingCount: number;
 }
 
 /** One invoice counter of a franchise for a financial year (`mst_invoice_sequences`). */

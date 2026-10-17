@@ -18,6 +18,9 @@
       </div>
       <mat-progress-bar mode="determinate" [value]="progress" [attr.aria-label]="'GST threshold ' + progress + '%'"></mat-progress-bar>
       <div class="note">{{ note }}.</div>
+      @if (turnover.fxPendingCount > 0) {
+        <div class="note">{{ turnover.fxPendingCount }} invoice(s) in another currency are waiting for an exchange rate and are not included yet.</div>
+      }
     </div>
   }
 }

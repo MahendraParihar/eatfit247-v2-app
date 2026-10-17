@@ -7,16 +7,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import {
   BusinessTypeEnum,
+  CREDIT_NOTE_SEQUENCE_TYPE,
   IFranchiseInvoiceCounters,
+  INDIA_COUNTRY_CODE,
   INVOICE_NUMBER_FORMAT_MAX_LENGTH,
   InvoiceNumberFormatUtil,
   InvoiceSeriesEnum,
 } from '@eatfit247-shared-lib';
 import { FranchiseApiService } from '../../api.service';
 
-/** Counter type of credit notes in mst_invoice_sequences (same as the server). */
-const CREDIT_NOTE_SEQUENCE_TYPE = 'credit';
-const INDIA_COUNTRY_CODE = 'IN';
 
 interface IPreviewDocument {
   label: string;
@@ -114,9 +113,9 @@ export class InvoiceNumberingComponent implements OnInit {
     return String(this.formGroup.get('invoiceNumberFormat')?.value || '').trim();
   }
 
-  /** Both empty: the franchise keeps the legacy format. */
+  /** Both empty: a non-Indian franchise keeps the legacy format. */
   get isLegacy(): boolean {
-    return !this.prefix && !this.template;
+    return !this.prefix && !this.template && !this.gstLimit;
   }
 
   get errors(): string[] {
@@ -166,7 +165,10 @@ export class InvoiceNumberingComponent implements OnInit {
   private errorsFor(templateValue: unknown): string[] {
     const template = String(templateValue || '').trim();
     if (!this.prefix && !template) {
-      return [];
+      // Same rule as the server: an Indian franchise can't use the legacy (22-character) format
+      return this.gstLimit
+        ? ['An Indian franchise needs an invoice prefix and number format (GST invoices allow at most 16 characters, Rule 46).']
+        : [];
     }
     return InvoiceNumberFormatUtil.validate(template, this.prefix, { gstLimit: this.gstLimit });
   }

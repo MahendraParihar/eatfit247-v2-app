@@ -13,6 +13,12 @@ export const INVOICE_PREFIX_PATTERN = /^[A-Z0-9]{1,5}$/;
 /** `mst_franchises.invoice_number_format` column length. */
 export const INVOICE_NUMBER_FORMAT_MAX_LENGTH = 40;
 
+/** Country whose invoices are held to Rule 46 (16 characters). */
+export const INDIA_COUNTRY_CODE = 'IN';
+
+/** `mst_invoice_sequences.invoice_type` of credit-note counters. */
+export const CREDIT_NOTE_SEQUENCE_TYPE = 'credit';
+
 export const INVOICE_SEQUENCE_MIN_DIGITS = 3;
 export const INVOICE_SEQUENCE_MAX_DIGITS = 8;
 
@@ -52,7 +58,8 @@ const ALL_TYPE_LETTERS = Object.values(InvoiceTypeLetter);
  * Per-franchise invoice number format (compliant invoice numbering, decisions 2–6).
  * Tokens: `{PREFIX}`, `{FY}` (`2627` for an April start, `2026` for a January start),
  * `{TYPE}` (one letter, see {@link InvoiceTypeLetter}) and `{SEQn}` (the counter, zero-padded to n
- * digits, n from 3 to 8). Literal separators may only be `/` and `-`.
+ * digits, n from 3 to 8). Literal separators may only be `/` and `-`. The template starts with
+ * `{PREFIX}` and a separator, contains `{FY}`, and ends with a separator and `{SEQn}`.
  *
  * Pure functions with no runtime dependencies, so the admin preview and the server share them.
  */
@@ -142,10 +149,19 @@ export class InvoiceNumberFormatUtil {
         }
       }
     }
-    for (const required of ['PREFIX', 'TYPE', 'SEQ']) {
+    // {FY}: counters restart every FY and invoice numbers are unique across all years
+    for (const required of ['PREFIX', 'FY', 'TYPE', 'SEQ']) {
       if (!seen.has(required)) {
         errors.push(`Number format must contain ${required === 'SEQ' ? '{SEQn}' : `{${required}}`}.`);
       }
+    }
+    // Prefix first and the counter last, each set off by a separator: numbers of different
+    // franchises can't collide, and Table 13 reads the counter from the trailing digits
+    if (seen.has('PREFIX') && !/^\{PREFIX\}[\/-]/.test(templateValue)) {
+      errors.push('Number format must start with {PREFIX} followed by / or -.');
+    }
+    if (seen.has('SEQ') && !/[\/-]\{SEQ\d+\}$/.test(templateValue)) {
+      errors.push('Number format must end with {SEQn}, after a / or -.');
     }
 
     const literals = templateValue.replace(BRACE_GROUP, '');

@@ -2,11 +2,11 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { InvoiceSequenceModel } from '../database/models';
-import { BusinessTypeEnum, InvoiceNumberFormatUtil, InvoiceSeriesEnum } from '@eatfit247-shared-lib';
+import { BusinessTypeEnum, CREDIT_NOTE_SEQUENCE_TYPE, InvoiceNumberFormatUtil, InvoiceSeriesEnum } from '@eatfit247-shared-lib';
 import { FranchiseDateUtil } from '../utils/franchise-date.util';
 
-/** Counter type of credit notes in mst_invoice_sequences. */
-export const CREDIT_NOTE_SEQUENCE_TYPE = 'credit';
+/** Counter type of credit notes in mst_invoice_sequences (shared-library; re-exported for existing imports). */
+export { CREDIT_NOTE_SEQUENCE_TYPE };
 
 export interface IInvoiceNumberRequest {
   franchiseId: number;
@@ -87,8 +87,8 @@ export class InvoiceSequenceService {
 
   /**
    * Locks (creating on first use) the counter row, renders the next number and only then saves the
-   * counter. The Rule 46 guard (decision 7) runs before the save, so a refused number is never
-   * consumed even if a caller commits after catching the error.
+   * counter. The Rule 46 guard (decision 7) runs before the save for every number of an Indian
+   * franchise, so a refused number is never consumed even if a caller commits after catching the error.
    */
   private async nextNumber(
     request: ICreditNoteNumberRequest,
@@ -111,7 +111,8 @@ export class InvoiceSequenceService {
     });
     const next = sequence.currentNumber + 1;
     const number = render(next);
-    if (request.gstLimit && this.hasTemplate(request) && !InvoiceNumberFormatUtil.isRule46Compliant(number)) {
+    // Every number of an Indian franchise, templated or legacy (decision 7, amended in group 7)
+    if (request.gstLimit && !InvoiceNumberFormatUtil.isRule46Compliant(number)) {
       this.logger.error(
         `Refused invoice number ${number} for franchise ${request.franchiseId}: it breaks Rule 46 (at most 16 characters, ` +
           `letters, digits, / and -). Fix the franchise's invoice number format.`,

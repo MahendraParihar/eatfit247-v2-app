@@ -1,7 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
-import { EXPORT_TAX_MODES, IMemberAddress, InvoiceSeriesEnum, TaxMode } from '@eatfit247-shared-lib';
+import { EXPORT_TAX_MODES, IMemberAddress, INDIA_COUNTRY_CODE, InvoiceSeriesEnum, TaxMode } from '@eatfit247-shared-lib';
 
-export const INDIA_COUNTRY_CODE = 'IN';
+// Defined in shared-library so the admin uses the same value; re-exported for existing server imports
+export { INDIA_COUNTRY_CODE };
 
 export interface IInvoiceSeriesInput {
   /** Country of the issuing franchise (from its address) */
