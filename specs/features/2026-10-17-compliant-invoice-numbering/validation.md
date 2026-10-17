@@ -52,3 +52,14 @@
 - **2026-10-17 Table 13 live run (Accounts / CA to decide):** EFMUM `EFMUM/2026-27/S/000463` (payment 5246, paid 30 Sep) and `…000464` (payment 5247, paid 25 Aug) were entered and numbered on 8 Oct, after `…000461` / `…000462` (7 Oct). By payment date, Q2 runs `000203…000464` missing 461–462 and October runs `000461…000491` missing 463–464. Nothing is changed (decision 1); Accounts decide which return lists 463–464 and, if the Q2 return is already filed, whether it needs an amendment.
 - **2026-10-17 monthly view:** by payment date the August and September ranges interleave (`000377…000463` in September with 35 numbers dated August): 34 payments entered in September carry August payment dates, and the old invoices print the payment date. Monthly Table 13 for FY 2026-27 months before go-live will show gaps; quarterly it is 2 (461–462). From go-live `invoice_date` is the issue date, so ranges are contiguous. Accounts decide how to report the pre-go-live months.
 - **2026-10-17 local test data left in `eatfit`:** QA admin users from `scripts/dev/qa-test-admin-users.sql` (incl. `qa.super.admin`); address 5857 "QA US billing" on member 4945; member 6394 `qa.web.checkout@eatfit247.test` with address 5859 "QA UAE billing"; payments 5278–5281 (counters EFMUM service DOMESTIC 494, EXPORT 1).
+- **2026-10-17 combination run (admin UI on localhost, dummy member 6395 `qa.combo@eatfit247.test`, created in the admin; test LUT `AD270426999999T` for EFMUM FY 2026-27 added in the LUT Register).** Each invoice PDF was rendered and read:
+  - Karnataka client, UPI: `EFM/2627/S/00495`, IGST 900, place of supply Karnataka (29).
+  - US client, international card (e-FIRA): `EFM/2627/E/00002`, 0% under LUT, LUT endorsement and ARN printed.
+  - US client, NRE / FCNR: `EFM/2627/E/00003`, 0% under LUT.
+  - US client, Vostro, created PENDING with no number, then edited to PAID: `EFM/2627/E/00004`, 0% under LUT.
+
+  Counters: EFMUM DOMESTIC 495, EXPORT 4. Not covered locally:
+  - an export paid in USD (no USD fee or USD gateway locally);
+  - HCUAE invoices (no TRN locally);
+  - Mahi product orders (a PAID order books a live NimbusPost shipment);
+  - GST credit notes (roadmap 4.9).
