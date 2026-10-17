@@ -1,9 +1,10 @@
-import {PaymentSourceEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {InvoiceSeriesEnum, PaymentRouteEnum, PaymentSourceEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum} from "../../enum";
 import {IAdminInfo, IDropdownItem} from "../../base.interface";
 import {IAddress} from "../location.interface";
 import {IShipment} from "../shipment.interface";
 import {IProduct} from "../product.interface";
 import {ICalculateTaxResponse} from "../tax-calculation.interface";
+import {IInvoiceFx} from "../tax-master.interface";
 
 export interface ICalculateProductVariantTaxRequest {
   items: IMemberProductOrderItemBasic[];
@@ -56,15 +57,28 @@ export interface IMemberProductOrderItem {
   isLutApplied?: boolean;
   jurisdiction?: any;
   invoiceNote?: string;
+  taxCategory?: TaxCategoryEnum | null;
+  lutArn?: string | null;
+  taxDecisionReason?: string | null;
+  /** ISO country of the place of supply, stored with the tax decision (Circular 242/36/2024) */
+  placeOfSupplyCountryCode?: string | null;
+  /** State code of the place of supply (GST state code in India); null for exports */
+  placeOfSupplyStateCode?: string | null;
+  /** HSN / SAC of the rule that priced this line, stored at decision time */
+  hsnSacCode?: string | null;
 }
 
-export interface IBasicMemberProduct {
+export interface IBasicMemberProduct extends IInvoiceFx {
   memberId: number;
   paymentModeId?: number | null;
   addressId?: number | null;
   transactionId?: string;
   paymentDate: Date;
   invoiceId?: string;
+  /** Series of `invoiceId`, set when the number is issued (null for Q1 FY 2026-27 and earlier) */
+  invoiceSeries?: InvoiceSeriesEnum | null;
+  /** Date of issue in the franchise's timezone (YYYY-MM-DD); the FY in the number comes from it */
+  invoiceDate?: string | null;
   paymentStatusId: number;
   franchiseId?: number | null;
   promoCode?: string;
@@ -85,6 +99,8 @@ export interface IBasicMemberProduct {
   gatewayOrderId?: string;
   gatewayPaymentId?: string;
   paymentLink?: string;
+  paymentRoute?: PaymentRouteEnum | null;
+  remittanceReference?: string | null;
 }
 
 export interface IManageMemberProduct {
@@ -104,7 +120,12 @@ export interface IManageMemberProduct {
   paymentLink?: string;
   gatewayProvider?: string;
   gatewayOrderId?: string;
+  /** Admin's gateway choice for a PAYMENT_GATEWAY record; the server creates the link after saving. */
+  franchisePaymentGatewayId?: number;
   gatewayPaymentId?: string;
+  /** Manual orders only: how the money arrived */
+  paymentRoute?: PaymentRouteEnum | null;
+  remittanceReference?: string | null;
   orderItems: IMemberProductOrderItemBasic[];
 }
 

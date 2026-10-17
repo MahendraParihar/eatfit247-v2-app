@@ -43,6 +43,18 @@
             <shared-ui-input-error [control]="formGroup.get('transactionType')"></shared-ui-input-error>
           </mat-form-field>
 
+          @if (showPlanDropdown) {
+            <mat-form-field appearance="outline">
+              <mat-label>Applies to</mat-label>
+              <mat-select formControlName="referenceId">
+                @for (plan of planOptions; track plan.id) {
+                  <mat-option [value]="plan.id">{{ plan.label }}</mat-option>
+                }
+              </mat-select>
+              <mat-hint>A plan-specific rule wins over "All plans"</mat-hint>
+            </mat-form-field>
+          }
+
           @if (showProductDropdown) {
             <mat-form-field appearance="outline">
               <mat-label>Product</mat-label>
@@ -94,6 +106,19 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
+            <mat-label>HSN / SAC code</mat-label>
+            <input matInput formControlName="hsnSacCode" inputmode="numeric" placeholder="999319 or 2106" />
+            <mat-hint>4–8 digits; printed on the invoice line</mat-hint>
+            <shared-ui-input-error [control]="formGroup.get('hsnSacCode')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Legal basis</mat-label>
+            <textarea matInput formControlName="legalBasis" rows="2" placeholder="Notification / article / adviser note Accounts can quote"></textarea>
+            <shared-ui-input-error [control]="formGroup.get('legalBasis')"></shared-ui-input-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
             <mat-label>Effective From</mat-label>
             <input matInput [matDatepicker]="fromPicker" formControlName="effectiveFrom" />
             <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
@@ -109,11 +134,28 @@
             <shared-ui-input-error [control]="formGroup.get('effectiveTo')"></shared-ui-input-error>
           </mat-form-field>
 
+          <mat-form-field appearance="outline">
+            <mat-label>Tax category</mat-label>
+            <mat-select formControlName="taxCategory">
+              @for (category of taxCategories; track category.value) {
+                <mat-option [value]="category.value">{{ category.label }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>For VAT: a 0% rule must be zero-rated or exempt. Use tax system NONE for a franchise that isn't registered.</mat-hint>
+          </mat-form-field>
+
           <div class="checkbox-group">
             <mat-checkbox formControlName="isTaxInclusive">
               Tax Inclusive
             </mat-checkbox>
           </div>
+
+          @if (isEditMode && isStagedRule) {
+            <p class="staged-hint full-width">
+              <mat-icon inline>schedule</mat-icon>
+              Staged rule: activate it from the list once the CA confirms the registration. Once active, the newest effective date wins over the older rule.
+            </p>
+          }
         </div>
       </div>
 

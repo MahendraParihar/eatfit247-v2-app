@@ -14,6 +14,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AddressFormComponent, InputErrorComponent, UploadFormComponent, ValidationUtil } from '@shared';
 import { FranchiseApiService } from '../api.service';
+import { FINANCIAL_YEAR_OPTIONS } from '../financial-year.util';
+import { InvoiceNumberingComponent } from './invoice-numbering/invoice-numbering.component';
 import {
   BusinessTypeEnum,
   CommonUtil,
@@ -41,7 +43,8 @@ import {
     MatSnackBarModule,
     InputErrorComponent,
     UploadFormComponent,
-    AddressFormComponent
+    AddressFormComponent,
+    InvoiceNumberingComponent
   ],
   templateUrl: './manage-franchise.html',
   styleUrl: './manage-franchise.scss'
@@ -93,8 +96,13 @@ export class ManageFranchise implements OnInit, OnDestroy {
     alternateContactNumber: ['', [Validators.required, Validators.maxLength(InputLengthEnum.MAX_CONTACT_NUMBER)]],
     panNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_20)]],
     tanNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_20)]],
-    gstNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_50)]],
-    vatNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
+    // Indian GSTIN (15 characters) when the franchise is GST-registered; empty otherwise
+    gstNumber: [
+      '',
+      [Validators.maxLength(InputLengthEnum.CHAR_50), Validators.pattern(/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/)],
+    ],
+    // VAT registration number; for the UAE, the 15-digit TRN
+    vatNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_100), Validators.pattern(/^[0-9A-Z]{8,20}$/)]],
     bankAccountId: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
     paymentGatewayConfigId: [null],
     brandName: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
@@ -105,7 +113,11 @@ export class ManageFranchise implements OnInit, OnDestroy {
     isPrimary: [false, [Validators.required]],
     isDefault: [false, [Validators.required]],
     businessType: [[]],
-    active: [true, [Validators.required]]
+    active: [true, [Validators.required]],
+    // Invoice numbering (compliant invoice numbering); validated by InvoiceNumberingComponent
+    invoicePrefix: [''],
+    invoiceNumberFormat: [''],
+    registrationThresholdAmount: [null, [Validators.min(0)]]
   });
   initialData!: IFranchise;
   isEditMode = false;
@@ -115,26 +127,13 @@ export class ManageFranchise implements OnInit, OnDestroy {
   internationalTaxModeOptions = InternationalTaxModeEnum;
   businessTypeOptions = BusinessTypeEnum;
   masterData: { taxApplicable: boolean } | null = null;
-  financialYearOptions: { value: number; label: string }[] = [];
-
-  private initializeFinancialYearOptions(): void {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    this.financialYearOptions = Array.from({ length: 12 }, (_, i) => {
-      const startMonth = months[i];
-      const endMonth = months[(i + 11) % 12];
-      return {
-        value: i + 1,
-        label: `${startMonth} to ${endMonth}`
-      };
-    });
-  }
+  financialYearOptions = FINANCIAL_YEAR_OPTIONS;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private apiService = inject(FranchiseApiService);
   private snackBar = inject(MatSnackBar);
 
   async ngOnInit(): Promise<void> {
-    this.initializeFinancialYearOptions();
     const id = this.route.snapshot.paramMap.get('id');
     await this.loadMasterData();
     if (id && id !== 'new') {
@@ -168,7 +167,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
         panNumber: this.initialData.panNumber || '',
         tanNumber: this.initialData.tanNumber || '',
         gstNumber: this.initialData.gstNumber || '',
-        vatNumber: (this.initialData as any).vatNumber || '',
+        vatNumber: this.initialData.vatNumber || '',
         bankAccountId: (this.initialData as any).bankAccountId || '',
         paymentGatewayConfigId: (this.initialData as any).paymentGatewayConfigId || null,
         brandName: (this.initialData as any).brandName || '',
@@ -179,7 +178,10 @@ export class ManageFranchise implements OnInit, OnDestroy {
         isPrimary: (this.initialData as any).isPrimary !== undefined ? (this.initialData as any).isPrimary : false,
         isDefault: (this.initialData as any).isDefault !== undefined ? (this.initialData as any).isDefault : false,
         businessType: (this.initialData as any).businessType || [],
-        active: this.initialData.active !== undefined ? this.initialData.active : true
+        active: this.initialData.active !== undefined ? this.initialData.active : true,
+        invoicePrefix: this.initialData.invoicePrefix || '',
+        invoiceNumberFormat: this.initialData.invoiceNumberFormat || '',
+        registrationThresholdAmount: this.initialData.registrationThresholdAmount ?? null
       });
       
       // Address will be bound by AddressFormComponent when address input is set
@@ -255,6 +257,10 @@ export class ManageFranchise implements OnInit, OnDestroy {
       // Format dates to avoid timezone conversion issues
       formValue.startDate = CommonUtil.formatDateForAPI(formValue.startDate) || undefined;
       formValue.endDate = CommonUtil.formatDateForAPI(formValue.endDate) || undefined;
+      formValue.invoicePrefix = String(formValue.invoicePrefix || '').trim().toUpperCase() || null;
+      formValue.invoiceNumberFormat = String(formValue.invoiceNumberFormat || '').trim() || null;
+      const threshold = formValue.registrationThresholdAmount;
+      formValue.registrationThresholdAmount = threshold === null || threshold === undefined || threshold === '' ? null : Number(threshold);
       
       // Handle logo from upload form
       const logoControl = this.formGroup.get('logo');

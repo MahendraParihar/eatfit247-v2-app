@@ -1,6 +1,21 @@
 import Razorpay from 'razorpay';
 import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { CurrencyUtil } from '@eatfit247-shared-lib';
+
+/** Gateway-agnostic view of a payment fetched from the gateway API. */
+export interface IGatewayPaymentDetails {
+  id: string;
+  orderId: string | null;
+  /** Gateway status, e.g. Razorpay `created` | `authorized` | `captured` | `refunded` | `failed`. */
+  status: string;
+  amountMinor: number;
+  currency: string;
+  createdAt: Date;
+  raw: Record<string, unknown>;
+}
+
+const RAZORPAY_TIMEOUT_MS = 15_000;
 
 @Injectable()
 export class RazorpayService {
@@ -30,20 +45,33 @@ export class RazorpayService {
     return this.razorpay;
   }
 
+  /**
+   * The SDK sets no request timeout; callers may hold a row lock while waiting, so every call
+   * is bounded (the request itself may still finish at Razorpay).
+   */
+  private withTimeout<T>(label: string, request: Promise<T>, ms = RAZORPAY_TIMEOUT_MS): Promise<T> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`Razorpay ${label} timed out after ${ms / 1000}s`)), ms);
+    });
+    return Promise.race([request, timeout]).finally(() => clearTimeout(timer));
+  }
+
   async createOrder(
     amount: number,
     receipt: string,
+    currency: string,
     notes?: Record<string, any>,
     keyId?: string,
     keySecret?: string,
   ) {
     const razorpay = this.getRazorpayInstance(keyId, keySecret);
-    return razorpay.orders.create({
-      amount: Math.round(amount * 100), // INR → paise
-      currency: 'INR',
+    return this.withTimeout('order create', razorpay.orders.create({
+      amount: CurrencyUtil.toMinor(amount, currency),
+      currency: currency.toUpperCase(),
       receipt,
       notes,
-    });
+    }));
   }
 
   async createPaymentLink(
@@ -60,13 +88,53 @@ export class RazorpayService {
     keySecret?: string,
   ) {
     const razorpay = this.getRazorpayInstance(keyId, keySecret);
-    return razorpay.paymentLink.create({
-      amount: Math.round(amount * 100), // Convert to smallest currency unit (paise for INR)
+    return this.withTimeout('payment link create', razorpay.paymentLink.create({
+      amount: CurrencyUtil.toMinor(amount, currency),
       currency: currency,
       description,
       customer: customer || {},
       notes: notes || {},
-    });
+    }));
+  }
+
+  /**
+   * Cancel a payment link so it can no longer be paid.
+   * Returns the link's resulting status; 'paid' means it was paid before it could be cancelled.
+   */
+  async cancelPaymentLink(
+    paymentLinkId: string,
+    keyId: string,
+    keySecret: string,
+  ): Promise<{ status: string }> {
+    const razorpay = this.getRazorpayInstance(keyId, keySecret);
+    const link = await this.withTimeout('payment link fetch', razorpay.paymentLink.fetch(paymentLinkId));
+    if (['paid', 'cancelled', 'expired'].includes(String(link.status))) {
+      return { status: String(link.status) };
+    }
+    const cancelled = await this.withTimeout('payment link cancel', razorpay.paymentLink.cancel(paymentLinkId));
+    return { status: String(cancelled.status) };
+  }
+
+  /**
+   * Fetch a payment from the Razorpay API (status, amount in minor units, order id).
+   * The checkout verify path trusts this, never the browser.
+   */
+  async fetchPayment(
+    paymentId: string,
+    keyId: string,
+    keySecret: string,
+  ): Promise<IGatewayPaymentDetails> {
+    const razorpay = this.getRazorpayInstance(keyId, keySecret);
+    const payment = await this.withTimeout('payment fetch', razorpay.payments.fetch(paymentId));
+    return {
+      id: payment.id,
+      orderId: payment.order_id ?? null,
+      status: payment.status,
+      amountMinor: Number(payment.amount),
+      currency: payment.currency,
+      createdAt: new Date(Number(payment.created_at) * 1000),
+      raw: payment as unknown as Record<string, unknown>,
+    };
   }
 
   /**

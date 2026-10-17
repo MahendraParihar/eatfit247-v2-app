@@ -35,6 +35,7 @@ import {
 import { CanvasRenderer } from 'echarts/renderers';
 import type { EChartsCoreOption } from 'echarts/core';
 import { DashboardApiService, IAnnualFranchiseSummary } from '../../api.service';
+import { GstThresholdAlertsComponent } from '../gst-threshold-alerts/gst-threshold-alerts.component';
 
 echarts.use([
   LineChart,
@@ -52,6 +53,7 @@ const SUPER_ADMIN_ROLE = 'super_admin';
   selector: 'lib-annual-dashboard',
   standalone: true,
   imports: [
+    GstThresholdAlertsComponent,
     CommonModule,
     FormsModule,
     MatCardModule,

@@ -321,7 +321,7 @@ export class MemberService {
 
     if (!defaultFranchise) {
       throw new BadRequestException(
-        'No franchise found for the specified country and no default franchise is configured',
+        'No franchise serves this country and no default franchise is configured (set is_default on a franchise in the admin)',
       );
     }
 
@@ -332,12 +332,6 @@ export class MemberService {
     obj: IManageMember,
     cIp: string,
   ): Promise<{ memberId: number; isNew: boolean; checkoutToken: string }> {
-    // Determine franchise based on countryId if not provided
-    let franchiseId = obj.franchiseId;
-    if (!franchiseId && obj.countryId) {
-      franchiseId = await this.determineFranchiseByCountry(obj.countryId);
-    }
-
     // Check if member exists by email or phone
     const existingMember = await this.memberRepository.findOne({
       where: {
@@ -349,36 +343,9 @@ export class MemberService {
     });
 
     if (existingMember) {
-      // Update existing member
-      const updateObj: any = {
-        firstName: obj.firstName,
-        lastName: obj.lastName,
-        countryCode: obj.countryCode,
-        franchiseId: franchiseId,
-        countryId: obj.countryId,
-        referrerId: obj.referrerId || null,
-        nutritionistId: obj.nutritionistId || null,
-        active: obj.active !== undefined ? obj.active : existingMember.active,
-        hasAnyPlan: obj.hasAnyPlan !== undefined ? obj.hasAnyPlan : existingMember.hasAnyPlan,
-        modifiedIp: cIp,
-      };
-
-      // Update password if provided
-      if (obj.password) {
-        const hashedPassword = await CryptoUtil.generateHash(obj.password);
-        updateObj.password = hashedPassword;
-        updateObj.passwordTemp = hashedPassword;
-      }
-
-      // Update profile picture if provided
-      if (obj.profilePicture && obj.profilePicture.length > 0) {
-        updateObj.profilePicture = obj.profilePicture;
-      }
-
-      await this.memberRepository.update(updateObj, {
-        where: { memberId: existingMember.memberId },
-      });
-
+      // This route is unauthenticated (anyone can type an email or phone), so an existing
+      // member's profile is never changed here. The checkout token it returns only reaches
+      // orders created in this session (see CheckoutTokenGuard `checkoutTokenIssuedAt`).
       return {
         memberId: existingMember.memberId,
         isNew: false,
@@ -386,6 +353,11 @@ export class MemberService {
       };
     } else {
       // Create new member
+      // The franchise follows the country only for a new member; an existing member keeps theirs
+      let franchiseId = obj.franchiseId;
+      if (!franchiseId && obj.countryId) {
+        franchiseId = await this.determineFranchiseByCountry(obj.countryId);
+      }
       // Generate a temporary password if not provided
       let hashedPassword = '';
       if (obj.password) {

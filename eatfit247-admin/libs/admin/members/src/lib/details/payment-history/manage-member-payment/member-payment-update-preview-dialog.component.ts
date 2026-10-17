@@ -21,6 +21,10 @@ export class MemberPaymentUpdatePreviewDialogComponent {
   }
 
   confirm(): void {
+    // The server refuses a blocked edit; don't offer to send it
+    if (this.data.blocked) {
+      return;
+    }
     this.dialogRef.close(true);
   }
 

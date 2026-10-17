@@ -135,7 +135,7 @@
               }
               @case ('date') {
                 @if (getFormattedValue(row, column); as dateValue) {
-                  {{ dateValue | date: 'dd MMM yyyy hh:mm a' }}
+                  {{ dateValue | date: (column.dateFormat || 'dd MMM yyyy hh:mm a') }}
                 } @else {
                   -
                 }

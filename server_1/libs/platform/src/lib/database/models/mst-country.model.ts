@@ -59,6 +59,13 @@ export class MstCountry extends Model<MstCountry> {
   declare defaultTaxPercentage: number;
 
   @Column({
+    allowNull: true,
+    field: 'currency_code',
+    type: DataType.STRING(3),
+  })
+  declare currencyCode: string | null;
+
+  @Column({
     allowNull: false,
     defaultValue: true,
     field: 'active',

@@ -256,7 +256,7 @@ export class PaymentReportComponent implements OnInit, OnDestroy {
             maximumFractionDigits: 2
           })}`
       },
-      { key: 'paymentDate', label: 'Payment Date', dataKey: 'paymentDate', type: 'date', sortable: true },
+      { key: 'paymentDate', label: 'Payment Date', dataKey: 'paymentDate', type: 'date', dateFormat: 'dd MMM yyyy', sortable: true },
       { key: 'invoiceId', label: 'Invoice ID', dataKey: 'invoiceId', sortable: true },
       {
         // Tracks the country filter's source so the column always shows the value

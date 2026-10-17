@@ -19,13 +19,16 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { InputErrorComponent } from '@shared';
 import {
+  IAddress,
   ICalculateTaxResponse,
   IDropdownItem,
   IMemberPayment,
   IMemberPaymentMasterData,
   InputLengthEnum,
+  PaymentRouteEnum,
   PaymentSourceEnum,
-  PaymentStatusEnum
+  PaymentStatusEnum,
+  TaxMode
 } from '@eatfit247-shared-lib';
 import { MembersApiService } from '../../../api.service';
 import { PaymentFormService } from './payment-form.service';
@@ -77,12 +80,14 @@ export class ManageMemberPaymentComponent implements OnInit {
   loading = signal(false);
   submitting = signal(false);
   calculatingTax = signal(false);
-  creatingPaymentLink = signal(false);
   isEditMode = false;
   selectedIndex = signal(0);
   InputLengthEnum = InputLengthEnum;
+  PaymentStatusEnum = PaymentStatusEnum;
   availableCurrencies = signal<IDropdownItem[]>([]);
   taxCalculationResult = signal<ICalculateTaxResponse | null>(null);
+  /** The tax engine's refusal (e.g. an Indian client under a non-Indian franchise); the dialog stays on step 1 */
+  taxError = signal<string | null>(null);
   paymentLink = signal<string | null>(null);
   paymentLinkId = signal<string | null>(null);
   supportedGateways = signal<
@@ -99,6 +104,8 @@ export class ManageMemberPaymentComponent implements OnInit {
   >([]);
   loadingGateways = signal(false);
   selectedGatewayId = signal<number | null>(null);
+  /** The gateway payment was saved and its link created (shown for copying). */
+  linkCreatedOnSave = signal(false);
 
   constructor() {
     this.initializeForm();
@@ -240,10 +247,21 @@ export class ManageMemberPaymentComponent implements OnInit {
         this.calculateTaxFromBackend();
       });
     // Subscribe to payment source changes to update field validators
+    // The payment mode (its route) and date of a manual payment change its tax (export vs IGST, LUT)
+    this.formGroup
+      .get('paymentModeId')
+      ?.valueChanges.pipe(distinctUntilChanged())
+      .subscribe(() => this.calculateTaxFromBackend());
+    this.formGroup
+      .get('paymentDate')
+      ?.valueChanges.pipe(debounceTime(300))
+      .subscribe(() => this.calculateTaxFromBackend());
     this.formGroup
       .get('paymentSource')
       ?.valueChanges.subscribe((paymentSource) => {
         this.updatePaymentFieldValidators(paymentSource);
+        // Manual vs gateway changes the route the tax uses
+        this.calculateTaxFromBackend();
         // Clear payment link when payment source changes
         this.paymentLink.set(null);
         this.paymentLinkId.set(null);
@@ -347,6 +365,7 @@ export class ManageMemberPaymentComponent implements OnInit {
         formData
       );
       this.taxCalculationResult.set(result);
+      this.taxError.set(null);
       if (result) {
         // Update tax percentage display
         this.formGroup.patchValue(
@@ -356,11 +375,20 @@ export class ManageMemberPaymentComponent implements OnInit {
           { emitEvent: false }
         );
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.taxCalculationResult.set(null);
-      // Error toast is handled by HttpErrorInterceptor
+      const message = (error as { message?: string } | null)?.message;
+      this.taxError.set(message || 'Tax could not be calculated for this selection.');
     } finally {
       this.calculatingTax.set(false);
+    }
+  }
+
+  /** Step 1 → 2 only with a tax decision: a refusal keeps the dialog on step 1 with the reason. */
+  async proceedToTaxStep(stepper: { next: () => void }): Promise<void> {
+    await this.calculateTaxFromBackend();
+    if (this.taxCalculationResult()) {
+      stepper.next();
     }
   }
 
@@ -385,7 +413,7 @@ export class ManageMemberPaymentComponent implements OnInit {
   }
 
   canProceedToStep2(): boolean {
-    return this.step1FormGroup?.valid ?? false;
+    return (this.step1FormGroup?.valid ?? false) && !!this.taxCalculationResult();
   }
 
   canProceedToStep3(): boolean {
@@ -404,9 +432,9 @@ export class ManageMemberPaymentComponent implements OnInit {
     const isPaymentGateway =
       paymentSource === PaymentSourceEnum?.PAYMENT_GATEWAY ||
       paymentSource === 'PAYMENT_GATEWAY';
-    // If payment source is PAYMENT_GATEWAY, payment link must be generated
-    if (isPaymentGateway) {
-      return !!this.paymentLink() && this.paymentLink()!.trim().length > 0;
+    // New gateway payment: a gateway must be chosen (the link is created when saving)
+    if (isPaymentGateway && !this.isEditMode) {
+      return !!this.formGroup.get('franchisePaymentGatewayId')?.value;
     }
     // For other payment sources, payment link is not required
     return true;
@@ -440,70 +468,6 @@ export class ManageMemberPaymentComponent implements OnInit {
       // Error toast is handled by HttpErrorInterceptor
     } finally {
       this.loadingGateways.set(false);
-    }
-  }
-
-  async createPaymentLinkIfNeeded(): Promise<void> {
-    if (this.paymentLink()) {
-      return;
-    }
-    const totalAmount = this.totalAmount;
-    if (totalAmount <= 0) {
-      this.snackBar.open('Invalid amount for payment link', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-    const selectedGatewayId =
-      this.formGroup.get('franchisePaymentGatewayId')?.value ||
-      this.selectedGatewayId();
-    if (!selectedGatewayId) {
-      this.snackBar.open('Please select a payment gateway', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-    this.creatingPaymentLink.set(true);
-    try {
-      const currencyCode =
-        this.step1FormGroup?.get('currencyCode')?.value ||
-        this.formGroup.get('currencyCode')?.value ||
-        'INR';
-      const programId =
-        this.step1FormGroup?.get('programId')?.value ||
-        this.formGroup.get('programId')?.value;
-      const programPlanId =
-        this.step1FormGroup?.get('programPlanId')?.value ||
-        this.formGroup.get('programPlanId')?.value;
-      const programName =
-        this.programOptions.find((p) => p.id === programId)?.label || '';
-      const planName =
-        this.programPlanOptions.find((p) => p.id === programPlanId)?.label ||
-        '';
-      const result = await this.paymentFormService.createPaymentLink(
-        this.data.memberId,
-        totalAmount,
-        currencyCode,
-        selectedGatewayId,
-        programId,
-        programPlanId,
-        programName,
-        planName
-      );
-      this.paymentLink.set(result.shortUrl);
-      this.paymentLinkId.set(result.id);
-      this.formGroup.patchValue({
-        paymentLink: result.shortUrl,
-        gatewayProvider: result.gatewayCode,
-        gatewayOrderId: result.id,
-        paymentStatusId: PaymentStatusEnum.PENDING,
-      });
-    } catch (error) {
-      this.snackBar.open('Failed to create payment link', 'Close', {
-        duration: 3000,
-      });
-    } finally {
-      this.creatingPaymentLink.set(false);
     }
   }
 
@@ -596,6 +560,26 @@ export class ManageMemberPaymentComponent implements OnInit {
       if (formValues.gatewayOrderId) {
         this.paymentLinkId.set(formValues.gatewayOrderId);
       }
+      this.lockGatewayPaymentFields();
+    }
+  }
+
+  /** Editing a gateway payment (decision 14) */
+  isGatewayPaymentEdit(): boolean {
+    return this.isEditMode && this.data.payment?.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY;
+  }
+
+  /**
+   * Decision 14: a gateway payment's source and amounts can't change, paid or not (the stored
+   * total is what the gateway charges or charged). Cancel the link and create a new payment.
+   */
+  private lockGatewayPaymentFields(): void {
+    if (!this.isGatewayPaymentEdit()) {
+      return;
+    }
+    this.formGroup.get('paymentSource')?.disable({ emitEvent: false });
+    for (const key of ['programId', 'programPlanId', 'currencyCode', 'discountAmount', 'billingAddressId']) {
+      this.step1FormGroup.get(key)?.disable({ emitEvent: false });
     }
   }
 
@@ -604,20 +588,9 @@ export class ManageMemberPaymentComponent implements OnInit {
     if (this.formGroup.valid && this.step1FormGroup?.valid) {
       this.submitting.set(true);
       try {
-        if (!this.isManualPaymentSource()) {
-          if (
-            !this.formGroup.value.paymentLink ||
-            this.formGroup.value.paymentLink.length === 0
-          ) {
-            this.snackBar.open(
-              'Payment link not generated, order can not be placed',
-              'Close',
-              {
-                duration: 3000,
-              }
-            );
-            return;
-          }
+        if (!this.isManualPaymentSource() && !this.isEditMode && !this.formGroup.get('franchisePaymentGatewayId')?.value) {
+          this.snackBar.open('Please select a payment gateway', 'Close', { duration: 3000 });
+          return;
         }
         const formValue = this.paymentFormService.transformFormToPaymentPayload(
           this.data.memberId,
@@ -645,7 +618,16 @@ export class ManageMemberPaymentComponent implements OnInit {
           }
           await this.apiService.updatePayment(this.data.memberId, paymentId, formValue);
         } else {
-          await this.apiService.createPayment(this.data.memberId, formValue);
+          const created = await this.apiService.createPayment(this.data.memberId, formValue);
+          if (!this.isManualPaymentSource() && created?.paymentLink) {
+            // Saved; show the server-created link to copy, then "Done" closes the dialog
+            this.paymentLink.set(created.paymentLink);
+            this.paymentLinkId.set(created.gatewayOrderId || null);
+            this.linkCreatedOnSave.set(true);
+            // The record exists now: close only via Done/Cancel, which refresh the list
+            this.dialogRef.disableClose = true;
+            return;
+          }
         }
         this.dialogRef.close(true);
       } catch (error) {
@@ -659,7 +641,8 @@ export class ManageMemberPaymentComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.dialogRef.close(false);
+    // After "Save & Create" the payment exists, so the list must refresh
+    this.dialogRef.close(this.linkCreatedOnSave());
   }
 
   get paymentModeOptions(): IDropdownItem[] {
@@ -742,6 +725,70 @@ export class ManageMemberPaymentComponent implements OnInit {
     } catch (error) {
       // Error toast is handled by HttpErrorInterceptor
     }
+  }
+
+  /** Billing address of the form, from the member's addresses. */
+  private get selectedBillingAddress(): IAddress | null {
+    const id = this.step1FormGroup?.get('billingAddressId')?.value || this.formGroup.get('billingAddressId')?.value;
+    return (this.masterData()?.addresses || []).find((a) => a.addressId === id) || null;
+  }
+
+  /** A manual payment billed outside India (its payment mode decides export vs IGST). */
+  private isForeignManualPayment(): boolean {
+    const billing = this.selectedBillingAddress;
+    if (!this.isManualPaymentSource() || !billing) {
+      return false;
+    }
+    const code = (billing.countryCode || '').trim().toUpperCase();
+    const name = (billing.country || '').trim().toLowerCase();
+    return code ? code !== 'IN' : !!name && name !== 'india';
+  }
+
+  /**
+   * Decision 10 (compliant invoice numbering): a client billed outside India with a domestic payment mode
+   * selected; the hint points to the remittance modes so a payment from abroad is priced as an export.
+   */
+  get showRemittanceHint(): boolean {
+    const modeId = this.formGroup.get('paymentModeId')?.value;
+    if (!modeId || !this.isForeignManualPayment()) {
+      return false;
+    }
+    const mode = this.paymentModeOptions.find((option) => option.id === modeId);
+    const route = (mode?.metadata as { paymentRoute?: string } | undefined)?.paymentRoute;
+    return route === PaymentRouteEnum.DOMESTIC;
+  }
+
+  /** Stored with the decision (Circular 242/36/2024): country and, for a domestic supply, the State code */
+  get placeOfSupplyLabel(): string | null {
+    const result = this.taxCalculationResult();
+    if (!result?.placeOfSupplyCountryCode) {
+      return null;
+    }
+    return result.placeOfSupplyStateCode
+      ? `${result.placeOfSupplyCountryCode} / State ${result.placeOfSupplyStateCode}`
+      : result.placeOfSupplyCountryCode;
+  }
+
+  /** Why the server taxed it this way (shown under the tax summary). */
+  get taxDecisionReason(): string | null {
+    return this.taxCalculationResult()?.taxDecisionReason || null;
+  }
+
+  /** Warnings an admin should see before saving (roadmap 4.6). */
+  get taxWarnings(): string[] {
+    const result = this.taxCalculationResult();
+    if (!result) {
+      return [];
+    }
+    const warnings: string[] = [];
+    const isExport = result.taxMode === TaxMode.EXPORT_OF_SERVICE || result.taxMode === TaxMode.EXPORT_OF_GOODS;
+    if (isExport && !result.isLutApplied) {
+      warnings.push('No valid LUT for this date: the export is charged IGST. Add the LUT in the franchise LUT register.');
+    }
+    if (result.taxMode === TaxMode.DOMESTIC_GST && this.isForeignManualPayment()) {
+      warnings.push('INR received over Indian payment methods from a client outside India is not an export, so IGST applies. If the money came from abroad, pick the matching payment mode (SWIFT, exchange house / RDA, Remitly / Wise, international card, NRE/FCNR, Vostro, PayPal).');
+    }
+    return warnings;
   }
 
   get taxableAmount(): number {

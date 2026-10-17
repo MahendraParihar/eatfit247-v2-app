@@ -6,11 +6,12 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
+import { TaxCategoryEnum, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
 
 export class CreateTaxMasterDto {
   @IsNotEmpty()
@@ -57,6 +58,23 @@ export class CreateTaxMasterDto {
   @IsNotEmpty()
   @IsBoolean()
   isTaxInclusive!: boolean;
+
+  /** VAT category; defaults to STANDARD */
+  @IsOptional()
+  @IsEnum(TaxCategoryEnum)
+  taxCategory?: TaxCategoryEnum;
+
+  /** HSN (goods) or SAC (services), 4–8 digits */
+  @IsOptional()
+  @IsString()
+  @Matches(/^\d{4,8}$/, { message: 'hsnSacCode must be 4 to 8 digits' })
+  hsnSacCode?: string | null;
+
+  /** Notification / article / adviser note for this rate */
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  legalBasis?: string | null;
 
   @IsNotEmpty()
   @IsDate()

@@ -257,14 +257,15 @@ export class EmailNotificationService {
   /**
    * Render and send an email from an already-fetched template.
    * Skips silently if email notifications are disabled or EJS file is missing.
+   * Returns true only when the email was handed to the transport.
    */
   public async sendEmailFromTemplate(
     template: MstEmailTemplate,
     params: { to: string | string[]; subject?: string; data: Record<string, any>; attachments?: any[] },
-  ): Promise<void> {
+  ): Promise<boolean> {
     try {
       if (!template.sendEmailNotification || !template.emailTemplateFile) {
-        return;
+        return false;
       }
       const templateFile = path.join(this.templatesPath, `${template.emailTemplateFile}.ejs`);
       if (!fs.existsSync(templateFile)) {
@@ -272,7 +273,7 @@ export class EmailNotificationService {
           `EJS template file not found: ${templateFile}. Skipping email send.`,
           { controller: this.serviceName, methodName: 'sendEmailFromTemplate' },
         );
-        return;
+        return false;
       }
       let htmlBody = '';
       try {
@@ -282,7 +283,7 @@ export class EmailNotificationService {
           ejsError instanceof Error ? ejsError : new Error(String(ejsError)),
           { controller: this.serviceName, methodName: 'sendEmailFromTemplate' },
         );
-        return;
+        return false;
       }
       const recipients = Array.isArray(params.to) ? params.to : [params.to];
       const emailAttachments =
@@ -299,11 +300,13 @@ export class EmailNotificationService {
         html: htmlBody,
         attachments: emailAttachments.length > 0 ? emailAttachments : undefined,
       });
+      return true;
     } catch (error) {
       await this.logErrorService.logError(
         error instanceof Error ? error : new Error(String(error)),
         { controller: this.serviceName, methodName: 'sendEmailFromTemplate' },
       );
+      return false;
     }
   }
 

@@ -1,0 +1,29 @@
+.fx-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fx-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding-top: 8px;
+
+  .code {
+    width: 110px;
+  }
+
+  .note {
+    flex: 1 1 320px;
+  }
+}
+
+.fx-table {
+  width: 100%;
+}
+
+.inactive {
+  opacity: 0.5;
+}

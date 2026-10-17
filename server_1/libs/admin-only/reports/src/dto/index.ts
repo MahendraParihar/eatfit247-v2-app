@@ -1,3 +1,4 @@
 export * from './payment-report.dto';
 export * from './member-product-report.dto';
 export * from './member-product-bulk-export.dto';
+export * from './documents-issued.dto';

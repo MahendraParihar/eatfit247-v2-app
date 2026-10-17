@@ -120,11 +120,48 @@ export class MstFranchise extends Model<MstFranchise> {
   })
   declare lutNumber: string;
   @Column({
+    allowNull: false,
+    defaultValue: 'Asia/Kolkata',
+    field: 'time_zone',
+    type: DataType.STRING(50),
+  })
+  declare timeZone: string;
+  @Column({
     allowNull: true,
     field: 'international_tax_mode',
     type: DataType.ENUM('EXPORT_OF_SERVICE', 'LOCAL_FOREIGN_TAX'),
   })
   declare internationalTaxMode: 'EXPORT_OF_SERVICE' | 'LOCAL_FOREIGN_TAX';
+  @Column({
+    allowNull: true,
+    field: 'invoice_prefix',
+    type: DataType.STRING(5),
+  })
+  declare invoicePrefix: string;
+  @Column({
+    allowNull: true,
+    field: 'invoice_number_format',
+    type: DataType.STRING(40),
+  })
+  declare invoiceNumberFormat: string;
+  @Column({
+    allowNull: true,
+    field: 'registration_threshold_amount',
+    type: DataType.DECIMAL(14, 2),
+  })
+  declare registrationThresholdAmount: number;
+  @Column({
+    allowNull: true,
+    field: 'turnover_alert_fy',
+    type: DataType.STRING(10),
+  })
+  declare turnoverAlertFy: string;
+  @Column({
+    allowNull: true,
+    field: 'turnover_alert_level',
+    type: DataType.SMALLINT,
+  })
+  declare turnoverAlertLevel: number;
   @Column({
     allowNull: true,
     field: 'bank_account_id',

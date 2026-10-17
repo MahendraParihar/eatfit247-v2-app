@@ -7,14 +7,13 @@ import {
   IAuthUser,
   IMemberProduct,
   IMemberProductMasterData,
-  IPaymentLinkResponse,
   ITableList,
 } from '@eatfit247-shared-lib';
 import {
   CalculateProductVariantTaxDto,
   CalculateProductVariantTaxResponseDto,
   CreateMemberProductDto,
-  CreatePaymentLinkDto,
+  PaymentLinkActionDto,
 } from '../../dto';
 import { IFileModel } from '@server_1/platform';
 
@@ -64,15 +63,6 @@ export class MemberProductController {
     return await this.memberProductService.findById(id, productId);
   }
 
-  @Post('create-payment-link')
-  @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberProducts)
-  async createPaymentLink(
-    @Param('id') id: number,
-    @Body() body: CreatePaymentLinkDto,
-  ): Promise<IPaymentLinkResponse> {
-    return await this.memberProductService.createPaymentLink(id, body);
-  }
-
   @Post('calculate-tax')
   @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.MemberProducts)
   async calculateTax(
@@ -103,12 +93,31 @@ export class MemberProductController {
     return await this.memberProductService.generateInvoicePDF(id, productId);
   }
 
+  @Post(':productId/cancel-payment-link')
+  @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberProducts)
+  async cancelPaymentLink(
+    @Param('id') id: number,
+    @Param('productId') productId: number,
+    @Body() body: PaymentLinkActionDto,
+    @CurrentUser() currentUser: IAuthUser,
+    @RequestedIp() requestedIp: string,
+  ): Promise<IMemberProduct> {
+    return await this.memberProductService.cancelPaymentLink(
+      id,
+      productId,
+      requestedIp,
+      currentUser.adminId,
+      body?.expectedGatewayOrderId,
+    );
+  }
+
   @Post(':productId/regenerate-payment-link')
   @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.MemberProducts)
   async regeneratePaymentLink(
     @Param('id') id: number,
     @Param('productId') productId: number,
+    @Body() body: PaymentLinkActionDto,
   ): Promise<IMemberProduct> {
-    return await this.memberProductService.regeneratePaymentLink(id, productId);
+    return await this.memberProductService.regeneratePaymentLink(id, productId, body?.expectedGatewayOrderId);
   }
 }

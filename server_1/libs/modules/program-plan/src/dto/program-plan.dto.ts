@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  Min,
   MinLength,
   ValidateNested,
 } from 'class-validator';
@@ -19,6 +20,7 @@ export class ProgramPlanFeeDto {
   currencyCode!: string;
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   fees!: number;
 }
 
@@ -44,6 +46,10 @@ export class CreateProgramPlanDto implements IManageProgramPlan {
   @IsNotEmpty()
   @IsBoolean()
   isVisibleOnWeb!: boolean;
+  /** UAE VAT ER Art 23 classification; stored only */
+  @IsOptional()
+  @IsBoolean()
+  isElectronicService?: boolean;
   @IsNotEmpty()
   @IsBoolean()
   active!: boolean;

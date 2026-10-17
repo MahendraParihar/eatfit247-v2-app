@@ -97,6 +97,13 @@ export class MstProgramPlan extends Model<MstProgramPlan> {
   declare isVisibleOnWeb: boolean;
   @Column({
     allowNull: false,
+    defaultValue: false,
+    field: 'is_electronic_service',
+    type: DataType.BOOLEAN,
+  })
+  declare isElectronicService: boolean;
+  @Column({
+    allowNull: false,
     defaultValue: true,
     field: 'active',
     type: DataType.BOOLEAN,

@@ -10,6 +10,8 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { LoaderComponent } from '@shared';
 import { IFranchise } from '@eatfit247-shared-lib';
 import { FranchiseApiService } from '../api.service';
+import { financialYearLabel } from '../financial-year.util';
+import { TurnoverBadgeComponent } from '../turnover-badge/turnover-badge.component';
 import { Subject, takeUntil } from 'rxjs';
 
 interface MenuItem {
@@ -31,6 +33,7 @@ interface MenuItem {
     MatChipsModule,
     MatSnackBarModule,
     LoaderComponent,
+    TurnoverBadgeComponent,
   ],
   templateUrl: './franchise-details.html',
   styleUrl: './franchise-details.scss',
@@ -46,6 +49,7 @@ export class FranchiseDetailsComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   menuItems: MenuItem[] = [
     { label: 'Dashboard', icon: 'dashboard', route: 'dashboard' },
+    { label: 'LUT Register', icon: 'verified', route: 'lut-register' },
   ];
 
   ngOnInit(): void {
@@ -74,6 +78,11 @@ export class FranchiseDetailsComponent implements OnInit, OnDestroy {
     } finally {
       this.loading = false;
     }
+  }
+
+  /** "Apr to Mar" instead of the stored start month number */
+  get financialYearLabel(): string {
+    return financialYearLabel(this.franchise?.financialYear);
   }
 
   getFranchiseDisplayName(): string {

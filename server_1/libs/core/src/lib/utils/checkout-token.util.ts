@@ -1,4 +1,5 @@
 import * as jwt from 'jsonwebtoken';
+import { randomUUID } from 'crypto';
 import { Env } from '../config/env.values';
 
 const CHECKOUT_TOKEN_TYPE = 'checkout';
@@ -7,6 +8,8 @@ export interface ICheckoutTokenPayload {
   /** memberId */
   sub: number;
   type: typeof CHECKOUT_TOKEN_TYPE;
+  /** Checkout session id, stored on the records this session creates. */
+  jti?: string;
   iat?: number;
   exp?: number;
 }
@@ -34,7 +37,10 @@ export class CheckoutTokenUtil {
 
   static sign(memberId: number): string {
     const expiresIn = (Env.checkoutTokenExpiry ?? '24h') as jwt.SignOptions['expiresIn'];
-    return jwt.sign({ sub: memberId, type: CHECKOUT_TOKEN_TYPE }, this.secret, { expiresIn });
+    return jwt.sign({ sub: memberId, type: CHECKOUT_TOKEN_TYPE }, this.secret, {
+      expiresIn,
+      jwtid: randomUUID(),
+    });
   }
 
   /**

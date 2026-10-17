@@ -13,12 +13,14 @@ import { DeliveryModule, TxnShipment } from '@server_1/modules/delivery';
 import {
   AnnualDashboardController,
   DashboardController,
+  DocumentsIssuedController,
   MemberProductReportController,
   PaymentReportController,
 } from './controllers';
 import {
   AnnualDashboardService,
   DashboardService,
+  DocumentsIssuedService,
   FinancialYearService,
   MemberProductReportService,
   PaymentReportService,
@@ -43,6 +45,7 @@ import {
     AnnualDashboardController,
     PaymentReportController,
     MemberProductReportController,
+    DocumentsIssuedController,
   ],
   providers: [
     FinancialYearService,
@@ -50,6 +53,7 @@ import {
     AnnualDashboardService,
     PaymentReportService,
     MemberProductReportService,
+    DocumentsIssuedService,
   ],
   exports: [
     SequelizeModule,

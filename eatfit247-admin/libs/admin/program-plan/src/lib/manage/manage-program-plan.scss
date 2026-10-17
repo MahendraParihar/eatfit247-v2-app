@@ -117,3 +117,9 @@ mat-card-title {
   font-style: italic;
   padding: var(--spacing-16);
 }
+
+.field-hint {
+  margin: -4px 0 12px;
+  font-size: 0.75rem;
+  color: var(--mat-sys-on-surface-variant);
+}

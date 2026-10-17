@@ -98,6 +98,11 @@ const NAV_CONFIG: NavSection[] = [
         icon: 'report_problem',
         route: '/reports/member-issues',
       },
+      {
+        label: 'Documents Issued (GSTR-1)',
+        icon: 'receipt_long',
+        route: '/reports/documents-issued',
+      },
     ],
   },
   {

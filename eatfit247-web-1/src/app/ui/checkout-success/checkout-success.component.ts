@@ -4,7 +4,14 @@ import { Subject, takeUntil } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CheckoutService } from '../../core/services';
 import { IAddress } from '@eatfit247-shared-library/core';
+import { PaymentStatusEnum } from '@eatfit247-shared-library';
 import { BreadcrumbsComponent, LoaderComponent } from '@shared-ui';
+
+type OrderStatus = 'paid' | 'pending' | 'failed';
+
+/** Poll a PENDING order every 3 s for up to a minute while the webhook confirms it. */
+const STATUS_POLL_INTERVAL_MS = 3000;
+const STATUS_POLL_MAX_ATTEMPTS = 20;
 
 interface OrderDetails {
   memberOrderId: number;
@@ -15,7 +22,9 @@ interface OrderDetails {
   discountAmount: number;
   totalAmount: number;
   currencyCode: string;
-  paymentDate: Date;
+  /** NULL until the gateway confirms the payment. */
+  paymentDate: Date | null;
+  paymentStatusId: number;
   paymentStatus?: string;
   member?: {
     firstName: string;
@@ -54,8 +63,13 @@ export class CheckoutSuccessComponent implements OnInit, OnDestroy {
   loading = signal(true);
   error = signal(null);
   orderDetails: OrderDetails | null = null;
+  /** Status as stored on the server, never inferred from the gateway redirect. */
+  orderStatus = signal<OrderStatus | null>(null);
   downloadingInvoice = false;
   isPlanOrder = false;
+  private gatewayOrderId: string | null = null;
+  private pollTimer: ReturnType<typeof setTimeout> | null = null;
+  private pollAttempts = 0;
   readonly contactInfo = {
     phone: '+91-859-185-4209',
     email: 'eatfit24by7@gmail.com'
@@ -73,7 +87,9 @@ export class CheckoutSuccessComponent implements OnInit, OnDestroy {
       try {
         // Determine if it's a plan order or product order
         this.isPlanOrder = !!planId;
+        this.gatewayOrderId = orderId;
         await this.loadOrderDetails(orderId, this.isPlanOrder);
+        this.schedulePollIfPending();
       } catch (error: unknown) {
         this.error.set(
           error instanceof Error ? error.message :
@@ -88,6 +104,50 @@ export class CheckoutSuccessComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.stopPolling();
+  }
+
+  /** While the order is PENDING, re-read it until the server marks it PAID or FAILED. */
+  private schedulePollIfPending(): void {
+    const gatewayOrderId = this.gatewayOrderId;
+    if (!isPlatformBrowser(this.platformId) || this.orderStatus() !== 'pending' || !gatewayOrderId) {
+      return;
+    }
+    if (this.pollAttempts >= STATUS_POLL_MAX_ATTEMPTS) {
+      return;
+    }
+    this.stopPolling();
+    this.pollTimer = setTimeout(async () => {
+      this.pollAttempts += 1;
+      try {
+        await this.loadOrderDetails(gatewayOrderId, this.isPlanOrder);
+      } catch (error: unknown) {
+        console.warn('Could not refresh order status:', error);
+      }
+      this.schedulePollIfPending();
+    }, STATUS_POLL_INTERVAL_MS);
+  }
+
+  private stopPolling(): void {
+    if (this.pollTimer) {
+      clearTimeout(this.pollTimer);
+      this.pollTimer = null;
+    }
+  }
+
+  /** Still PENDING after the polling window: the webhook may be delayed. */
+  get statusCheckExhausted(): boolean {
+    return this.orderStatus() === 'pending' && this.pollAttempts >= STATUS_POLL_MAX_ATTEMPTS;
+  }
+
+  private toOrderStatus(paymentStatusId: number): OrderStatus {
+    if (paymentStatusId === PaymentStatusEnum.PAID) {
+      return 'paid';
+    }
+    if (paymentStatusId === PaymentStatusEnum.FAILED) {
+      return 'failed';
+    }
+    return 'pending';
   }
 
   /**
@@ -100,16 +160,21 @@ export class CheckoutSuccessComponent implements OnInit, OnDestroy {
     gatewayOrderId: string,
     isPlanOrder: boolean = false
   ): Promise<void> {
-    let data;
     if (isPlanOrder) {
-      data = await this.checkoutService.getPlanOrderDetails(gatewayOrderId);
+      const data = await this.checkoutService.getPlanOrderDetails(gatewayOrderId);
+      if (!data) {
+        throw new Error('Order not found. Please contact support.');
+      }
       this.orderDetails = {
         ...data,
         memberOrderId: data.memberPaymentId,
         currencyCode: data.currency
       };
     } else {
-      data = await this.checkoutService.getProductOrderDetails(gatewayOrderId);
+      const data = await this.checkoutService.getProductOrderDetails(gatewayOrderId);
+      if (!data) {
+        throw new Error('Order not found. Please contact support.');
+      }
       this.orderDetails = {
         ...data,
         orderAmount: data.subTotalAmount,
@@ -117,6 +182,7 @@ export class CheckoutSuccessComponent implements OnInit, OnDestroy {
         currencyCode: data.currency
       };
     }
+    this.orderStatus.set(this.toOrderStatus(this.orderDetails.paymentStatusId));
   }
 
   /**
@@ -155,7 +221,7 @@ export class CheckoutSuccessComponent implements OnInit, OnDestroy {
    * Returns true if all required data is available
    */
   get canDownloadInvoice(): boolean {
-    return !!this.orderDetails?.memberOrderId;
+    return this.orderStatus() === 'paid' && !!this.orderDetails?.memberOrderId;
   }
 
   /**

@@ -1,0 +1,26 @@
+@if (turnover) {
+  @if (mode === 'chip') {
+    @if (turnover.level !== levels.NONE) {
+      <span class="turnover-chip" [class]="levelClass" [matTooltip]="note + '. FY ' + turnover.financialYear + '.'">
+        <mat-icon inline>warning</mat-icon>
+        GST threshold {{ turnover.percent | number: '1.0-0' }}%
+      </span>
+    }
+  } @else {
+    <div class="turnover-card" [class]="levelClass">
+      <div class="title">
+        <mat-icon inline>{{ turnover.level === levels.NONE ? 'trending_up' : 'warning' }}</mat-icon>
+        GST registration threshold · FY {{ turnover.financialYear }}
+      </div>
+      <div class="figures">
+        ₹{{ turnover.turnover | number: '1.2-2' }} of ₹{{ turnover.threshold | number: '1.2-2' }}
+        <strong>({{ turnover.percent | number: '1.0-2' }}%)</strong>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="progress" [attr.aria-label]="'GST threshold ' + progress + '%'"></mat-progress-bar>
+      <div class="note">{{ note }}.</div>
+      @if (turnover.fxPendingCount > 0) {
+        <div class="note">{{ turnover.fxPendingCount }} invoice(s) in another currency are waiting for an exchange rate and are not included yet.</div>
+      }
+    </div>
+  }
+}

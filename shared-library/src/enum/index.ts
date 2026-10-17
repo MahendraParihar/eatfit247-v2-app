@@ -26,3 +26,5 @@ export * from "./admin-action.enum";
 export * from "./admin-subject.enum";
 export * from "./google-review.enum";
 
+export * from "./payment-gateway-event.enum";
+export * from "./turnover-alert-level.enum";

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { MstPaymentMode } from '../database/models/mst-payment-mode.model';
-import { IDropdownItem } from '@eatfit247-shared-lib';
+import { IDropdownItem, PaymentRouteEnum } from '@eatfit247-shared-lib';
 
 @Injectable()
 export class PaymentModeService {
@@ -16,12 +16,14 @@ export class PaymentModeService {
     const paymentModes = await this.paymentModeRepository.findAll({
       where: { active: true },
       order: [['paymentMode', 'ASC']],
-      attributes: ['paymentModeId', 'paymentMode'],
+      attributes: ['paymentModeId', 'paymentMode', 'paymentRoute'],
     });
     return paymentModes.map((mode) => ({
       id: mode.paymentModeId,
       label: mode.paymentMode,
       selected: false,
+      // Lets the payment form hint at a remittance mode for a client abroad (compliant invoice numbering, decision 10)
+      metadata: { paymentRoute: mode.paymentRoute },
     }));
   }
 
@@ -32,6 +34,15 @@ export class PaymentModeService {
     return this.paymentModeRepository.findOne({
       where: { paymentModeId: id, active: true },
     });
+  }
+
+  /** Payment route of a payment mode (DOMESTIC when unknown), for the tax decision of offline payments. */
+  public async routeOf(paymentModeId: number | null | undefined): Promise<PaymentRouteEnum> {
+    if (!paymentModeId) {
+      return PaymentRouteEnum.DOMESTIC;
+    }
+    const mode = await this.paymentModeRepository.findOne({ where: { paymentModeId }, attributes: ['paymentModeId', 'paymentRoute'] });
+    return (mode?.paymentRoute as PaymentRouteEnum) || PaymentRouteEnum.DOMESTIC;
   }
 
   /**
