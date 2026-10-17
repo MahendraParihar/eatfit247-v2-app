@@ -34,17 +34,18 @@
 
 > **As built (group 0, 2026-10-17):** 4.7 requirements carry a status note (decisions 3 and 13–17 superseded); 4.7 plan group 6 is headed RETIRED, 7.2 records the go-live counters only, and 8.3's "Later" item points here. The 4.6 runbook drops the 138 preview sign-off, applies 137, 139–144 then 145 (never 138), and step 6 adds the franchise format check and EFMUM's FY 2026-27 LUT. The tax-matrix pending list links here with the principle 2 replanning note.
 >
-> **As built (group 1, 2026-10-17):** the local `eatfit` DB is a fresh copy without 137–144, so the rehearsal ran on a clone (`eatfit_rh145`): 137, 139–144, then 145 twice (second run: only "already exists" notices; franchise and payment-mode rows identical), 138 aborts with the retired message (exit 3), `\d mst_franchises` shows the five columns and both CHECKs, and a 6-character prefix, a lowercase prefix and level 3 are refused. New payment modes: 21 "Remittance via exchange house (RDA)", 22 "Remittance app (Remitly / Wise)". 138's original body: `git show db0918bd:db_changes/138_fy2026_27_q2_invoice_renumber.sql`. `MstFranchise` has the five columns; `nx` core typecheck green.
+> **As built (group 1, 2026-10-17):** the local `eatfit` DB is a fresh copy without 137–144, so the rehearsal ran on a clone (`eatfit_rh145`); afterwards 137, 139–145 were applied to `eatfit` itself (owner request, backup taken first; counters EFMUM service 491, MEMUM product 64): 137, 139–144, then 145 twice (second run: only "already exists" notices; franchise and payment-mode rows identical), 138 aborts with the retired message (exit 3), `\d mst_franchises` shows the five columns and both CHECKs, and a 6-character prefix, a lowercase prefix and level 3 are refused. New payment modes: 21 "Remittance via exchange house (RDA)", 22 "Remittance app (Remitly / Wise)". 138's original body: `git show db0918bd:db_changes/138_fy2026_27_q2_invoice_renumber.sql`. `MstFranchise` has the five columns; `nx` core typecheck green.
 
 ## Group 2: Shared library: format engine and contract
 
-- [ ] 2.1 `InvoiceNumberFormatUtil` (`core/invoice/`):
+- [x] 2.1 `InvoiceNumberFormatUtil` (`core/invoice/`):
   - `render({ template, prefix, fyStartMonth, invoiceDate, typeLetter, sequence })`;
-  - `validate(template, prefix, { gstLimit })` returns a list of errors: unknown token, missing `{SEQn}` or `{TYPE}`, n outside 3–8, literal characters other than `/` and `-`, a worst-case render over 16 characters or failing the Rule 46 regex when `gstLimit`;
+  - `validate(template, prefix, { gstLimit })` returns a list of errors: a prefix outside `^[A-Z0-9]{1,5}$`, unknown or repeated token, missing `{PREFIX}`, `{SEQn}` or `{TYPE}`, n outside 3–8, literal characters other than `/` and `-`, a worst-case render over 16 characters or failing the Rule 46 regex when `gstLimit`;
+    - `{PREFIX}` is required because `invoice_id` and `credit_note_number` are unique across all franchises (review 2026-10-17); a template without it could collide with another franchise's numbers;
   - `typeLetter(invoiceType, series, isCreditNote)` gives S/E/P/X/C;
   - `RULE46_INVOICE_NUMBER = /^[A-Za-z1-9][A-Za-z0-9\/-]{0,15}$/`.
-- [ ] 2.2 `IFranchise.invoicePrefix`, `invoiceNumberFormat`, `registrationThresholdAmount`; `IFranchiseTurnover`; `TurnoverAlertLevel` enum (NONE 0, AMBER 1, RED 2).
-- [ ] 2.3 Spec file for the util. Cases:
+- [x] 2.2 `IFranchise.invoicePrefix`, `invoiceNumberFormat`, `registrationThresholdAmount`; `IFranchiseTurnover`; `TurnoverAlertLevel` enum (NONE 0, AMBER 1, RED 2).
+- [x] 2.3 Spec file for the util. Cases:
   - EFM April FY → `EFM/2627/S/00492`;
   - January FY → `2026`;
   - every type letter;
@@ -55,6 +56,8 @@
 
   Then `npm run build`.
 
+> **As built (group 2, 2026-10-17):** `shared-library/src/core/invoice/invoice-number-format.util.ts` exports `InvoiceNumberFormatUtil` (`render`, `fyToken`, `typeLetter`, `isRule46Compliant`, `validate`), `InvoiceTypeLetter` (S/E/P/X/C), `RULE46_INVOICE_NUMBER`, `INVOICE_PREFIX_PATTERN` and the length/digit limits. `validate` also requires `{PREFIX}` and rejects repeated tokens (see 2.1); under `gstLimit` it renders sequence 1 and all 9s for every type letter. `TurnoverAlertLevel` enum, `IFranchiseTurnover`, and the three optional fields on `IBaseFranchise` (so the manage DTO inherits them). The spec lives at `server_1/libs/platform/src/lib/utils/invoice-number-format.util.spec.ts` (shared-library has no test runner); platform's `jest.config.ts` gained the tsconfig-paths `moduleNameMapper` that member already had — without it the shared lib resolved to `index.d.ts` and every runtime export was undefined. 23/23 green; `google.service.spec` still fails as before. Shared lib build, `admin-api` + `public-api` builds, admin and web `tsc` all green.
+
 ## Group 3: Backend numbering (`server_1`, platform + member)
 
 - [ ] 3.1 `InvoiceSequenceService.generateInvoiceNumber` / `generateCreditNoteNumber`:
@@ -63,7 +66,7 @@
   - same counter key, same `FOR UPDATE`.
 - [ ] 3.2 Issue-time guard (decision 7): with `gstLimit`, a render failing `RULE46_INVOICE_NUMBER` throws `BadRequestException` and logs at error level. The transaction rolls back, so no number is consumed.
 - [ ] 3.3 `InvoiceIssueService.franchiseContext` and `issue`, and `CreditNoteService`: pass the franchise's prefix, template and `gstLimit` (country IN).
-- [ ] 3.4 Franchise DTO and service: validate prefix and template with `InvoiceNumberFormatUtil.validate` (the limit applies when the franchise address country is IN), return 400 with the listed errors, and persist both.
+- [ ] 3.4 Franchise DTO and service: validate prefix and template with `InvoiceNumberFormatUtil.validate` (the limit applies when the franchise address country is IN), return 400 with the listed errors, and persist both. The prefix must also be unique among franchises, and must not equal another franchise's `franchise_code` (case-insensitive), for the same global-uniqueness reason.
 - [ ] 3.5 Unit tests:
   - EFMUM next number after counter 491 is `EFM/2627/S/00492`;
   - the first export is `EFM/2627/E/00001`;
