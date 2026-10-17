@@ -21,7 +21,7 @@
   - `place_of_supply_country_code CHAR(3)`, `place_of_supply_state_code VARCHAR(10)` on `txn_member_payments` and `txn_member_product_order_items`
   - back-fill `hsn_sac_code` on existing PRODUCT rules from `mst_product.hsn_code`, and on SERVICE rules with `999319` where null
   - seeds, each `INSERT … WHERE NOT EXISTS` on `(franchise_id, reference_id, country_code, tax_code, effective_from)`:
-    - EFMUM (1) · `IN` · SERVICE · ref 1 · `GST_18` · 18 · STANDARD · `999319` · from 2017-07-01 · basis: Notif 11/2017-CT(R) heading 9993; kept at 18% pending CA (requirements decision 2)
+    - EFMUM (1) · `IN` · SERVICE · ref 1 · `GST_18` · 18 · STANDARD · `999319` · from 2017-07-01 · basis: Notif 11/2017-CT(R) heading 9993; 18% confirmed 2026-10-17 (requirements decision 2)
     - HCUAE (2) · `AE` · SERVICE · ref 1 · `VAT_0` · 0 · ZERO_RATED · `999319` · from 2018-01-01 · basis: ER Art 41 per UAE adviser; confirm licence, else 5% STANDARD
     - MEMUM (3) · `IN` · PRODUCT · one pair per active `mst_product`: `NONE_0` · 0 · active · basis: unregistered, CGST s.24(i); and `GST_5` · 5 · STANDARD · **inactive** · HSN from the product · from 2025-09-22 · basis: Notif 9/2025-CT(R) Sch. I (2106 / 3004)
   - seed `created_by` = system admin id used by earlier migrations; header comment lists which rows the CA may activate

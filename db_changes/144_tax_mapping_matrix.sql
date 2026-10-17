@@ -27,18 +27,22 @@
 --      any existing row, active or not, suppresses the seed; rules are owner data):
 --        EFMUM  IN SERVICE  GST 18% STANDARD, SAC 999319, from 2017-07-01
 --        HCUAE  AE SERVICE  VAT 0% ZERO_RATED, from 2018-01-01
---                           (basis: ER Art 41 per UAE adviser — confirm; else 5% S)
+--                           (basis: ER Art 41, confirmed by the UAE adviser 2026-10-17)
 --        MEMUM  IN PRODUCT  per active product:
 --                             NONE 0% (active)  — unregistered, CGST s.24(i)
 --                             GST 5% STANDARD (INACTIVE, staged) — Notif 9/2025-CT(R)
---                             Sch. I (HSN 2106 / 3004), from 2025-09-22.
+--                             Sch. I (HSN 3004, confirmed 2026-10-17), from 2025-09-22.
 --                           **The CA activates the GST_5 rows** (and deactivates
 --                           NONE_0 / the old GST_12) once Mahi is registered. No
 --                           deployment needed. The staged row is added even when an
 --                           older GST rule exists (production has GST 12%); once
 --                           active it wins because its effective_from is newer.
 --
--- Idempotent: safe to run twice. Seeds never update existing rows.
+--        Existing EFMUM / HCUAE service rows (production) are skipped by the seeds but
+--        get the confirmed legal_basis when that new column is still NULL.
+--
+-- Idempotent: safe to run twice. Seeds never update existing rows; the only update
+-- fills the new legal_basis column where it is NULL.
 -- =============================================================================
 
 BEGIN;
@@ -113,7 +117,7 @@ INSERT INTO public.mst_tax_master (franchise_id, reference_id, country_code, tra
                                    created_by, modified_by, created_at, updated_at, created_ip, modified_ip)
 SELECT f.franchise_id, 1, 'IN', 'SERVICE', 'GST', 'GST_18',
        'GST 18%', 18.00, 'SALE', FALSE, 'STANDARD', '999319',
-       'Notif 11/2017-CT(R) heading 9993 (human health services) @ 18%. Kept at 18% pending the CA''s view on Group 99972 @ 5% (no ITC) from 22 Sep 2025 — spec 2026-10-10-tax-mapping-matrix, decision 2.',
+       'Notif 11/2017-CT(R) heading 9993 (human health services) @ 18%, SAC 999319. Confirmed 2026-10-17 (Group 99972 @ 5% does not apply) — spec 2026-10-10-tax-mapping-matrix, decision 2.',
        DATE '2017-07-01', NULL, TRUE,
        1, 1, now(), now(), ':0', ':0'
 FROM public.mst_franchises f
@@ -132,7 +136,7 @@ INSERT INTO public.mst_tax_master (franchise_id, reference_id, country_code, tra
                                    created_by, modified_by, created_at, updated_at, created_ip, modified_ip)
 SELECT f.franchise_id, 1, 'AE', 'SERVICE', 'VAT', 'VAT_0',
        'UAE VAT 0% (zero-rated)', 0.00, 'SALE', FALSE, 'ZERO_RATED', '999319',
-       'UAE VAT Executive Regulation Art 41 (healthcare zero-rating) per the UAE adviser (4.6 decision 7). Confirm the licence basis; without it diet coaching is 5% STANDARD (Decree-Law 8/2017).',
+       'UAE VAT Executive Regulation Art 41 (healthcare zero-rating); basis confirmed by the UAE adviser 2026-10-17 (4.6 decision 7, matrix decision 6).',
        DATE '2018-01-01', NULL, TRUE,
        1, 1, now(), now(), ':0', ':0'
 FROM public.mst_franchises f
@@ -173,7 +177,7 @@ INSERT INTO public.mst_tax_master (franchise_id, reference_id, country_code, tra
 SELECT f.franchise_id, p.product_id, 'IN', 'PRODUCT', 'GST', 'GST_5',
        'GST 5%', 5.00, 'SALE', FALSE, 'STANDARD',
        NULLIF(left(regexp_replace(p.hsn_code, '\D', '', 'g'), 8), ''),
-       'STAGED — activate when Mahi holds a GSTIN. Notif 9/2025-CT(R) Schedule I, effective 22 Sep 2025: HSN 2106 food preparations n.e.s. 5%; HSN 3004 Ayurvedic medicaments 5%. CA to confirm the heading.',
+       'STAGED — activate only when the debloat supplier holds a GSTIN (matrix decision 5a). Notif 9/2025-CT(R) Schedule I, effective 22 Sep 2025: HSN 3004 Ayurvedic medicaments 5% (heading confirmed 2026-10-17).',
        DATE '2025-09-22', NULL, FALSE,
        1, 1, now(), now(), ':0', ':0'
 FROM public.mst_franchises f
@@ -188,5 +192,31 @@ WHERE f.franchise_code = 'MEMUM'
                     AND t.transaction_type = 'PRODUCT'
                     AND t.tax_system = 'GST'
                     AND t.tax_percent = 5);
+
+-- Production already has the EFMUM / HCUAE service rows, so the seeds above are skipped for them.
+-- Fill the column this migration adds with the confirmed basis, only where nothing is set yet.
+UPDATE public.mst_tax_master t
+SET legal_basis = 'Notif 11/2017-CT(R) heading 9993 (human health services) @ 18%, SAC 999319. Confirmed 2026-10-17 (Group 99972 @ 5% does not apply) — spec 2026-10-10-tax-mapping-matrix, decision 2.'
+FROM public.mst_franchises f
+WHERE f.franchise_id = t.franchise_id
+  AND f.franchise_code = 'EFMUM'
+  AND t.reference_id = 1
+  AND upper(trim(t.country_code)) = 'IN'
+  AND t.transaction_type = 'SERVICE'
+  AND t.tax_system = 'GST'
+  AND t.tax_percent = 18
+  AND t.legal_basis IS NULL;
+
+UPDATE public.mst_tax_master t
+SET legal_basis = 'UAE VAT Executive Regulation Art 41 (healthcare zero-rating); basis confirmed by the UAE adviser 2026-10-17 (4.6 decision 7, matrix decision 6).'
+FROM public.mst_franchises f
+WHERE f.franchise_id = t.franchise_id
+  AND f.franchise_code = 'HCUAE'
+  AND t.reference_id = 1
+  AND upper(trim(t.country_code)) = 'AE'
+  AND t.transaction_type = 'SERVICE'
+  AND t.tax_system = 'VAT'
+  AND t.tax_percent = 0
+  AND t.legal_basis IS NULL;
 
 COMMIT;

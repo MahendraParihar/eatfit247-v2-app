@@ -52,7 +52,7 @@ F = franchise, C = customer, SVC = service, GDS = goods. Engine result = `taxMod
 |---|---|-----------|------|-------------------|---------------|--------------------------|
 | 1 | IN (EFMUM) | IN, same State | SVC | CGST 9% + SGST 9% | DOMESTIC_GST / – / 18 / DOMESTIC | C State name + code, SAC 999319, GSTIN |
 | 2 | IN | IN, other State | SVC | IGST 18% | DOMESTIC_GST / – / 18 / DOMESTIC | same |
-| 3 | IN (MEMUM, once registered) | IN, same State (delivery) | GDS | CGST 2.5% + SGST 2.5% | DOMESTIC_GST / – / 5 / DOMESTIC | delivery State, HSN per line |
+| 3 | IN (MEMUM, once registered; decision 5a) | IN, same State (delivery) | GDS | CGST 2.5% + SGST 2.5% | DOMESTIC_GST / – / 5 / DOMESTIC | delivery State, HSN per line |
 | 4 | IN (MEMUM) | IN, other State | GDS | IGST 5% | DOMESTIC_GST / – / 5 / DOMESTIC | same |
 | 5 | IN | outside IN, FX / Vostro / NRE-FCNR | SVC | Export of service, 0% under LUT | EXPORT_OF_SERVICE / – / 0 / EXPORT | LUT ARN + endorsement, C country, FX amount + INR at FBIL rate |
 | 5b | IN | outside IN, FX, LUT expired | SVC | Export, IGST 18% paid | EXPORT_OF_SERVICE / – / 18 / EXPORT | "on payment of IGST" endorsement |
@@ -91,7 +91,7 @@ P0 = wrong tax or legal exposure on live rows; P1 = statutory data missing; P2 =
 | G16 | P2 | No table-driven test pins the legal matrix. | all | group 3 |
 | G17 | P2 | Dead tax config confuses admins (`mst_countries.tax_type`, `default_tax_percentage`, `international_tax_mode`, `lut_number`, `mst_product_prices.tax_percent`, `TAX_PERCENTAGE`). | – | group 4 (hide) |
 | G18 | P2 | Website tax copy contradicts itself ("Inclusive of all taxes" vs "Taxes extra" vs FAQ). | 3–7 | group 5 |
-| G19 | data | Goods invoices from 22 Sep 2025 to now may be over-taxed at 12%/18%. | 3, 4 | CA review + 4.9 credit notes |
+| G19 | data | Goods invoices from 22 Sep 2025 to now may be over-taxed at 12%/18%. | 3, 4 | **Closed 2026-10-17:** leave as issued (decision 5a) |
 
 Already correct in 4.6: rows 1, 2, 5, 5b, 6 service logic; row 7 delivery-country test; row 12 refusal; FX at issue; UAE "TAX INVOICE"/TRN/category lines; UAE credit notes; LUT register; export/domestic series.
 
@@ -122,11 +122,12 @@ Already correct in 4.6: rows 1, 2, 5, 5b, 6 service logic; row 7 delivery-countr
 | # | Decision | Why |
 |---|----------|-----|
 | 1 | **Baseline is 4.6.** Gaps are measured against `feature/tax-engine-correctness`; the branch stacks on it. | Owner decision 2026-10-10. 4.6 already fixes the audit's engine defects; re-listing them would hide the real remaining work. |
-| 2 | **Diet consultation stays 18%, SAC 999319** until the CA rules on 99972/5%. | Owner decision. Conservative reading; the rule row is effective-dated so a CA change is a config edit. |
+| 2 | **Diet consultation is 18%, SAC 999319** (confirmed 2026-10-17; 99972 @ 5% does not apply). | Owner decision 2026-10-10, confirmed with the CA answer 2026-10-17. The rule row is effective-dated, so a later change is a config edit. |
 | 3 | **Indian clients under a non-Indian franchise stay refused** (no OIDAR registration for HCUAE). | Owner decision; 4.6 decision 6. |
 | 4 | **Seeds never overwrite admin-edited rows.** `INSERT … WHERE NOT EXISTS` per franchise + reference + country + type (any existing row, active or not, suppresses the seed; the staged MEMUM 5% row is suppressed only by an existing 5% GST row); re-running 144 is a no-op. | Rules are owner data; a migration must not reset a CA-driven change. |
 | 5 | **MEMUM is seeded as `NONE` (active) plus a staged, inactive GST 5% row per product** (HSN from the product, effective 2025-09-22). | Mahi is unregistered today (4.6 decision 18). The CA's answer becomes "activate the staged row", not a deployment. |
-| 6 | **HCUAE AE service rule stays 0% ZERO_RATED** with `legal_basis` = "Art 41 ER healthcare zero-rating per UAE adviser; confirm licence, else 5% STANDARD". | Keeps 4.6 decision 7 while making the basis auditable (G6). |
+| 5a | **Debloat powder is HSN 3004 @ 5%** (confirmed 2026-10-17). The owner wants future debloat invoices at 5%. The 93 MEMUM invoices issued at 12% (25 Feb – 15 Jun 2026) stay as issued: no credit notes, no data change (closes G19). **Blocked:** Mahi has not applied for GST. An unregistered person may not collect tax (CGST s.32), and MEMUM's local and production data carry EFMUM's GSTIN. The staged GST_5 row is not activated, and the live GST_12 row is not changed, until the owner chooses: register Mahi, sell debloat under EFMUM, or invoice without GST. | Owner answers 2026-10-17. The rate and HSN are settled. Who may charge the tax is not. |
+| 6 | **HCUAE AE service rule stays 0% ZERO_RATED** with `legal_basis` = "UAE VAT ER Art 41 healthcare zero-rating; basis confirmed by the UAE adviser 2026-10-17". | Keeps 4.6 decision 7 and makes the basis auditable (G6). The adviser confirmed the basis on 2026-10-17. On production the existing row skips the seed, so 144 fills its new `legal_basis` column (the same for EFMUM's 18% row) only while it is NULL. |
 | 7 | **Place of supply is stored at decision time** (`place_of_supply_country_code`, `place_of_supply_state_code`) and the invoice prints the stored value; the address-derived value is only a fallback for pre-144 rows. | Circular 242 and principle 10. |
 | 8 | **Unregistered Indian franchise + delivery State ≠ supplier State (or unknown) → 400**, with config `ALLOW_UNREGISTERED_INTERSTATE_GOODS` (default false) as the CA override; `mst_configs` is read at boot, so the override needs an API restart. Goods only: Notif 10/2017-IT exempts under-threshold inter-state *service* suppliers from s.24(i). | CGST s.24(i). Sales must not continue illegally by default, but the CA may accept the risk explicitly. |
 | 9 | **Plans pass their own `programPlanId` as the rule reference; the lookup falls back to `reference_id = 1`.** | G3 without a data migration: the single EFMUM row keeps working; a plan-specific row wins when present. |
@@ -159,11 +160,11 @@ Already correct in 4.6: rows 1, 2, 5, 5b, 6 service logic; row 7 delivery-countr
 
 ## Open Questions
 
-- [ ] **[CA]** SAC and rate for diet consultation: 999319 @ 18% (current) or 99972 @ 5% without ITC? (Default stays 18%, decision 2.)
-- [ ] **[CA]** HSN for the debloat powder: 2106 (food supplement) or 3004 (AYUSH)? Both 5% since 22 Sep 2025; the staged row uses the product's current `hsn_code`.
-- [ ] **[CA, urgent]** Mahi's GST registration. Until registered, inter-state and export goods sales are refused (decision 8).
-- [ ] **[CA]** Do Razorpay INR-denominated international-card payments with an e-FIRA count as export proceeds? (Carried from 4.6.)
-- [ ] **[CA]** Goods invoices issued 22 Sep 2025 → now at 12%/18%: credit notes (4.9) or leave as filed? (G19)
-- [ ] **[UAE adviser]** Basis for HCUAE's 0% Z on UAE clients (Art 41 licence?) or switch to 5% S (decision 6).
+- [x] **[CA]** SAC and rate for diet consultation: **18%, SAC 999319** (answered 2026-10-17; decision 2).
+- [x] **[CA]** HSN for the debloat powder: **3004 @ 5%** (answered 2026-10-17; decision 5a). `mst_product.hsn_code` already holds 3004.
+- [ ] **[Owner, blocking rows 3/4]** Mahi has **not applied for GST** (2026-10-17), but the owner wants debloat invoiced at 5%. Choose one: register Mahi, sell debloat under EFMUM's GSTIN, or invoice it without GST (decision 5a). Until then the staged GST_5 row stays inactive and inter-state sales stay refused (decision 8).
+- [ ] **[CA]** Do Razorpay INR-denominated international-card payments with an e-FIRA count as export proceeds? The owner is unsure (2026-10-17). Behaviour is unchanged: online INR orders are taxed IGST 18%. The offline "International card (e-FIRA)" mode prices as an export.
+- [x] **[CA]** Goods invoices issued 22 Sep 2025 → now at 12%/18%: **leave as issued**, no credit notes. New invoices at 5% (answered 2026-10-17; decision 5a, G19 closed).
+- [x] **[UAE adviser]** Basis for HCUAE's 0% Z on UAE clients: **Art 41 basis confirmed** (2026-10-17; decision 6). It stays 0% ZERO_RATED.
 - [ ] **[UAE adviser]** Is EatFit247's online coaching an *electronic service* under ER Art 23 when sold to UAE residents by EFMUM? (Row 14, decision 10.)
 - [ ] **[UAE adviser]** Zero-rating evidence policy for HCUAE's foreign clients (G7).

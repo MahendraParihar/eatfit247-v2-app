@@ -56,6 +56,14 @@ Row numbers refer to the mapping table in `requirements.md`.
 
 Tracked in `requirements.md § Open Questions`. Rows 3/4 (Mahi 5% activation), 8 (HCUAE basis) and 14 (electronic service) cannot be signed off as final until answered; the system behaviour for each is configured, not coded.
 
+**Answers received 2026-10-17**
+- Diet consultation: 18%, SAC 999319. Row 1/2 is final.
+- Debloat powder: HSN 3004 @ 5%. The 93 MEMUM invoices issued at 12% stay as issued (G19 closed).
+- HCUAE 0% Z on UAE clients: Art 41 basis confirmed. Row 8 is final.
+- Mahi: has not applied for GST, yet the owner wants 5% on future debloat invoices. **Rows 3/4 are blocked** on the owner's choice (requirements decision 5a). Release impact: on production data, migration 144 leaves MEMUM's live GST_12 row active, so debloat keeps being charged 12% until that choice is applied.
+- Razorpay INR international card + e-FIRA as export proceeds: the owner is unsure. It stays open with the CA, and behaviour is unchanged.
+- Still open: electronic-service flag (row 14) and the zero-rating evidence policy (G7).
+
 ## Browser run (2026-10-11, Chrome, local servers; web on :4300)
 
 Test members 4945 (US, EFMUM), 5888 (UAE, HCUAE), 5889 (India, HCUAE). Plan 263 (`1 Session 10 Days`, INR 20000) was given a USD 250 fee through the admin plan form. Razorpay test mode, published Mastercard test number, test OTP.
@@ -113,4 +121,4 @@ Code for F1–F9 is pushed on `feature/tax-engine-correctness` (`562bba7f`); not
 - RBAC: a Dubai-scoped admin cannot see or edit EFMUM's tax rules (manual check above, still unticked).
 - Exchange-rate admin screen walked only via API.
 
-**Adviser answers outstanding** (see "Open items for the CA / UAE adviser"): Mahi's 5% activation, HCUAE's legal basis, the electronic-service flag.
+**Adviser answers outstanding** (see "Open items for the CA / UAE adviser"; partly answered 2026-10-17): Mahi's GST status vs 5% invoicing (owner choice), the e-FIRA question, the electronic-service flag, the zero-rating evidence policy.
