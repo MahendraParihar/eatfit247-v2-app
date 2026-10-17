@@ -77,6 +77,14 @@
       content: "\00a0";
     }
 
+    .diet-plan-table td .meal-recipes {
+      margin-top: 6px;
+    }
+
+    .diet-plan-table td .meal-recipes:first-child {
+      margin-top: 0;
+    }
+
     .diet-plan-table th:nth-child(1),
     .diet-plan-table td:nth-child(1) {
       width: 20%;
@@ -353,15 +361,18 @@
     </thead>
     <tbody>
       {{#each diet.dietPlan}}
-        {{#if this.dietDetail}}
+        {{#if (or this.dietDetail this.recipeList)}}
           <tr>
             <td>{{this.recipeCategory}}</td>
-            <td>{{{this.dietDetail}}}</td>
-          </tr>
-        {{else if this.recipeList}}
-          <tr>
-            <td>{{this.recipeCategory}}</td>
-            <td></td>
+            <td>
+              {{#if this.dietDetail}}{{{this.dietDetail}}}{{/if}}
+              {{#if this.recipeList}}
+                <p class="meal-recipes">
+                  <strong>Recipe{{#if (gt this.recipeList.length 1)}}s{{/if}}:</strong>
+                  {{#each this.recipeList}}{{#if this.label}}{{this.label}}{{else}}{{this.name}}{{/if}}{{#unless @last}}, {{/unless}}{{/each}}
+                </p>
+              {{/if}}
+            </td>
           </tr>
         {{/if}}
       {{/each}}
