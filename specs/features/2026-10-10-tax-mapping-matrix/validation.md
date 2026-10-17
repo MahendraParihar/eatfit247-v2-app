@@ -104,6 +104,8 @@ Local config made for this run (keep or revert): `mst_franchises.is_default = tr
 
 Code for F1–F9 is pushed on `feature/tax-engine-correctness` (`562bba7f`); not yet merged to `m3-cms-update`.
 
+**Follow-up feature (2026-10-17):** [compliant invoice numbering](../2026-10-17-compliant-invoice-numbering/requirements.md) takes the ≤16-character invoice number (Rule 46), retires migration 138, adds the unregistered-turnover warning for Mahi, the remittance payment modes and the GSTR-1 Table 13 report. Replanning note: mission.md principle 2 needs new exception wording (FY 2026-27 numbers issued before go-live stay in the long format, with foreign clients in the domestic series).
+
 **Open bugs / debt**
 - PENDING web orders 5144 (pre-fix franchise leak) and 5149 (group 9 check) in the local DB — Razorpay test iframe refused typed input; pay or cancel them manually if the local data should stay clean.
 - `eatfit247-web-1` checkout component: pre-existing lint errors (template click handlers without key events at the payment modal close button, an empty `catch`) — untouched.

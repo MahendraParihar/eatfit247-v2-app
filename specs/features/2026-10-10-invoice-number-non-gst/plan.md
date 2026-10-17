@@ -111,7 +111,10 @@
 - [x] 5b.6 Not changed: the pool (`max: 5`) concern about extra franchise/country reads during confirmation is the same pattern as before, at a smaller scale; logged for roadmap 5.x. A PAID row without a number (member without a franchise) renders as a proforma, which matches decision 11.
 - [x] 5b.7 For 138: JSON `null` snapshots must fall back to the address (`jsonb_typeof(...) = 'object'`), and the country chain is code → id → name, the same as `InvoiceSeriesUtil` / `InvoiceIssueService`.
 
-## Group 6: Data migration (FY 2026-27, Q2 onwards)
+## Group 6: Data migration (FY 2026-27, Q2 onwards) — RETIRED 2026-10-17
+
+> **Retired** by [compliant invoice numbering](../2026-10-17-compliant-invoice-numbering/requirements.md) decision 1: issued invoices are never changed. `138_fy2026_27_q2_invoice_renumber.sql` is now a guard that raises an exception and changes nothing; the preview script is marked retired. The tasks below record what was built and tested on 2026-10-10; they are not part of the release.
+
 
 - [x] 6.1 `scripts/invoice-renumber/preview_fy2026_27_q2.sql` (read-only). For every row in the window it outputs:
   - table, pk, franchise_code, type, member name
@@ -184,7 +187,7 @@
   4. Deploy the server, shared-library and admin builds.
   5. Start the APIs.
   6. Smoke test: one domestic invoice, one export invoice, one proforma.
-- [ ] 7.2 (owner, at release) Record the go-live timestamp and the counters before and after in `validation.md`.
+- [ ] 7.2 (owner, at release) Record the go-live timestamp and the counters at go-live in `validation.md` (138 is retired, so there is no before/after renumbering).
 
 ## Group 8: Close-out
 
@@ -192,4 +195,4 @@
 - [x] 8.2 Status set to "implemented, release pending" (Shipped after the production release). Mark roadmap 4.7 ✅ with a link to this folder.
 - [ ] 8.3 Replan notes:
   - If the CA agrees, give 4.10 the job of printing the LUT endorsement keyed on `invoice_series` for historical EXP rows.
-  - Confirm the 16-character format item stays under "Later".
+  - ~~Confirm the 16-character format item stays under "Later".~~ Done by [compliant invoice numbering](../2026-10-17-compliant-invoice-numbering/requirements.md) (2026-10-17).

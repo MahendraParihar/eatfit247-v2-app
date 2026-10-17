@@ -57,14 +57,14 @@ Automated: member jest **265/265**; `nx build admin-api` and `public-api` green;
 ## Release runbook (4.5 + 4.7 + 4.6 ship together)
 
 **Before the window (owner)**
-1. Accounts signs off `scripts/invoice-renumber/preview_fy2026_27_q2.sql` run on a production copy (CSV: `psql -X -q --csv`); no row may show `blocks_138`, part 2 must be empty. Resolve any listed rows with Accounts / CA first.
+1. ~~Accounts signs off `scripts/invoice-renumber/preview_fy2026_27_q2.sql`~~ Not needed: migration 138 is retired ([compliant invoice numbering](../2026-10-17-compliant-invoice-numbering/requirements.md) decision 1), so no issued invoice is renumbered. Accounts confirms the new format `EFM/2627/S/00492` instead.
 2. CA answer on **Mahi's GST registration** (requirements Open Questions). Registered → GSTIN + LUT; not registered → clear its GSTIN and set its tax rule to `NONE` (exports are then refused).
 3. Healuxe's real **TRN** ready; every production **product** has its own tax rule; every franchise address has country and state.
 
 **Window**
 4. Stop public-api and admin-api. Back up the database.
-5. Apply in order: `137_invoice_series.sql`, `138_fy2026_27_q2_invoice_renumber.sql`, `139_payment_gateway_events.sql` (if 4.5 isn't live yet), `140_tax_engine_correctness.sql`, `141_exchange_rates.sql`, `142_credit_notes.sql`, `143_payment_mode_routes.sql`. Record counters before/after 138 in the 4.7 validation.
-6. Configuration (admin or SQL, before the APIs start): Healuxe TRN in "VAT number / TRN" and its GSTIN cleared; Mahi per step 2; EFMUM's LUT for FY 2026-27 in the LUT register (and Mahi's if registered); USD fees on the plans foreign clients buy; check tax rules (EFMUM IN GST 18; HCUAE AE VAT 0% zero-rated; product rules).
+5. Apply in order: `137_invoice_series.sql`, `139_payment_gateway_events.sql` (if 4.5 isn't live yet), `140_tax_engine_correctness.sql`, `141_exchange_rates.sql`, `142_credit_notes.sql`, `143_payment_mode_routes.sql`, `144_tax_mapping_matrix.sql`, then `145_compliant_invoice_numbering.sql`. **Do not run 138** (retired; it aborts with a "Retired" message if run). Record the invoice counters at go-live in the 4.7 validation.
+6. Configuration (admin or SQL, before the APIs start): set EFMUM's and MEMUM's invoice prefix and number format on the franchise form (seeded by 145; confirm the preview shows `EFM/2627/S/…` and `MEM/2627/P/…`); enter EFMUM's FY 2026-27 LUT in the LUT register; Healuxe TRN in "VAT number / TRN" and its GSTIN cleared; Mahi per step 2; EFMUM's LUT for FY 2026-27 in the LUT register (and Mahi's if registered); USD fees on the plans foreign clients buy; check tax rules (EFMUM IN GST 18; HCUAE AE VAT 0% zero-rated; product rules).
 7. Build and deploy shared-library, server (both APIs), admin and website (`docker compose -f ./infra/docker-compose.yml build --no-cache && … up -d`). Start the APIs.
 
 **Smoke test**

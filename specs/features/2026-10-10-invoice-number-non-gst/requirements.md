@@ -8,6 +8,8 @@
 | References | Accounts department change request (2026-10-10); [mission.md](../../product/mission.md) principles 1, 2, 10, 11; audit findings C2, C3, C6, M1; CGST Act s.13, s.34; CGST Rules 46, 96A; GSTR-1 Table 13 |
 | Apps touched | server_1 / shared-library / eatfit247-admin / db_changes |
 
+> **Status note (2026-10-17):** decisions **3** (the long `{code}/EXP/…` format) and **13–17** (the Q2 renumbering by migration 138) are **superseded** by [compliant invoice numbering](../2026-10-17-compliant-invoice-numbering/requirements.md) decisions 1–5. Issued invoices are never changed, migration 138 is retired (it refuses to run), and new numbers use a per-franchise template (`EFM/2627/S/00492`, at most 16 characters). Plan group 6 is retired. The text below is kept as the record of what was decided on 2026-10-10.
+
 ## Context
 
 The Accounts department needs invoices that an **Indian franchise** (EFMUM "EAT FIT 247", MEMUM "Mahi Enterprise") issues to **customers outside India** to use a **separate invoice series** from domestic GST invoices. These are zero-rated exports under LUT, and GST filings report them separately.
