@@ -37,7 +37,8 @@ export class FranchiseController {
 
   @Get('manage/:id')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Franchise)
-  async getById(@Param('id') id: number): Promise<IFranchise> {
+  async getById(@Param('id', ParseIntPipe) id: number, @CurrentUser() currentUser: IAuthUser): Promise<IFranchise> {
+    this.assertFranchiseScope(id, currentUser);
     return await this.service.fetchById(id);
   }
 
@@ -70,22 +71,24 @@ export class FranchiseController {
   @Put('manage/:id')
   @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.Franchise)
   async update(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() body: CreateFranchiseDto,
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
+    this.assertFranchiseScope(id, currentUser);
     await this.service.update(id, body, requestedIp, currentUser.adminId);
   }
 
   @Patch('update-status/:id')
   @RequireAbility(AdminActionEnum.Update, AdminSubjectEnum.Franchise)
   async changeStatus(
-    @Param('id') id: number,
+    @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateActiveDto,
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
+    this.assertFranchiseScope(id, currentUser);
     await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);
   }
 

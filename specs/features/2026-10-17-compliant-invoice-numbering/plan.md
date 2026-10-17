@@ -166,6 +166,13 @@
 > - Checks: admin `tsc` and development build green; ESLint on the changed files 0 errors (warnings are older `any`s); server suites member 321, franchise 30, reports 17, platform 24; both API builds green.
 > - Browser (Chrome, local admin-api + admin, 2026-10-17): EFMUM form previews `EFM/2627/S/00492`, `…/E/00001`, `…/P/00001`, `…/X/00001`, `…/C/00001` at 16 characters; typing `efmum` gives `EFMUM` and "The longest number, EFMUM/2627/S/99999, has 18 characters…" (not saved). With MEMUM temporarily set to no GSTIN and a ₹90,000 threshold (restored afterwards): amber "GST threshold 89%" chip in the list, amber card on the details page and on the dashboard (₹79,900 of ₹90,000, 88.78%), threshold field on its form, `MEM/2627/P/00065` preview, report banner. Payment dialog for a US-billed member (6392, not saved): "Cash" shows the remittance hint, "Remittance via exchange house (RDA)" removes it. Report: EFMUM Q3 `000461…000491`, 2 missing; September `000377…000463`, 35 missing (see validation Review). No console errors.
 
+## Group 5b: Review fixes (live RBAC run, 2026-10-17)
+
+- [x] 5b.1 `PUT franchise/manage/:id`, `GET franchise/manage/:id` and `PATCH franchise/update-status/:id` refuse (403) a franchise outside the caller's `franchiseIds` (empty = unscoped), like the turnover and counters endpoints. Found live: `qa.franchise.admin` (franchise 1) reached the service on `PUT franchise/manage/3` (400 from the format check instead of 403), so with a valid body it could change Mahi's number format and every other field. The gap predates this feature; the format field depends on it (principle 3).
+- [x] 5b.2 Unit test for the three endpoints; re-run the curl matrix.
+> **As built (5b, 2026-10-17):** `assertFranchiseScope` now guards `GET manage/:id`, `PUT manage/:id`, `PATCH update-status/:id` (ids parsed with `ParseIntPipe`); `franchise.controller.spec.ts` (franchise jest 32/32). Live curl (QA tokens from `AuthService.signIn`): `qa.franchise.admin` → 403 on GET / PUT / PATCH of franchise 3, 200 on its own franchise, and its invalid PUT on franchise 1 reaches the 400 format check; super admin unchanged; `mst_franchises` hash identical before and after.
+- Not changed here (noted for the RBAC backlog): `GET franchise/list` and `franchise/dropdown` return every franchise to a scoped admin, and a `franchise_admin` holds Franchise `create`. Narrowing those changes other screens (dashboard alerts, dropdowns) and belongs to an RBAC item.
+
 ## Group 6: Close-out
 
 - [ ] 6.1 All checks in `validation.md` pass.
