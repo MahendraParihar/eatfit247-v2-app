@@ -1,0 +1,308 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "EatFit247 Tax Decision",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "main-charge",
+        "label": "Domestic charge",
+        "focus": [
+          "entry",
+          "invariants",
+          "facts",
+          "resolve",
+          "charge",
+          "store"
+        ],
+        "note": "An admin payment priced by a same-country CHARGE rule and stored with its rule id."
+      },
+      {
+        "id": "exports",
+        "label": "Exports and zero-rating",
+        "focus": [
+          "resolve",
+          "zeroRated",
+          "lutExport",
+          "foreignReg",
+          "evidence"
+        ],
+        "note": "Indian export under LUT or IGST, UAE zero-rating gated by evidence, tax under a foreign registration."
+      },
+      {
+        "id": "refusals",
+        "label": "Refusals",
+        "focus": [
+          "invariants",
+          "resolve",
+          "refused"
+        ],
+        "note": "Code invariants and REFUSE rules stop the entry before any payment row exists."
+      }
+    ],
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "frontend": {
+          "label": "Admin entry"
+        },
+        "backend": {
+          "label": "Service step"
+        },
+        "security": {
+          "label": "Guard / refusal"
+        },
+        "database": {
+          "label": "Tax data / counter"
+        },
+        "cloud": {
+          "label": "Zero-rated / foreign tax"
+        },
+        "external": {
+          "label": "Document"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "decide",
+      "label": "Guard, place of supply, rule"
+    },
+    {
+      "id": "charge-lane",
+      "label": "Charge + stored decision"
+    },
+    {
+      "id": "export-lane",
+      "label": "Zero-rating, export, foreign registration"
+    },
+    {
+      "id": "stops",
+      "label": "Evidence decision + refusals",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "guard",
+      "label": "Guard",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "resolve-phase",
+      "label": "Facts + rule",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "treat",
+      "label": "Treatment + store",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "entry",
+    "invariants",
+    "facts",
+    "resolve",
+    "charge",
+    "store"
+  ],
+  "nodes": [
+    {
+      "id": "entry",
+      "lane": "decide",
+      "col": 0,
+      "type": "frontend",
+      "label": "Admin entry",
+      "sublabel": "payment or order",
+      "width": 128
+    },
+    {
+      "id": "invariants",
+      "lane": "decide",
+      "col": 1,
+      "type": "security",
+      "label": "Code invariants",
+      "sublabel": "OIDAR, goods address",
+      "width": 140
+    },
+    {
+      "id": "facts",
+      "lane": "decide",
+      "col": 2,
+      "type": "backend",
+      "label": "Place of supply",
+      "sublabel": "billing or delivery",
+      "width": 140
+    },
+    {
+      "id": "resolve",
+      "lane": "decide",
+      "col": 3,
+      "type": "database",
+      "label": "Resolve rule",
+      "sublabel": "mst_tax_master",
+      "tag": "precedence 1-8",
+      "width": 140
+    },
+    {
+      "id": "charge",
+      "lane": "charge-lane",
+      "col": 4,
+      "type": "backend",
+      "label": "CHARGE",
+      "sublabel": "GST split or VAT",
+      "width": 140
+    },
+    {
+      "id": "store",
+      "lane": "charge-lane",
+      "col": 5,
+      "type": "database",
+      "label": "Stored decision",
+      "sublabel": "written by every treatment",
+      "width": 170
+    },
+    {
+      "id": "zeroRated",
+      "lane": "export-lane",
+      "col": 3,
+      "type": "cloud",
+      "label": "ZERO_RATED_EXPORT",
+      "sublabel": "UAE 0% Z",
+      "width": 160
+    },
+    {
+      "id": "lutExport",
+      "lane": "export-lane",
+      "col": 4,
+      "type": "backend",
+      "label": "EXPORT_LUT_OR_TAX",
+      "sublabel": "LUT 0% or IGST",
+      "width": 160
+    },
+    {
+      "id": "foreignReg",
+      "lane": "export-lane",
+      "col": 5,
+      "type": "cloud",
+      "label": "FOREIGN_REGISTRATION",
+      "sublabel": "AED invoice",
+      "width": 170
+    },
+    {
+      "id": "refused",
+      "lane": "stops",
+      "col": 1,
+      "type": "security",
+      "label": "Refused",
+      "sublabel": "no row, no number",
+      "width": 140
+    },
+    {
+      "id": "evidence",
+      "lane": "stops",
+      "col": 3,
+      "type": "security",
+      "label": "Evidence check",
+      "sublabel": "finance decides",
+      "width": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "entry-guard",
+      "from": "entry",
+      "to": "invariants",
+      "variant": "emphasis"
+    },
+    {
+      "id": "guard-facts",
+      "from": "invariants",
+      "to": "facts",
+      "variant": "emphasis"
+    },
+    {
+      "id": "facts-resolve",
+      "from": "facts",
+      "to": "resolve",
+      "variant": "emphasis"
+    },
+    {
+      "id": "resolve-charge",
+      "from": "resolve",
+      "to": "charge",
+      "label": "CHARGE",
+      "variant": "emphasis"
+    },
+    {
+      "id": "charge-store",
+      "from": "charge",
+      "to": "store",
+      "variant": "emphasis"
+    },
+    {
+      "id": "resolve-zero",
+      "from": "resolve",
+      "to": "zeroRated",
+      "label": "zero-rate",
+      "role": "branch"
+    },
+    {
+      "id": "resolve-export",
+      "from": "resolve",
+      "to": "lutExport",
+      "label": "export",
+      "role": "branch"
+    },
+    {
+      "id": "resolve-foreign",
+      "from": "resolve",
+      "to": "foreignReg",
+      "label": "electronic",
+      "role": "branch",
+      "variant": "dashed"
+    },
+    {
+      "id": "zero-evidence",
+      "from": "zeroRated",
+      "to": "evidence",
+      "label": "evidence",
+      "variant": "security"
+    },
+    {
+      "id": "guard-refused",
+      "from": "invariants",
+      "to": "refused",
+      "label": "blocked",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "rule-refused",
+      "from": "resolve",
+      "to": "refused",
+      "label": "REFUSE",
+      "variant": "security",
+      "role": "error"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Rule = when + then",
+      "items": [
+        "Conditions first, specific plan next, latest date last",
+        "Services follow billing, goods follow delivery (IGST s.10, s.12)"
+      ]
+    }
+  ]
+}

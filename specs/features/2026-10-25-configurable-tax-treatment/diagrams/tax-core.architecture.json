@@ -1,0 +1,405 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "EatFit247 Tax Core",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "pricing",
+        "label": "Pricing a sale",
+        "focus": [
+          "adminUi",
+          "adminApi",
+          "taxEngine",
+          "taxMaster",
+          "taxRegistration",
+          "rulesTable",
+          "registrationsTable",
+          "lutFx"
+        ],
+        "note": "calculate-tax resolves the Tax Master rule and runs its treatment."
+      },
+      {
+        "id": "numbering",
+        "label": "Issuing a number",
+        "focus": [
+          "adminApi",
+          "invoiceIssue",
+          "invoiceSequence",
+          "sequencesTable",
+          "paymentsTable",
+          "lutFx"
+        ],
+        "note": "On the first PAID, the franchise counter is locked and the number committed."
+      }
+    ],
+    "repository": {
+      "url": "https://github.com/MahendraParihar/eatfit247-v2-app",
+      "revision": "7f496a3e5472fb73aaa3c22df0c15d9e170e5431"
+    }
+  },
+  "components": [
+    {
+      "id": "adminUi",
+      "type": "frontend",
+      "label": "Admin CMS",
+      "sublabel": "Tax Master, payments",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "eatfit247-admin/libs/admin/tax-master/src/lib/manage/manage-tax-master.html",
+          "label": "Tax Master form"
+        }
+      ]
+    },
+    {
+      "id": "adminApi",
+      "type": "backend",
+      "label": "admin-api",
+      "sublabel": "tax-master, member-plan",
+      "tag": "calculate-tax",
+      "pos": [
+        250,
+        300
+      ],
+      "size": [
+        170,
+        70
+      ],
+      "sources": [
+        {
+          "path": "server_1/libs/modules/member/src/controllers/admin/member-plan.controller.ts",
+          "line": 124,
+          "label": "calculate-tax"
+        },
+        {
+          "path": "server_1/libs/modules/tax-engine/src/controllers/admin/tax-master.controller.ts",
+          "label": "Tax Master API"
+        }
+      ]
+    },
+    {
+      "id": "taxEngine",
+      "type": "backend",
+      "label": "TaxEngineService",
+      "sublabel": "invariants + executors",
+      "pos": [
+        490,
+        150
+      ],
+      "size": [
+        180,
+        64
+      ],
+      "sources": [
+        {
+          "path": "server_1/libs/modules/tax-engine/src/services/tax-engine.service.ts",
+          "line": 66,
+          "label": "calculate"
+        }
+      ]
+    },
+    {
+      "id": "taxMaster",
+      "type": "backend",
+      "label": "TaxMasterService",
+      "sublabel": "rule resolver",
+      "tag": "precedence",
+      "pos": [
+        740,
+        40
+      ],
+      "size": [
+        180,
+        70
+      ],
+      "sources": [
+        {
+          "path": "server_1/libs/modules/tax-engine/src/services/tax-master.service.ts",
+          "line": 24,
+          "label": "rule lookup"
+        }
+      ]
+    },
+    {
+      "id": "taxRegistration",
+      "type": "security",
+      "label": "TaxRegistrationService",
+      "sublabel": "GSTIN / TRN per country",
+      "tag": "4.14",
+      "pos": [
+        740,
+        170
+      ],
+      "size": [
+        200,
+        70
+      ]
+    },
+    {
+      "id": "lutFx",
+      "type": "database",
+      "label": "LUT + FX rates",
+      "sublabel": "mst_franchise_luts, mst_exchange_rates",
+      "pos": [
+        1060,
+        300
+      ],
+      "size": [
+        260,
+        64
+      ],
+      "sources": [
+        {
+          "path": "server_1/libs/modules/tax-engine/src/services/lut.service.ts",
+          "line": 17,
+          "label": "findValid"
+        },
+        {
+          "path": "server_1/libs/modules/tax-engine/src/services/exchange-rate.service.ts",
+          "line": 53,
+          "label": "findRate"
+        }
+      ]
+    },
+    {
+      "id": "invoiceIssue",
+      "type": "backend",
+      "label": "InvoiceIssueService",
+      "sublabel": "series + FX at issue",
+      "pos": [
+        490,
+        450
+      ],
+      "size": [
+        180,
+        64
+      ],
+      "sources": [
+        {
+          "path": "server_1/libs/modules/member/src/services/invoice-issue.service.ts",
+          "line": 88,
+          "label": "issue"
+        }
+      ]
+    },
+    {
+      "id": "invoiceSequence",
+      "type": "backend",
+      "label": "InvoiceSequenceService",
+      "sublabel": "lock + increment",
+      "tag": "FOR UPDATE",
+      "pos": [
+        740,
+        450
+      ],
+      "size": [
+        200,
+        70
+      ],
+      "sources": [
+        {
+          "path": "server_1/libs/platform/src/lib/services/invoice-sequence.service.ts",
+          "line": 57,
+          "label": "generateInvoiceNumber"
+        }
+      ]
+    },
+    {
+      "id": "rulesTable",
+      "type": "database",
+      "label": "mst_tax_master",
+      "sublabel": "when + then rules",
+      "pos": [
+        1060,
+        40
+      ],
+      "size": [
+        240,
+        64
+      ]
+    },
+    {
+      "id": "registrationsTable",
+      "type": "database",
+      "label": "mst_franchise_tax_registrations",
+      "sublabel": "4.14",
+      "pos": [
+        1060,
+        170
+      ],
+      "size": [
+        240,
+        64
+      ]
+    },
+    {
+      "id": "sequencesTable",
+      "type": "database",
+      "label": "mst_invoice_sequences",
+      "sublabel": "franchise x type x FY x series",
+      "pos": [
+        1060,
+        450
+      ],
+      "size": [
+        240,
+        64
+      ]
+    },
+    {
+      "id": "paymentsTable",
+      "type": "database",
+      "label": "txn_member_payments",
+      "sublabel": "stored decision + number",
+      "pos": [
+        1060,
+        580
+      ],
+      "size": [
+        240,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "server_1 admin-api (NestJS)",
+      "wraps": [
+        "adminApi",
+        "taxEngine",
+        "taxMaster",
+        "taxRegistration",
+        "invoiceIssue",
+        "invoiceSequence"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "PostgreSQL",
+      "wraps": [
+        "rulesTable",
+        "registrationsTable",
+        "lutFx",
+        "sequencesTable",
+        "paymentsTable"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "ui-api",
+      "from": "adminUi",
+      "to": "adminApi",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "api-engine",
+      "from": "adminApi",
+      "to": "taxEngine",
+      "label": "calculate",
+      "variant": "emphasis"
+    },
+    {
+      "id": "engine-master",
+      "from": "taxEngine",
+      "to": "taxMaster",
+      "label": "resolve"
+    },
+    {
+      "id": "engine-registration",
+      "from": "taxEngine",
+      "to": "taxRegistration",
+      "label": "registered?"
+    },
+    {
+      "id": "engine-lut",
+      "from": "taxEngine",
+      "to": "lutFx",
+      "label": "LUT"
+    },
+    {
+      "id": "master-rules",
+      "from": "taxMaster",
+      "to": "rulesTable",
+      "label": "SQL"
+    },
+    {
+      "id": "registration-table",
+      "from": "taxRegistration",
+      "to": "registrationsTable",
+      "label": "SQL"
+    },
+    {
+      "id": "api-issue",
+      "from": "adminApi",
+      "to": "invoiceIssue",
+      "label": "on PAID",
+      "variant": "emphasis"
+    },
+    {
+      "id": "issue-sequence",
+      "from": "invoiceIssue",
+      "to": "invoiceSequence",
+      "label": "next number"
+    },
+    {
+      "id": "sequence-table",
+      "from": "invoiceSequence",
+      "to": "sequencesTable",
+      "label": "FOR UPDATE"
+    },
+    {
+      "id": "issue-fx",
+      "from": "invoiceIssue",
+      "to": "lutFx",
+      "label": "FX",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "issue-payments",
+      "from": "invoiceIssue",
+      "to": "paymentsTable",
+      "label": "invoice_id"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Pricing",
+      "items": [
+        "Treatment comes from the matched Tax Master rule",
+        "Registration decides GST, VAT or a foreign series"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Numbering",
+      "items": [
+        "Counters belong to the franchise",
+        "Locked in the payment transaction: no gaps"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "4.14 additions",
+      "items": [
+        "TaxRegistrationService + registrations table",
+        "Rule conditions, guardrails and preview"
+      ]
+    }
+  ]
+}
