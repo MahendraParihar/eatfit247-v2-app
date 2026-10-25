@@ -133,6 +133,8 @@ export interface IMemberPaymentMasterData {
 
 export interface IPlanTaxCalculationRequest {
   programPlanId: number;
+  /** The customer's GSTIN / TRN (B2B): validated, and for India services its State is the place of supply */
+  gstNumber?: string;
   discountAmount: number;
   currency: string;
   addressId?: number;

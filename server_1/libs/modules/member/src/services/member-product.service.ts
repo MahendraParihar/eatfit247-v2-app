@@ -78,6 +78,9 @@ import { InvoiceIssueService } from './invoice-issue.service';
 interface IProductTaxOptions {
   paymentRoute?: PaymentRouteEnum | null;
   supplyDate?: Date | string | null;
+  /** The customer's GSTIN / TRN (decision 10); an invalid one is refused when enforced (create, admin preview) */
+  customerRegistrationNumber?: string | null;
+  enforceCustomerRegistration?: boolean;
 }
 
 @Injectable()
@@ -348,6 +351,8 @@ export class MemberProductService {
       taxMasterId?: number | null;
       taxRegistrationId?: number | null;
       customerType?: CustomerTypeEnum | null;
+      customerRegistrationCountry?: string | null;
+      customerRegistrationNumber?: string | null;
       requiresEvidence?: boolean;
     }>
   > {
@@ -396,6 +401,8 @@ export class MemberProductService {
           taxMasterId: taxCalculationResult.taxMasterId ?? null,
           taxRegistrationId: taxCalculationResult.taxRegistrationId ?? null,
           customerType: taxCalculationResult.customerType ?? null,
+          customerRegistrationCountry: taxCalculationResult.customerRegistrationCountry ?? null,
+          customerRegistrationNumber: taxCalculationResult.customerRegistrationNumber ?? null,
           requiresEvidence: !!taxCalculationResult.requiresEvidence,
         };
       }),
@@ -437,6 +444,9 @@ export class MemberProductService {
       refundObj: item.refundObj,
       paymentGatewayResponse: item.paymentGatewayResponse,
       gstNumber: item.gstNumber,
+      // B2B and the country of the customer's number: the invoice prints the buyer's GSTIN / TRN (decision 10)
+      customerType: item.customerType ?? null,
+      customerRegistrationCountry: item.customerRegistrationCountry ?? null,
       paymentSource: item.paymentSource as PaymentSourceEnum,
       gatewayProvider: item.gatewayProvider,
       gatewayOrderId: item.gatewayOrderId,
@@ -719,6 +729,8 @@ export class MemberProductService {
       addresses.franchiseAddress,
       memberAddressSnapshot.billingAddress,
       memberAddressSnapshot.address,
+      // The website takes no customer number yet (deferred); the admin preview validates it as the save will
+      publicCheckout ? {} : { customerRegistrationNumber: payload.gstNumber || null, enforceCustomerRegistration: !!(payload.gstNumber ?? '').trim() },
     );
     // The public preview must show exactly what the order will charge (same per-line rounding)
     const orderItemObjs = publicCheckout
@@ -819,6 +831,8 @@ export class MemberProductService {
       deliveryStateCode: deliveryCodes?.customerStateCode ?? null,
       paymentRoute: options.paymentRoute ?? null,
       supplyDate: options.supplyDate ?? null,
+      customerRegistrationNumber: options.customerRegistrationNumber ?? null,
+      enforceCustomerRegistration: !!options.enforceCustomerRegistration,
     };
     const taxResult = await this.taxEngineService.calculate(taxInput);
     // Calculate base amounts
@@ -849,6 +863,8 @@ export class MemberProductService {
       taxMasterId: taxResult.taxMasterId ?? null,
       taxRegistrationId: taxResult.taxRegistrationId ?? null,
       customerType: taxResult.customerType ?? null,
+      customerRegistrationCountry: taxResult.customerRegistrationCountry ?? null,
+      customerRegistrationNumber: taxResult.customerRegistrationNumber ?? null,
       requiresEvidence: !!taxResult.requiresEvidence,
     };
   }
@@ -985,9 +1001,13 @@ export class MemberProductService {
 
   /** An order header's registration and customer type: every line of an order is priced for the same franchise and customer. */
   private orderDecision(
-    items: Array<{ taxRegistrationId?: number | null; customerType?: CustomerTypeEnum | null }>,
-  ): { taxRegistrationId: number | null; customerType: CustomerTypeEnum | null } {
-    return { taxRegistrationId: items[0]?.taxRegistrationId ?? null, customerType: items[0]?.customerType ?? null };
+    items: Array<{ taxRegistrationId?: number | null; customerType?: CustomerTypeEnum | null; customerRegistrationCountry?: string | null }>,
+  ): { taxRegistrationId: number | null; customerType: CustomerTypeEnum | null; customerRegistrationCountry: string | null } {
+    return {
+      taxRegistrationId: items[0]?.taxRegistrationId ?? null,
+      customerType: items[0]?.customerType ?? null,
+      customerRegistrationCountry: items[0]?.customerRegistrationCountry ?? null,
+    };
   }
 
   /**
@@ -1095,6 +1115,8 @@ export class MemberProductService {
         {
           paymentRoute: route,
           supplyDate: obj.paymentSource === PaymentSourceEnum.MANUAL ? obj.paymentDate ?? null : null,
+          customerRegistrationNumber: obj.gstNumber || null,
+          enforceCustomerRegistration: !!(obj.gstNumber ?? '').trim(),
         },
       );
       const totalOrderAmount = orderItemObjs.reduce((acc, item) => acc + item.baseAmount, 0);
@@ -1116,7 +1138,8 @@ export class MemberProductService {
         currency: obj.orderItems[0].currency,
         refundObj: null,
         paymentGatewayResponse: obj.paymentGatewayResponse || null,
-        gstNumber: obj.gstNumber || null,
+        // Stored as validated (upper case, no spaces)
+        gstNumber: orderItemObjs[0]?.customerRegistrationNumber ?? (obj.gstNumber || null),
         memberAddress: memberAddressSnapshot,
         paymentSource: obj.paymentSource,
         paymentRoute: route,

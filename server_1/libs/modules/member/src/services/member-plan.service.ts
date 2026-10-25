@@ -35,6 +35,7 @@ import {
   PaymentStatusEnum,
   TableEnum,
   TaxMode,
+  TaxRegistrationNumberUtil,
   TaxTypeEnum,
   TransactionType,
   IInvoiceDocument,
@@ -73,6 +74,22 @@ interface IPlanTaxOptions {
   programPlanId?: number | null;
   paymentRoute: PaymentRouteEnum | null;
   supplyDate: Date | string | null;
+  /** The customer's GSTIN / TRN (decision 10) */
+  customerRegistrationNumber?: string | null;
+  /** Refuse an invalid number: on create, and on update when it changed (a legacy value stays editable) */
+  enforceCustomerRegistration?: boolean;
+}
+
+/** The customer number to price with, and whether it must be valid: always when new, else only when it changed. */
+export function customerNumberOptions(
+  next: string | null | undefined,
+  stored?: string | null,
+): Pick<IPlanTaxOptions, 'customerRegistrationNumber' | 'enforceCustomerRegistration'> {
+  const normalize = (value: string | null | undefined): string => TaxRegistrationNumberUtil.normalize(value);
+  return {
+    customerRegistrationNumber: next || null,
+    enforceCustomerRegistration: !!normalize(next) && normalize(next) !== normalize(stored),
+  };
 }
 
 @Injectable()
@@ -191,6 +208,7 @@ export class MemberPlanService {
           payload.paymentDate,
         ),
         programPlanId: programPlan.programPlanId,
+        ...customerNumberOptions(payload.gstNumber),
       },
     );
     return { ...result, taxableAmount: Number(fee.fees) - (result.discountAmount || 0) };
@@ -339,7 +357,11 @@ export class MemberPlanService {
         },
         billingAddress,
         franchiseAddress,
-        { ...this.taxOptions(member.franchiseId, obj.paymentSource, obj.paymentRoute, obj.paymentDate), programPlanId: programPlan.programPlanId },
+        {
+          ...this.taxOptions(member.franchiseId, obj.paymentSource, obj.paymentRoute, obj.paymentDate),
+          programPlanId: programPlan.programPlanId,
+          ...customerNumberOptions(obj.gstNumber),
+        },
       );
       // Get program plan details to get noOfCycle and noOfDaysInCycle
       const noOfCycle = programPlan.noOfCycle;
@@ -360,7 +382,8 @@ export class MemberPlanService {
         isTaxApplicable: true,
         refundObj: null,
         paymentGatewayResponse: obj.paymentGatewayResponse || null,
-        gstNumber: obj.gstNumber || null,
+        // Stored as validated (upper case, no spaces)
+        gstNumber: paymentObj.customerRegistrationNumber ?? (obj.gstNumber || null),
         memberAddress: memberAddressSnapshot,
         paymentSource: obj.paymentSource,
         orderAmount: paymentObj.orderAmount,
@@ -386,6 +409,7 @@ export class MemberPlanService {
         taxMasterId: paymentObj.taxMasterId ?? null,
         taxRegistrationId: paymentObj.taxRegistrationId ?? null,
         customerType: paymentObj.customerType ?? null,
+        customerRegistrationCountry: paymentObj.customerRegistrationCountry ?? null,
         remittanceReference:
           obj.paymentSource === PaymentSourceEnum.MANUAL ? obj.remittanceReference?.trim() || null : null,
         noOfCycle: noOfCycle,
@@ -525,8 +549,8 @@ export class MemberPlanService {
 
     const isGatewayRecord = payment.paymentSource === PaymentSourceEnum.PAYMENT_GATEWAY;
     const amountsLocked = isGatewayRecord || !!payment.invoiceId;
-    const lockedChange = amountsLocked && this.isFinancialChange(payment, obj);
-    const draft = await this.buildPaymentDraft(memberId, obj, amountsLocked ? payment : undefined);
+    const lockedChange = amountsLocked && (this.isFinancialChange(payment, obj) || this.customerNumberChanged(payment, obj));
+    const draft = await this.buildPaymentDraft(memberId, obj, amountsLocked ? payment : undefined, payment.gstNumber);
     const oldPayment = this.convertToModel(payment.get({ plain: true }));
     const dietPlanImpact = await this.memberDietPlanService.getPaymentPlanLimitImpact(
       memberId,
@@ -607,6 +631,13 @@ export class MemberPlanService {
     if (amountsLocked && this.isFinancialChange(payment, obj)) {
       throw new BadRequestException(this.lockedChangeMessage(payment, isGatewayRecord));
     }
+    if (amountsLocked && this.customerNumberChanged(payment, obj)) {
+      throw new BadRequestException(
+        isGatewayRecord && !payment.invoiceId
+          ? "The customer's GSTIN / TRN of a payment-link payment can't change: it would change the tax the link charges. Cancel the link and create a new payment."
+          : "The customer's GSTIN / TRN of an issued invoice can't change: issue a credit note and record the payment again.",
+      );
+    }
     if (!isGatewayRecord) {
       PaymentValidationUtil.validateManualPaymentSource({
         paymentSource: obj.paymentSource,
@@ -619,7 +650,7 @@ export class MemberPlanService {
 
     // Locked records keep their stored price and tax: no recalculation (it could also fail on
     // configuration that changed since, e.g. a missing TRN)
-    const draft = await this.buildPaymentDraft(memberId, obj, amountsLocked ? payment : undefined);
+    const draft = await this.buildPaymentDraft(memberId, obj, amountsLocked ? payment : undefined, payment.gstNumber);
     const t = await this.sequelize.transaction();
     try {
       // Lock the row and re-read it, so two concurrent saves to PAID can't both issue a number
@@ -631,7 +662,8 @@ export class MemberPlanService {
         throw new BadRequestException(blockReason);
       }
       payment.addressId = obj.addressId || null;
-      payment.gstNumber = obj.gstNumber || null;
+      // A locked record keeps its number (a change is refused above); otherwise stored as validated
+      payment.gstNumber = amountsLocked ? payment.gstNumber : draft.paymentObj.customerRegistrationNumber ?? (obj.gstNumber || null);
       payment.modifiedIp = requestedIp;
       payment.modifiedBy = adminId;
       if (isGatewayRecord) {
@@ -711,6 +743,14 @@ export class MemberPlanService {
   }
 
   /** Plan, currency, discount or billing address differ from the stored payment. */
+  /**
+   * The customer's GSTIN / TRN decides B2B and, for India services, the place of supply (decision 10): on a locked
+   * record (issued invoice or gateway payment) it can't change without re-pricing, so the change is refused.
+   */
+  private customerNumberChanged(payment: TxnMemberPayment, obj: IManageMemberPayment): boolean {
+    return TaxRegistrationNumberUtil.normalize(obj.gstNumber) !== TaxRegistrationNumberUtil.normalize(payment.gstNumber);
+  }
+
   private isFinancialChange(payment: TxnMemberPayment, obj: IManageMemberPayment): boolean {
     return (
       Number(obj.programPlanId) !== Number(payment.programPlanId) ||
@@ -760,6 +800,8 @@ export class MemberPlanService {
       taxMasterId: payment.taxMasterId ?? null,
       taxRegistrationId: payment.taxRegistrationId ?? null,
       customerType: payment.customerType ?? null,
+      customerRegistrationCountry: payment.customerRegistrationCountry ?? null,
+      customerRegistrationNumber: payment.gstNumber ?? null,
     };
   }
 
@@ -831,6 +873,7 @@ export class MemberPlanService {
     payment.taxMasterId = draft.paymentObj.taxMasterId ?? null;
     payment.taxRegistrationId = draft.paymentObj.taxRegistrationId ?? null;
     payment.customerType = draft.paymentObj.customerType ?? null;
+    payment.customerRegistrationCountry = draft.paymentObj.customerRegistrationCountry ?? null;
     payment.remittanceReference = obj.remittanceReference?.trim() || null;
     payment.noOfCycle = draft.noOfCycle;
     payment.daysInCycle = draft.noOfDaysInCycle;
@@ -840,6 +883,7 @@ export class MemberPlanService {
     memberId: number,
     obj: IManageMemberPayment,
     storedPricing?: TxnMemberPayment,
+    storedCustomerNumber?: string | null,
   ): Promise<{
     member: TxnMember;
     programPlan: IProgramPlan;
@@ -909,7 +953,11 @@ export class MemberPlanService {
       },
       billingAddress,
       franchiseAddress,
-      { ...this.taxOptions(member.franchiseId, obj.paymentSource, obj.paymentRoute, obj.paymentDate), programPlanId: programPlan.programPlanId },
+      {
+        ...this.taxOptions(member.franchiseId, obj.paymentSource, obj.paymentRoute, obj.paymentDate),
+        programPlanId: programPlan.programPlanId,
+        ...customerNumberOptions(obj.gstNumber, storedCustomerNumber),
+      },
     );
 
     return {
@@ -1075,6 +1123,9 @@ export class MemberPlanService {
       placeOfSupplyCountryCode: item.placeOfSupplyCountryCode ?? null,
       placeOfSupplyStateCode: item.placeOfSupplyStateCode ?? null,
       hsnSacCode: item.hsnSacCode ?? null,
+      // B2B and the country of the customer's number: the invoice prints the buyer's GSTIN / TRN (decision 10)
+      customerType: item.customerType ?? null,
+      customerRegistrationCountry: item.customerRegistrationCountry ?? null,
       noOfCycle: item.noOfCycle,
       noOfDaysInCycle: item.daysInCycle,
       deletable: false, // TODO: Add logic to determine if payment can be deleted
@@ -1140,6 +1191,8 @@ export class MemberPlanService {
       transactionType: TransactionType.SERVICE,
       paymentRoute: options.paymentRoute ?? null,
       supplyDate: options.supplyDate ?? null,
+      customerRegistrationNumber: options.customerRegistrationNumber ?? null,
+      enforceCustomerRegistration: !!options.enforceCustomerRegistration,
     };
     const taxResult = await this.taxEngineService.calculate(taxInput);
     return <ICalculateTaxResponse>{
@@ -1169,6 +1222,8 @@ export class MemberPlanService {
       taxMasterId: taxResult.taxMasterId ?? null,
       taxRegistrationId: taxResult.taxRegistrationId ?? null,
       customerType: taxResult.customerType ?? null,
+      customerRegistrationCountry: taxResult.customerRegistrationCountry ?? null,
+      customerRegistrationNumber: taxResult.customerRegistrationNumber ?? null,
       requiresEvidence: !!taxResult.requiresEvidence,
     };
   }
@@ -1764,6 +1819,7 @@ export class MemberPlanService {
           taxMasterId: paymentObj.taxMasterId ?? null,
           taxRegistrationId: paymentObj.taxRegistrationId ?? null,
           customerType: paymentObj.customerType ?? null,
+          customerRegistrationCountry: paymentObj.customerRegistrationCountry ?? null,
           // The website collects no evidence yet (decision 9, online payments deferred)
           taxEvidence: TaxEngineService.notCollectedEvidence(paymentObj),
           noOfCycle: programPlan.noOfCycle,

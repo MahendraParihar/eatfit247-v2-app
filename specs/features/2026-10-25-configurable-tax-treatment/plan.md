@@ -591,7 +591,7 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
 
 ## Group 9: Backend: customer registration (G15)
 
-- [ ] 9.1 Validate the customer GSTIN / TRN on admin payment and order create (`member-plan.dto.ts:75`, `member-product.dto.ts:68`), and on payment update only when changed. Refuse a GSTIN on a non-Indian billing address. Set `customer_type` and the registration country.
+- [ ] 9.1 Validate the customer GSTIN / TRN on admin payment and order create (`member-plan.dto.ts:75`, `member-product.dto.ts:68`), and on payment update only when changed. Refuse a GSTIN on a non-Indian billing address. Set `customer_type` and the registration country. *(Added in the build:)* on a record whose invoice is issued (or a gateway record), the customer number can't change. It moves the place of supply and the printed buyer, so the correction is a credit note (D16).
 - [ ] 9.2 India B2B services: the place-of-supply State = the GSTIN State (stored and printed); a mismatch is noted in the reason.
 - [ ] 9.3 The mapper prints the buyer TRN on a UAE B2B tax invoice.
 - [ ] 9.4 `customer_type` feeds the facts.

@@ -1,9 +1,10 @@
 import { IInvoiceDocument, IInvoiceItem, IInvoiceTaxRow } from './invoice-document.interface';
-import { TaxMode, TaxTypeEnum, TransactionType } from '../../enum';
+import { CustomerTypeEnum, TaxMode, TaxTypeEnum, TransactionType } from '../../enum';
 import { IFranchise } from '../franchise.interface';
 import { IAddress } from '../location.interface';
 import {IMemberPayment, IMemberProduct} from "../member";
 import { IInvoiceRegistration } from '../tax/tax-rule.interface';
+import { gstStateCode, gstStateName, TaxRegistrationNumberUtil } from '../tax/tax-registration-number.util';
 
 /**
  * Optional member information for buyer details
@@ -68,7 +69,7 @@ export function mapPaymentToInvoiceDocument(
       payment.totalAmount,
       payment.taxAmount,
       taxableAmount,
-      payment.gstNumber,
+      buyerTaxNumber(payment, taxType)?.taxId,
       items.length,
       payment.taxObj,
     );
@@ -78,8 +79,7 @@ export function mapPaymentToInvoiceDocument(
   // Build buyer (member) information
   const buyer = buildBuyerInfo(
     memberAddress,
-    payment.gstNumber,
-    taxType,
+    buyerTaxNumber(payment, taxType),
     memberInfo || {
       fullName: payment.memberName,
     },
@@ -335,20 +335,38 @@ function buildSellerInfo(
 }
 
 /**
+ * The buyer's tax number on the invoice (decision 10; CGST Rule 46(e), UAE ER Art 59(1)(c)): a B2B customer's GSTIN
+ * or TRN with its label. A record priced before customer types existed (type unknown) prints a GST buyer's number
+ * as before, so issued invoices read the same; a B2C record prints none.
+ */
+export function buyerTaxNumber(
+  record: { gstNumber?: string | null; customerType?: CustomerTypeEnum | string | null; customerRegistrationCountry?: string | null },
+  taxType?: TaxTypeEnum | string | null,
+): { taxId: string; taxIdLabel: string } | null {
+  const number = (record.gstNumber ?? '').trim();
+  if (!number) {
+    return null;
+  }
+  if (record.customerType === CustomerTypeEnum.B2B) {
+    const country = (record.customerRegistrationCountry ?? '').trim().toUpperCase();
+    return { taxId: number, taxIdLabel: TaxRegistrationNumberUtil.label(country === 'IN' ? TaxTypeEnum.GST : TaxTypeEnum.VAT, country) };
+  }
+  if (!record.customerType && taxType === TaxTypeEnum.GST) {
+    return { taxId: number, taxIdLabel: 'GSTIN' };
+  }
+  return null;
+}
+
+/**
  * Builds buyer (member) information
  */
 function buildBuyerInfo(
   address: IAddress,
-  gstNumber?: string,
-  taxType?: TaxTypeEnum,
+  buyerNumber: { taxId: string; taxIdLabel: string } | null,
   memberInfo?: IMemberInfo,
 ): IInvoiceDocument['buyer'] {
-  let taxId: string | undefined;
-  let taxIdLabel: string | undefined;
-  if (taxType === TaxTypeEnum.GST && gstNumber) {
-    taxId = gstNumber;
-    taxIdLabel = 'GSTIN';
-  }
+  const taxId = buyerNumber?.taxId;
+  const taxIdLabel = buyerNumber?.taxIdLabel;
   // Build a member name from memberInfo or use placeholder
   const memberName =
     memberInfo?.fullName ||
@@ -432,8 +450,10 @@ function placeOfSupplyOf(
     const country = storedPlaceOfSupply || buyerAddress.country || '';
     return { placeOfSupply: country || undefined, countryOfDestination: country || undefined };
   }
-  const state = (buyerAddress.state || '').trim();
   const code = (storedStateCode || buyerAddress.stateCode || '').trim();
+  // A registered buyer's GSTIN State can differ from the billing State (decision 10): name the State supplied to
+  const storedDiffers = !!storedStateCode && !!buyerAddress.stateCode && gstStateCode(storedStateCode) !== gstStateCode(buyerAddress.stateCode);
+  const state = storedDiffers ? gstStateName(storedStateCode) ?? '' : (buyerAddress.state || '').trim();
   const isIndianBuyer = (buyerAddress.countryCode || '').toUpperCase() === 'IN' || (buyerAddress.country || '').toLowerCase() === 'india';
   if (state && isIndianBuyer) {
     return { placeOfSupply: code ? `${state} (${code})` : state };
@@ -554,7 +574,7 @@ export function mapProductOrderToInvoiceDocument(
       productOrder.totalAmount,
       productOrder.taxAmount,
       taxableAmount,
-      productOrder.gstNumber,
+      buyerTaxNumber(productOrder, productOrder.orderItems[0].taxType as TaxTypeEnum)?.taxId,
       productOrder.orderItems.length,
       firstItemTaxObj,
     );
@@ -564,8 +584,7 @@ export function mapProductOrderToInvoiceDocument(
   // Build buyer (member) information
   const buyer = buildBuyerInfo(
     memberAddress,
-    productOrder.gstNumber,
-    productOrder.orderItems[0].taxType,
+    buyerTaxNumber(productOrder, productOrder.orderItems[0].taxType as TaxTypeEnum),
     memberInfo || {
       fullName: productOrder.memberName,
     },

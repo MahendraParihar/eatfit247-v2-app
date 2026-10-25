@@ -9,6 +9,8 @@ import {IInvoiceFx} from "../tax-master.interface";
 
 export interface ICalculateProductVariantTaxRequest {
   items: IMemberProductOrderItemBasic[];
+  /** The customer's GSTIN / TRN (B2B), validated for the billing country */
+  gstNumber?: string;
   billingAddressId?: number;
   addressId?: number;
   discountAmount?: number;

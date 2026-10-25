@@ -1,5 +1,6 @@
 import { InvoicePdfService } from '@server_1/platform';
 import {
+  CustomerTypeEnum,
   IAddress,
   IFranchise,
   IInvoiceRegistration,
@@ -381,5 +382,56 @@ describe('invoice mapper: proforma and invoice date', () => {
       [],
     );
     expect(pending.fx).toBeUndefined();
+  });
+
+  describe('configurable tax treatment 9.2 / 9.3: the buyer\'s GSTIN / TRN', () => {
+    const vat = { taxType: TaxTypeEnum.VAT, taxMode: TaxMode.VAT, taxObj: { VAT: { amount: 50, taxPercentage: 5 } }, currency: 'AED' };
+
+    it('a B2B Indian customer: GSTIN printed and in the QR; the place of supply is the GSTIN State stored', () => {
+      const doc = mapPaymentToInvoiceDocument(
+        payment({ invoiceId: 'EFM/2627/S/00001', gstNumber: '29AAACE1234F1Z2', customerType: CustomerTypeEnum.B2B, customerRegistrationCountry: 'IN', placeOfSupplyStateCode: '29' }),
+        franchise,
+        address,
+        address,
+        [],
+      );
+      expect(doc.buyer).toMatchObject({ taxId: '29AAACE1234F1Z2', taxIdLabel: 'GSTIN' });
+      expect(doc.qrCode?.value).toContain('29AAACE1234F1Z2');
+      // The billing address is in Maharashtra (27): the place of supply names the GSTIN's State
+      const billed27 = { ...address, state: 'Maharashtra', stateCode: '27', countryCode: 'IN', country: 'India' } as unknown as IAddress;
+      const named = mapPaymentToInvoiceDocument(
+        payment({ invoiceId: 'EFM/2627/S/00002', gstNumber: '29AAACE1234F1Z2', customerType: CustomerTypeEnum.B2B, customerRegistrationCountry: 'IN', placeOfSupplyStateCode: '29' }),
+        franchise,
+        billed27,
+        address,
+        [],
+      );
+      expect(named.header.placeOfSupply).toBe('Karnataka (29)');
+      const same = mapPaymentToInvoiceDocument(payment({ placeOfSupplyStateCode: '27' }), franchise, billed27, address, []);
+      expect(same.header.placeOfSupply).toBe('Maharashtra (27)');
+    });
+
+    it('9.3: a B2B UAE customer on a VAT invoice: the buyer TRN printed', () => {
+      const doc = mapPaymentToInvoiceDocument(
+        payment({ ...vat, invoiceId: 'HCUAE/2026/S/000001', gstNumber: '100123456700003', customerType: CustomerTypeEnum.B2B, customerRegistrationCountry: 'AE' } as Partial<IMemberPayment>),
+        franchise,
+        address,
+        address,
+        [],
+      );
+      expect(doc.buyer).toMatchObject({ taxId: '100123456700003', taxIdLabel: 'TRN' });
+    });
+
+    it('B2C: no buyer number, even with a legacy value stored', () => {
+      const doc = mapPaymentToInvoiceDocument(payment({ gstNumber: '456789', customerType: CustomerTypeEnum.B2C }), franchise, address, address, []);
+      expect(doc.buyer.taxId).toBeUndefined();
+    });
+
+    it('priced before customer types: a GST buyer number prints as before (issued invoices read the same)', () => {
+      const doc = mapPaymentToInvoiceDocument(payment({ gstNumber: '27CSEPS5397E1Z8', customerType: null }), franchise, address, address, []);
+      expect(doc.buyer).toMatchObject({ taxId: '27CSEPS5397E1Z8', taxIdLabel: 'GSTIN' });
+      const vatDoc = mapPaymentToInvoiceDocument(payment({ ...vat, gstNumber: '100123456700003', customerType: null } as Partial<IMemberPayment>), franchise, address, address, []);
+      expect(vatDoc.buyer.taxId).toBeUndefined();
+    });
   });
 });

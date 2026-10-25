@@ -21,6 +21,13 @@ export interface TaxInput {
   paymentRoute?: PaymentRouteEnum | null;
   /** Date of supply, for the LUT and rule validity (defaults to today) */
   supplyDate?: Date | string | null;
+  /**
+   * The customer's GSTIN / TRN (payment / order `gst_number`, decision 10). Valid for the billing country → B2B
+   * (and for India services the GSTIN's State is the place of supply); otherwise the sale is B2C.
+   */
+  customerRegistrationNumber?: string | null;
+  /** Refuse an invalid number (400) instead of pricing B2C: on create, and on update when the number changed */
+  enforceCustomerRegistration?: boolean;
 }
 
 export interface TaxResult {
@@ -51,8 +58,12 @@ export interface TaxResult {
   taxMasterId?: number | null;
   /** The franchise's registration the sale is invoiced under; null = unregistered */
   taxRegistrationId?: number | null;
-  /** The facts' customer type (B2C until the customer GSTIN / TRN feeds the facts, plan group 9) */
+  /** B2B with a valid customer GSTIN / TRN for the billing country, else B2C (decision 10) */
   customerType?: CustomerTypeEnum | null;
+  /** The country of the customer's number (IN for a GSTIN, AE for a TRN); null for B2C */
+  customerRegistrationCountry?: string | null;
+  /** The customer's number as validated (upper case, no spaces); null for B2C */
+  customerRegistrationNumber?: string | null;
   /** The rule has an evidence policy (decision 9) */
   requiresEvidence?: boolean;
 }

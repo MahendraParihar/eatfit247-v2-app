@@ -49,6 +49,10 @@ export interface ICalculateTaxResponse {
   requiresEvidence?: boolean;
   /** B2B when a valid customer GSTIN / TRN was given, else B2C (decision 10) */
   customerType?: CustomerTypeEnum | null;
+  /** The country of the customer's GSTIN / TRN (IN / AE); null for B2C */
+  customerRegistrationCountry?: string | null;
+  /** The customer's number as validated (upper case, no spaces); null for B2C */
+  customerRegistrationNumber?: string | null;
 }
 
 export interface ICalculatePlanTaxRequest {

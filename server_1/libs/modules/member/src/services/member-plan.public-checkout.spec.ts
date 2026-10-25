@@ -477,7 +477,7 @@ describe('MemberPlanService public checkout', () => {
           .spyOn(service as unknown as { buildPaymentDraft: () => Promise<unknown> }, 'buildPaymentDraft')
           .mockResolvedValue({ memberAddressSnapshot: { address: null, billingAddress: null }, paymentObj: { totalAmount: 1 }, noOfCycle: 4, noOfDaysInCycle: 7 });
 
-        await service.update(4945, 900, { ...adminGatewayPayment, gstNumber: '27AAAAA0000A1Z5' }, '127.0.0.1', 7);
+        await service.update(4945, 900, adminGatewayPayment, '127.0.0.1', 7);
 
         expect(record).toMatchObject({
           paymentStatusId: PaymentStatusEnum.PENDING,
@@ -485,9 +485,15 @@ describe('MemberPlanService public checkout', () => {
           transactionId: null,
           gatewayOrderId: 'plink_1',
           totalAmount: '1062.00',
-          gstNumber: '27AAAAA0000A1Z5',
         });
         expect(record.save).toHaveBeenCalled();
+      });
+
+      it('configurable tax treatment 9.1: the customer GSTIN of a payment-link payment can no longer change (it would change the tax the link charges)', async () => {
+        paymentFindOne.mockResolvedValue(storedGateway());
+        await expect(service.update(4945, 900, { ...adminGatewayPayment, gstNumber: '27AAAAA0000A1Z5' }, '127.0.0.1', 7)).rejects.toThrow(
+          "customer's GSTIN / TRN of a payment-link payment can't change",
+        );
       });
 
       it('the amount of a PAID gateway payment cannot be changed either', async () => {

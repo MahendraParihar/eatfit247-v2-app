@@ -401,6 +401,13 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     type: DataType.STRING(3),
   })
   declare customerType: CustomerTypeEnum | null;
+  /** Country of the customer's GSTIN / TRN (IN / AE); null for B2C (decision 10) */
+  @Column({
+    allowNull: true,
+    field: 'customer_registration_country',
+    type: DataType.STRING(3),
+  })
+  declare customerRegistrationCountry: string | null;
 
   @Column({
     allowNull: true,

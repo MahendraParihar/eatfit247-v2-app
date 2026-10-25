@@ -21,6 +21,7 @@ import {
   TaxEvidenceIndicatorResultEnum,
   TaxEvidenceStatusEnum,
   TaxMode,
+  TaxRegistrationNumberUtil,
   TaxRuleMatchUtil,
   TaxTreatmentEnum,
   TaxTypeEnum,
@@ -52,6 +53,10 @@ interface ITaxContext {
   domestic: boolean;
   /** How the money arrived, as decided from the currency and the chosen route */
   route: PaymentRouteEnum | null;
+  /** The State a domestic GST service is split by: the GSTIN's for India B2B, else the billing State */
+  serviceState: string | null;
+  /** India B2B: the GSTIN's State differs from the billing State (noted in the reason) */
+  gstinStateNote: string | null;
   supplyDate: string;
   countryName: (code: string) => string;
 }
@@ -124,6 +129,7 @@ export class TaxEngineService {
     const gstRegistered = registrations.some((r) => r.taxSystem === TaxTypeEnum.GST && this.normalize(r.countryCode) === INDIA_COUNTRY_CODE);
     const vatRegistered = registrations.some((r) => r.taxSystem === TaxTypeEnum.VAT && this.normalize(r.countryCode) === supplier);
 
+    const customerNumber = TaxEngineService.customerRegistration(customer, input.customerRegistrationNumber, !!input.enforceCustomerRegistration);
     const place = TaxRuleMatchUtil.placeOfSupply({
       transactionType: input.transactionType,
       supplierCountryCode: supplier,
@@ -131,7 +137,10 @@ export class TaxEngineService {
       billingStateCode: input.customerStateCode,
       deliveryCountryCode: delivery,
       deliveryStateCode: input.deliveryStateCode,
+      customerRegistrationNumber: customerNumber?.normalized ?? null,
     });
+    // India B2B services: the GSTIN's State (IGST s.12(2)(a))
+    const gstinState = place.source === 'GSTIN' ? place.stateCode : null;
     // Money in the franchise's own currency over a domestic route is domestic money (decision 17)
     const route = TaxMasterService.paymentRoute(input.currency, input.paymentRoute, franchise.currencyCode);
     const facts: ITaxRuleFacts = {
@@ -143,7 +152,7 @@ export class TaxEngineService {
       placeOfSupplyCountryCode: place.countryCode ?? '',
       placeOfSupplyStateCode: place.stateCode,
       registered: !!home,
-      customerType: CustomerTypeEnum.B2C,
+      customerType: customerNumber ? CustomerTypeEnum.B2B : CustomerTypeEnum.B2C,
       electronic: isGoods ? false : await this.taxMasterService.isElectronicPlan(Number(input.referenceId)),
       money: isGoods ? null : TaxRuleMatchUtil.moneyOrigin(route),
       supplyDate,
@@ -185,13 +194,15 @@ export class TaxEngineService {
       placeOfSupply,
       domestic,
       route,
+      serviceState: gstinState ?? input.customerStateCode ?? null,
+      gstinStateNote: place.stateDiffersFromBilling ? ` (GSTIN State ${gstinState}; billing State ${this.normalize(input.customerStateCode)})` : null,
       supplyDate,
       countryName,
     };
 
     const result = await this.execute(context);
     // Stored with the decision (Circular 242/36/2024): the State only exists for a domestic supply
-    const placeOfSupplyState = domestic ? this.normalize(isGoods ? input.deliveryStateCode : input.customerStateCode) : null;
+    const placeOfSupplyState = domestic ? this.normalize(isGoods ? input.deliveryStateCode : gstinState ?? input.customerStateCode) : null;
     return {
       ...result,
       baseAmount: taxable + input.discountAmount,
@@ -204,8 +215,9 @@ export class TaxEngineService {
       hsnSacCode: priceRule.hsnSacCode?.trim() || null,
       taxMasterId: rule.id,
       taxRegistrationId: home?.taxRegistrationId ?? null,
-      // Not assessed until the customer GSTIN / TRN feeds the facts (plan group 9): stored NULL, never a guessed B2C
-      customerType: null,
+      customerType: facts.customerType as CustomerTypeEnum,
+      customerRegistrationCountry: customerNumber ? customer : null,
+      customerRegistrationNumber: customerNumber?.normalized ?? null,
       requiresEvidence: !!rule.requiresEvidence,
     };
   }
@@ -274,6 +286,33 @@ export class TaxEngineService {
     return response;
   }
 
+  /**
+   * The customer's number when it is valid for the billing country (decision 10): a GSTIN for India (format, State
+   * code, check character), a TRN for the UAE. An invalid one is refused when `enforce` (create, or a changed value),
+   * else the sale is simply B2C (a legacy value such as `456789` stays editable).
+   */
+  static customerRegistration(
+    billingCountryCode: string,
+    value: string | null | undefined,
+    enforce: boolean,
+  ): { normalized: string } | null {
+    if (!(value ?? '').trim()) {
+      return null;
+    }
+    const check = TaxRegistrationNumberUtil.checkForCountry(billingCountryCode, value);
+    if (check.valid) {
+      return { normalized: check.normalized };
+    }
+    if (!enforce) {
+      return null;
+    }
+    const country = (billingCountryCode ?? '').trim().toUpperCase();
+    if (country !== INDIA_COUNTRY_CODE && /^[0-9]{2}[A-Z]{5}/.test(check.normalized)) {
+      throw new BadRequestException('A GSTIN is accepted only with an Indian billing address.');
+    }
+    throw new BadRequestException(`Customer ${country === INDIA_COUNTRY_CODE ? 'GSTIN' : 'tax number'}: ${check.error}`);
+  }
+
   /** A result in the shape of `calculate-tax`. */
   static toResponse(result: TaxResult, currency: string): ICalculateTaxResponse {
     return {
@@ -304,6 +343,8 @@ export class TaxEngineService {
       taxMasterId: result.taxMasterId ?? null,
       taxRegistrationId: result.taxRegistrationId ?? null,
       customerType: result.customerType ?? null,
+      customerRegistrationCountry: result.customerRegistrationCountry ?? null,
+      customerRegistrationNumber: result.customerRegistrationNumber ?? null,
       requiresEvidence: !!result.requiresEvidence,
     };
   }
@@ -366,8 +407,9 @@ export class TaxEngineService {
           return this.igst(context, TaxMode.DOMESTIC_GST, rule.invoiceNote?.trim() || null, context.route, reason);
         }
         const isGoods = input.transactionType === TransactionType.PRODUCT;
-        // Goods: the delivery State only (IGST s.10); services: the billing State (s.12(2)(b))
-        const customerState = isGoods ? input.deliveryStateCode : input.customerStateCode;
+        // Goods: the delivery State only (IGST s.10); services: the billing State (s.12(2)(b)), or a registered
+        // customer's GSTIN State (s.12(2)(a))
+        const customerState = isGoods ? input.deliveryStateCode : context.serviceState;
         if (!customerState) {
           throw new BadRequestException(`A ${isGoods ? 'delivery' : 'billing'} state is required for GST.`);
         }
@@ -384,7 +426,7 @@ export class TaxEngineService {
           taxCategory: null,
           lutArn: null,
           paymentRoute: context.route,
-          taxDecisionReason: sameState ? `CGST + SGST ${rate}% (same state)` : `IGST ${rate}% (another state)`,
+          taxDecisionReason: (sameState ? `CGST + SGST ${rate}% (same state)` : `IGST ${rate}% (another state)`) + (context.gstinStateNote ?? ''),
         };
       }
       case TaxTypeEnum.VAT:

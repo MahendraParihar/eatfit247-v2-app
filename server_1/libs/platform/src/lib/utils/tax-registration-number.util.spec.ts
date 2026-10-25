@@ -1,4 +1,4 @@
-import { DialCodeUtil, gstStateCode, IDialCodeCountry, TaxRegistrationNumberUtil, TaxTypeEnum } from '@eatfit247-shared-lib';
+import { DialCodeUtil, gstStateCode, IDialCodeCountry, TaxRegistrationNumberUtil, TaxTypeEnum, gstStateName } from '@eatfit247-shared-lib';
 
 /** Configurable tax treatment, plan 2.4 (decisions 9, 10). */
 describe('TaxRegistrationNumberUtil', () => {
@@ -104,5 +104,16 @@ describe('DialCodeUtil (evidence indicator, decision 9)', () => {
 
   it.each(['', '   ', '+999', 'Atlantis', 'Dubai', null])('unknown "%s" → none (NOT_AVAILABLE)', (value) => {
     expect(DialCodeUtil.countryCodes(value, countries)).toEqual([]);
+  });
+
+  describe('gstStateName (group 9: the place of supply names the GSTIN State)', () => {
+    it('names a GST State code in either form, and nothing else', () => {
+      expect(gstStateName('29')).toBe('Karnataka');
+      expect(gstStateName('07')).toBe('Delhi');
+      expect(gstStateName('7')).toBe('Delhi');
+      expect(gstStateName('38')).toBe('Ladakh');
+      expect(gstStateName('45')).toBeNull();
+      expect(gstStateName(null)).toBeNull();
+    });
   });
 });

@@ -137,6 +137,10 @@ export class CalculateProductVariantTaxDto implements ICalculateProductVariantTa
   @IsNumber()
   @Min(0)
   discountAmount?: number;
+  @IsOptional()
+  @IsString()
+  @MaxLength(InputLengthEnum.CHAR_50)
+  gstNumber?: string;
 }
 
 export class ProductVariantTaxResultDto

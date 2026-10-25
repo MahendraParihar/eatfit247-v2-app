@@ -47,6 +47,7 @@ describe('TaxEngineService on Tax Master treatment rules', () => {
     svc({ franchiseId: HCUAE, supplierCountryCode: 'AE', supplierStateCode: '1', customerCountryCode: 'AE', customerStateCode: '1', currency: 'AED', ...o });
   const goods = (o: Partial<TaxInput>): TaxInput =>
     svc({ franchiseId: MEMUM, referenceId: 1, transactionType: TransactionType.PRODUCT, deliveryCountryCode: 'IN', deliveryStateCode: '27', ...o });
+  const uaeOverrides = (): Partial<TaxInput> => ({ franchiseId: HCUAE, supplierCountryCode: 'AE', supplierStateCode: '1', customerCountryCode: 'AE', customerStateCode: '1', currency: 'AED' });
   const winner = async (): Promise<SeedRule> => harness.resolveOrThrow.mock.results[harness.resolveOrThrow.mock.results.length - 1].value;
 
   describe('A5: HCUAE changes its export rule to CHARGE 5% STANDARD (configuration only)', () => {
@@ -184,8 +185,8 @@ describe('TaxEngineService on Tax Master treatment rules', () => {
       expect(await engine.calculate(uae({ customerCountryCode: 'US', currency: 'USD' }))).toMatchObject({ taxMasterId: 10, taxRegistrationId: 2, requiresEvidence: true });
     });
 
-    it('customer type not assessed (NULL) until the customer GSTIN / TRN feeds the facts (group 9)', async () => {
-      expect((await engine.calculate(svc({}))).customerType).toBeNull();
+    it('customer type is assessed since group 9: B2C without a customer number (stored and matched alike)', async () => {
+      expect((await engine.calculate(svc({}))).customerType).toBe(CustomerTypeEnum.B2C);
       expect(harness.resolveOrThrow.mock.calls[0][0]).toMatchObject({ customerType: CustomerTypeEnum.B2C });
     });
 
@@ -290,6 +291,63 @@ describe('TaxEngineService on Tax Master treatment rules', () => {
       await expect(engine.calculate(svc({ customerCountryCode: 'US', customerStateCode: null, currency: 'USD' }))).rejects.toThrow('not GST-registered');
       harness.registrations[EFMUM] = [{ taxRegistrationId: 1, taxSystem: TaxTypeEnum.GST, countryCode: 'IN' }];
       expect(await engine.calculate(svc({ customerCountryCode: 'US', customerStateCode: null, currency: 'USD' }))).toMatchObject({ taxMode: TaxMode.NO_TAX, taxMasterId: 211 });
+    });
+  });
+
+  describe('group 9: the customer GSTIN / TRN (decision 10)', () => {
+    const GSTIN_29 = '29AAACE1234F1Z2';
+    const GSTIN_27 = '27AAACE1234F1Z6';
+
+    it('A16: a GSTIN of State 29 with a billing address in State 27 → IGST, place of supply 29, B2B, the mismatch in the reason', async () => {
+      const r = await engine.calculate(svc({ customerRegistrationNumber: GSTIN_29, enforceCustomerRegistration: true }));
+      expect(r.taxObj).toEqual({ IGST: { amount: 180, taxPercentage: 18 } });
+      expect(r).toMatchObject({ placeOfSupplyStateCode: '29', customerType: CustomerTypeEnum.B2B, customerRegistrationCountry: 'IN', customerRegistrationNumber: GSTIN_29 });
+      expect(r.taxDecisionReason).toContain('GSTIN State 29; billing State 27');
+      expect(harness.resolveOrThrow.mock.calls[0][0]).toMatchObject({ customerType: CustomerTypeEnum.B2B, placeOfSupplyStateCode: '29' });
+    });
+
+    it('a GSTIN of the franchise State → CGST + SGST; spaces and lower case are normalised', async () => {
+      const r = await engine.calculate(svc({ customerRegistrationNumber: ' 27aaace1234f1z6 ', enforceCustomerRegistration: true }));
+      expect(Object.keys(r.taxObj)).toEqual(['CGST', 'SGST']);
+      expect(r).toMatchObject({ customerType: CustomerTypeEnum.B2B, customerRegistrationNumber: GSTIN_27 });
+    });
+
+    it('A17: an invalid number is refused when enforced (create, or a changed value)', async () => {
+      const enforced = (customerRegistrationNumber: string, o: Partial<TaxInput> = {}) =>
+        engine.calculate(svc({ customerRegistrationNumber, enforceCustomerRegistration: true, ...o }));
+      await expect(enforced('29AAACE1234F1Z3')).rejects.toThrow('check character');
+      await expect(enforced('45AAACE1234F1Z3')).rejects.toThrow('not a GST State code');
+      await expect(enforced('456789')).rejects.toThrow('Customer GSTIN: A GSTIN has 15 characters');
+      await expect(enforced('10012345670000', uaeOverrides())).rejects.toThrow('A UAE TRN has 15 digits');
+      await expect(enforced(GSTIN_29, { customerCountryCode: 'US', customerStateCode: null, currency: 'USD' })).rejects.toThrow(
+        'A GSTIN is accepted only with an Indian billing address.',
+      );
+    });
+
+    it('A28: an invalid legacy number not enforced (unchanged on edit) prices as B2C, as before', async () => {
+      const r = await engine.calculate(svc({ customerRegistrationNumber: '456789' }));
+      expect(r).toMatchObject({ customerType: CustomerTypeEnum.B2C, customerRegistrationCountry: null, customerRegistrationNumber: null, placeOfSupplyStateCode: '27' });
+    });
+
+    it('a UAE TRN makes a HCUAE sale B2B (AE); no number → B2C', async () => {
+      expect(await engine.calculate(uae({ customerRegistrationNumber: '100123456700003', enforceCustomerRegistration: true }))).toMatchObject({
+        customerType: CustomerTypeEnum.B2B,
+        customerRegistrationCountry: 'AE',
+      });
+      expect(await engine.calculate(uae({}))).toMatchObject({ customerType: CustomerTypeEnum.B2C, customerRegistrationCountry: null });
+    });
+
+    it('9.4: customer type feeds the facts: a B2B rule prices only B2B sales', async () => {
+      rules.push(rule({ id: 220, franchiseId: EFMUM, countryCode: 'IN', transactionType: 'SERVICE', customerTypeCondition: 'B2B', taxSystem: TaxTypeEnum.GST, taxPercent: 5 }));
+      expect(await engine.calculate(svc({ customerRegistrationNumber: GSTIN_27, enforceCustomerRegistration: true }))).toMatchObject({ taxMasterId: 220, taxPercentage: 5 });
+      expect(await engine.calculate(svc({}))).toMatchObject({ taxMasterId: 1, taxPercentage: 18 });
+    });
+
+    it('a GSTIN on a goods order does not move the place of supply (goods follow delivery)', async () => {
+      harness.registrations[MEMUM] = [{ taxRegistrationId: 3, taxSystem: TaxTypeEnum.GST, countryCode: 'IN' }];
+      const r = await engine.calculate(goods({ baseAmount: 1120, customerRegistrationNumber: GSTIN_29, enforceCustomerRegistration: true }));
+      expect(r).toMatchObject({ placeOfSupplyStateCode: '27', customerType: CustomerTypeEnum.B2B });
+      expect(Object.keys(r.taxObj)).toEqual(['CGST', 'SGST']);
     });
   });
 

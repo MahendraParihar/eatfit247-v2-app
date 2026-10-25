@@ -112,6 +112,11 @@ export class PlanTaxCalculationRequestDto implements IPlanTaxCalculationRequest 
   @Min(0)
   programPlanId!: number;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(InputLengthEnum.CHAR_50)
+  gstNumber?: string;
+
   @IsNotEmpty()
   @IsNumber()
   @Min(0)
