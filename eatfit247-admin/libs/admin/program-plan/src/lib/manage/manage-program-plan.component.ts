@@ -60,6 +60,7 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
     noOfDaysInCycle: [1, [Validators.required, Validators.min(1)]],
     isOnline: [true, [Validators.required]],
     isVisibleOnWeb: [false, [Validators.required]],
+    isElectronicService: [false],
     active: [true, [Validators.required]],
     url: [''],
     programPlanFees: this.fb.array([])
@@ -102,6 +103,7 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
         noOfDaysInCycle: this.initialData.noOfDaysInCycle || 1,
         isOnline: this.initialData.isOnline !== undefined ? this.initialData.isOnline : true,
         isVisibleOnWeb: this.initialData.isVisibleOnWeb !== undefined ? this.initialData.isVisibleOnWeb : false,
+        isElectronicService: !!this.initialData.isElectronicService,
         active: this.initialData.active !== undefined ? this.initialData.active : true
       });
       // Populate fees form array if editing
@@ -125,7 +127,8 @@ export class ManageProgramPlan implements OnInit, OnDestroy {
   addFeeFormGroup(currencyCode: string = '', fees: number = 0): void {
     const feeGroup = this.fb.group({
       currencyCode: [currencyCode, [Validators.required]],
-      fees: [fees, [Validators.required, Validators.min(0)]]
+      // A gateway cannot charge 0; a free plan is not sold through checkout
+      fees: [fees, [Validators.required, Validators.min(1)]]
     });
     this.feesFormArray.push(feeGroup);
   }

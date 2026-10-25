@@ -1,0 +1,28 @@
+<h2 mat-dialog-title>Tax Credit Note</h2>
+<mat-dialog-content>
+  <p class="against">
+    Against tax invoice <strong>{{ data.payment.invoiceId }}</strong> ·
+    {{ data.payment.totalAmount | number: '1.2-2' }} {{ data.payment.currency }}
+  </p>
+  <form [formGroup]="form" class="cn-form" (ngSubmit)="issue()">
+    <mat-form-field appearance="outline">
+      <mat-label>Amount to credit (incl. VAT)</mat-label>
+      <input matInput type="number" step="0.01" formControlName="amount" />
+      <span matTextSuffix>{{ data.payment.currency }}</span>
+      <mat-hint>VAT is reversed at the invoice's rate. At most what is still creditable.</mat-hint>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Reason</mat-label>
+      <textarea matInput rows="2" formControlName="reason" maxlength="500"></textarea>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Date of the event</mat-label>
+      <input matInput type="date" formControlName="eventDate" />
+      <mat-hint>Issue within 14 days of this date (UAE)</mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary" type="button" [disabled]="saving()" (click)="issue()">Issue &amp; download</button>
+</mat-dialog-actions>

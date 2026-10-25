@@ -1,0 +1,62 @@
+<section class="invoice-numbering" [formGroup]="formGroup">
+  <h3>Invoice numbering</h3>
+  <p class="helper">
+    <mat-icon inline>info</mat-icon>
+    Indian GST invoices: at most 16 characters (Rule 46). Changing this does not change issued invoices; the counter continues.
+  </p>
+
+  <div class="row">
+    <mat-form-field class="prefix-field">
+      <mat-label>Invoice prefix</mat-label>
+      <input matInput formControlName="invoicePrefix" maxlength="5" placeholder="EFM" (input)="onPrefixInput()" />
+      <mat-hint>1 to 5 capital letters or digits</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field class="format-field">
+      <mat-label>Number format</mat-label>
+      <input matInput formControlName="invoiceNumberFormat" [maxlength]="formatMaxLength" placeholder="{PREFIX}/{FY}/{TYPE}/{SEQ5}" />
+      <mat-hint>Tokens: {{ '{PREFIX}' }} {{ '{FY}' }} {{ '{TYPE}' }} {{ '{SEQn}' }} (n = 3 to 8); start with {{ '{PREFIX}' }}/, end with /{{ '{SEQn}' }}, include {{ '{FY}' }}. Outside India both may be left empty (legacy format).</mat-hint>
+    </mat-form-field>
+  </div>
+
+  @if (errors.length > 0) {
+    <ul class="format-errors" role="alert">
+      @for (error of errors; track error) {
+        <li><mat-icon inline>error</mat-icon> {{ error }}</li>
+      }
+    </ul>
+  }
+
+  @if (isLegacy) {
+    <p class="legacy-note">No format set: invoices keep the legacy number (franchise code / financial year / type / 6 digits, e.g. {{ formGroup.get('franchiseCode')?.value || 'CODE' }}/…/S/000001).</p>
+  } @else if (previewRows.length > 0) {
+    <p class="preview-title">
+      Next numbers{{ counters ? ' (FY ' + counters.financialYear + ')' : '' }}{{ gstLimit ? ' — limit 16 characters' : '' }}
+    </p>
+    <table mat-table [dataSource]="previewRows" class="preview-table">
+      <ng-container matColumnDef="label">
+        <th mat-header-cell *matHeaderCellDef>Document</th>
+        <td mat-cell *matCellDef="let row">{{ row.label }}</td>
+      </ng-container>
+      <ng-container matColumnDef="number">
+        <th mat-header-cell *matHeaderCellDef>Next number</th>
+        <td mat-cell *matCellDef="let row" class="number">{{ row.number }}</td>
+      </ng-container>
+      <ng-container matColumnDef="length">
+        <th mat-header-cell *matHeaderCellDef>Length</th>
+        <td mat-cell *matCellDef="let row" [class.too-long]="!row.compliant">{{ row.length }}</td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="previewColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: previewColumns"></tr>
+    </table>
+  }
+
+  @if (!hasGstin) {
+    <h3>GST registration threshold</h3>
+    <mat-form-field class="threshold-field">
+      <mat-label>Registration threshold (₹)</mat-label>
+      <input matInput type="number" min="0" step="0.01" formControlName="registrationThresholdAmount" placeholder="4000000" />
+      <mat-hint>Warn super admins at 80% and 100% of this FY turnover. Leave empty for no warning.</mat-hint>
+    </mat-form-field>
+  }
+</section>

@@ -9,6 +9,10 @@
     (searchChange)="onSearchChange($event)"
   >
     <div headerActions>
+      <button mat-stroked-button type="button" (click)="openExchangeRates()">
+        <mat-icon>currency_exchange</mat-icon>
+        Exchange rates
+      </button>
       <button mat-raised-button color="primary" (click)="createItem()">
         <mat-icon>add</mat-icon>
         New Tax Rule

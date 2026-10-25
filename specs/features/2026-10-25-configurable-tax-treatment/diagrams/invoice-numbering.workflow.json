@@ -1,0 +1,297 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "EatFit247 Invoice Numbering",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "home-series",
+        "label": "Franchise series",
+        "focus": [
+          "saved",
+          "issueDate",
+          "series",
+          "franchiseCounter",
+          "render",
+          "guard",
+          "commit"
+        ],
+        "note": "A PAID payment takes the next number from its franchise counter."
+      },
+      {
+        "id": "foreign-series",
+        "label": "Foreign registration",
+        "focus": [
+          "series",
+          "registrationCounter",
+          "render"
+        ],
+        "note": "A sale under a registration in another country uses that registration's own counter (4.14)."
+      },
+      {
+        "id": "no-number",
+        "label": "No number issued",
+        "focus": [
+          "saved",
+          "proforma",
+          "franchiseCounter",
+          "guard",
+          "refused"
+        ],
+        "note": "PENDING rows stay proforma; a missing counter or a number over 16 characters refuses the whole entry: no row, counter unchanged."
+      }
+    ],
+    "legend": {
+      "mode": "auto",
+      "entries": {
+        "frontend": {
+          "label": "Admin entry"
+        },
+        "backend": {
+          "label": "Service step"
+        },
+        "security": {
+          "label": "Guard / refusal"
+        },
+        "database": {
+          "label": "Tax data / counter"
+        },
+        "cloud": {
+          "label": "Zero-rated / foreign tax"
+        },
+        "external": {
+          "label": "Document"
+        }
+      }
+    }
+  },
+  "lanes": [
+    {
+      "id": "issue-lane",
+      "label": "PAID to number (per franchise)"
+    },
+    {
+      "id": "side",
+      "label": "Registration counter + commit"
+    },
+    {
+      "id": "nonumber",
+      "label": "No number",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "when",
+      "label": "When",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "which",
+      "label": "Which counter",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "issue-phase",
+      "label": "Render + commit",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "saved",
+    "issueDate",
+    "series",
+    "franchiseCounter",
+    "render",
+    "guard",
+    "commit"
+  ],
+  "nodes": [
+    {
+      "id": "saved",
+      "lane": "issue-lane",
+      "col": 0,
+      "type": "frontend",
+      "label": "Payment saved",
+      "sublabel": "admin or gateway",
+      "width": 130
+    },
+    {
+      "id": "issueDate",
+      "lane": "issue-lane",
+      "col": 1,
+      "type": "backend",
+      "label": "First PAID",
+      "sublabel": "FY from franchise TZ",
+      "width": 140
+    },
+    {
+      "id": "series",
+      "lane": "issue-lane",
+      "col": 2,
+      "type": "backend",
+      "label": "Resolve series",
+      "sublabel": "DOMESTIC or EXPORT",
+      "width": 150
+    },
+    {
+      "id": "franchiseCounter",
+      "lane": "issue-lane",
+      "col": 3,
+      "type": "database",
+      "label": "Franchise counter",
+      "sublabel": "must exist",
+      "width": 150
+    },
+    {
+      "id": "render",
+      "lane": "issue-lane",
+      "col": 4,
+      "type": "backend",
+      "label": "Render number",
+      "sublabel": "PREFIX/FY/TYPE/SEQ5",
+      "width": 160
+    },
+    {
+      "id": "guard",
+      "lane": "issue-lane",
+      "col": 5,
+      "type": "security",
+      "label": "Rule 46 guard",
+      "sublabel": "India: 16 chars",
+      "width": 140
+    },
+    {
+      "id": "registrationCounter",
+      "lane": "side",
+      "col": 3,
+      "type": "database",
+      "label": "Registration counter",
+      "sublabel": "foreign TRN (4.14)",
+      "width": 170
+    },
+    {
+      "id": "commit",
+      "lane": "side",
+      "col": 5,
+      "type": "database",
+      "label": "Commit number",
+      "sublabel": "FOR UPDATE, +1",
+      "width": 150
+    },
+    {
+      "id": "proforma",
+      "lane": "nonumber",
+      "col": 1,
+      "type": "external",
+      "label": "Proforma",
+      "sublabel": "PENDING: no number",
+      "width": 150
+    },
+    {
+      "id": "refused",
+      "lane": "nonumber",
+      "col": 5,
+      "type": "security",
+      "label": "Entry refused",
+      "sublabel": "409, no row",
+      "width": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "saved-paid",
+      "from": "saved",
+      "to": "issueDate",
+      "label": "PAID",
+      "variant": "emphasis"
+    },
+    {
+      "id": "paid-series",
+      "from": "issueDate",
+      "to": "series",
+      "variant": "emphasis"
+    },
+    {
+      "id": "series-franchise",
+      "from": "series",
+      "to": "franchiseCounter",
+      "label": "home",
+      "variant": "emphasis"
+    },
+    {
+      "id": "franchise-render",
+      "from": "franchiseCounter",
+      "to": "render",
+      "variant": "emphasis"
+    },
+    {
+      "id": "render-guard",
+      "from": "render",
+      "to": "guard",
+      "variant": "emphasis"
+    },
+    {
+      "id": "guard-commit",
+      "from": "guard",
+      "to": "commit",
+      "label": "valid",
+      "variant": "emphasis"
+    },
+    {
+      "id": "series-registration",
+      "from": "series",
+      "to": "registrationCounter",
+      "label": "foreign TRN",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "registration-render",
+      "from": "registrationCounter",
+      "to": "render",
+      "variant": "dashed"
+    },
+    {
+      "id": "saved-proforma",
+      "from": "saved",
+      "to": "proforma",
+      "label": "PENDING",
+      "variant": "dashed",
+      "role": "branch"
+    },
+    {
+      "id": "guard-refused",
+      "from": "guard",
+      "to": "refused",
+      "label": "too long",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "counter-refused",
+      "from": "franchiseCounter",
+      "to": "refused",
+      "label": "no counter",
+      "variant": "security",
+      "role": "error"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Every franchise has its own counters",
+      "items": [
+        "Key: franchise, type, FY, series (+ registration); created only by migration or admin",
+        "No counter: the entry fails and rolls back (CGST Rule 46(b), UAE ER Art 59(1)(d))"
+      ]
+    }
+  ]
+}

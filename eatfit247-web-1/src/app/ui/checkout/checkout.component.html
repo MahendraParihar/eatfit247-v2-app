@@ -44,7 +44,7 @@
     <div class="checkout-grid">
       <!-- LEFT: stepper panes -->
       <section class="checkout-main">
-        @if (formsInitialized && (!error || (error && currentStepIndex()))) {
+        @if (formsInitialized && !checkoutBlocked) {
           <mat-stepper #stepper [linear]="true" class="checkout-stepper"
                        (selectionChange)="onStepperSelectionChange($event.selectedIndex)">
 
@@ -136,6 +136,7 @@
                             <mat-option [value]="state.id">{{ state.label }}</mat-option>
                           }
                         </mat-select>
+                        <mat-hint>Required for your tax invoice (place of supply)</mat-hint>
                         @if (basicDetailsForm.get('stateId')?.touched && basicDetailsForm.get('stateId')?.invalid) {
                           <mat-error>State is required</mat-error>
                         }
@@ -301,7 +302,21 @@
             <mat-step [editable]="false">
               <ng-template matStepLabel>Result</ng-template>
               <div class="checkout-panel">
-                @if (paymentSuccess) {
+                @if (paymentSuccess && paymentPending) {
+                  <div class="result">
+                    <mat-spinner diameter="48"></mat-spinner>
+                    <h2>Confirming your payment</h2>
+                    <p class="result__sub">
+                      Thanks <strong>{{ basicDetailsForm.get('firstName')?.value }}</strong> — we have received the payment
+                      from the gateway and are confirming it. This usually takes a few seconds.
+                    </p>
+                    <div class="result__actions">
+                      <button type="button" class="mat-btn mat-btn--filled" (click)="navigateToSuccess()">
+                        <span class="mat-icon">receipt_long</span> View Order Status
+                      </button>
+                    </div>
+                  </div>
+                } @else if (paymentSuccess) {
                   <div class="result">
                     <span class="result__check"><span class="mat-icon">check</span></span>
                     <h2>Order placed successfully</h2>
@@ -310,14 +325,16 @@
                       A receipt has been sent to <strong>{{ basicDetailsForm.get('email')?.value }}</strong>.
                     </p>
 
-                    <div class="result__timeline">
-                      <div class="trk-step is-current">
-                        <span class="mat-icon">task_alt</span>Confirmed
+                    @if (isProductCheckout) {
+                      <div class="result__timeline">
+                        <div class="trk-step is-current">
+                          <span class="mat-icon">task_alt</span>Confirmed
+                        </div>
+                        <div class="trk-step"><span class="mat-icon">inventory_2</span>Packed</div>
+                        <div class="trk-step"><span class="mat-icon">local_shipping</span>Shipped</div>
+                        <div class="trk-step"><span class="mat-icon">home</span>Delivered</div>
                       </div>
-                      <div class="trk-step"><span class="mat-icon">inventory_2</span>Packed</div>
-                      <div class="trk-step"><span class="mat-icon">local_shipping</span>Shipped</div>
-                      <div class="trk-step"><span class="mat-icon">home</span>Delivered</div>
-                    </div>
+                    }
 
                     <div class="result__card">
                       <div class="result__card-head">
@@ -395,17 +412,51 @@
           }
         </div>
 
+        @if (taxCalculation && currentStepIndex() === STEP_INDICES.PREVIEW) {
+          <div class="os-promo">
+            @if (appliedPromoCode()) {
+              <div class="os-promo__applied">
+                <span class="mat-icon">sell</span>
+                <span class="os-promo__code">{{ appliedPromoCode() }}</span>
+                <span class="os-promo__msg">{{ promoMessage() }}</span>
+                <button mat-button type="button" (click)="removePromoCode()" [disabled]="calculatingTax || loading">
+                  Remove
+                </button>
+              </div>
+            } @else {
+              <mat-form-field class="os-promo__field" subscriptSizing="dynamic">
+                <mat-label>Promo code</mat-label>
+                <input matInput [formControl]="promoCodeControl" maxlength="50"
+                       autocomplete="off" (keydown.enter)="applyPromoCode()">
+                <button mat-button matSuffix type="button" (click)="applyPromoCode()"
+                        [disabled]="applyingPromo() || !promoCodeControl.value.trim()">
+                  @if (applyingPromo()) { <mat-spinner diameter="16"></mat-spinner> } @else { Apply }
+                </button>
+                @if (promoError()) {
+                  <mat-hint class="os-promo__error">{{ promoError() }}</mat-hint>
+                }
+              </mat-form-field>
+            }
+          </div>
+        }
+
         <div class="os-totals">
           <div class="os-row">
             <span>Subtotal</span>
             <span>{{ subtotalDisplay | currency:currencyCode:'symbol':'1.2-2' }}</span>
           </div>
+          @if (taxCalculation && taxCalculation.discountAmount > 0) {
+            <div class="os-row os-row--discount">
+              <span>Discount{{ appliedPromoCode() ? ' (' + appliedPromoCode() + ')' : '' }}</span>
+              <span>−{{ taxCalculation.discountAmount | currency:currencyCode:'symbol':'1.2-2' }}</span>
+            </div>
+          }
           <div class="os-row os-row--free">
             <span>Shipping</span>
             <span>FREE</span>
           </div>
           <div class="os-row">
-            <span>Tax</span>
+            <span>{{ taxLabel }}</span>
             @if (calculatingTax) {
               <mat-spinner diameter="14"></mat-spinner>
             } @else if (taxCalculation) {
@@ -426,7 +477,7 @@
           <div>
             <span class="os-grand__label">Total</span>
             <span class="os-grand__inclusive">
-              {{ taxCalculation ? 'Inclusive of all taxes' : 'Tax calculated at next step' }}
+              {{ taxCalculation ? totalNote : 'Tax calculated at next step' }}
             </span>
           </div>
           <span class="os-grand__value">
@@ -436,8 +487,12 @@
 
         <ul class="os-trust">
           <li><span class="mat-icon">verified_user</span> 100% secure checkout</li>
-          <li><span class="mat-icon">local_shipping</span> Pan-India shipping in 3–5 days</li>
-          <li><span class="mat-icon">replay</span> Easy 7-day replacement</li>
+          @if (isProductCheckout) {
+            <li><span class="mat-icon">local_shipping</span> Pan-India shipping in 3–5 days</li>
+            <li><span class="mat-icon">replay</span> Easy 7-day replacement</li>
+          } @else {
+            <li><span class="mat-icon">receipt_long</span> Invoice available right after payment</li>
+          }
         </ul>
       </aside>
     </div>

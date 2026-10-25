@@ -2,8 +2,10 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember } from '../models';
 import { IBasicSearch, IManageMember, IMember, ITableList } from '@eatfit247-shared-lib';
@@ -21,9 +23,12 @@ import { Op, Order } from 'sequelize';
 
 @Injectable()
 export class MemberService {
+  private readonly logger = new Logger(MemberService.name);
+
   constructor(
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
     private franchiseService: FranchiseService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   public async findAll(
@@ -193,7 +198,31 @@ export class MemberService {
       createdIp: cIp,
       modifiedIp: cIp,
     };
-    await this.memberRepository.create(createObj);
+    const member = await this.memberRepository.create(createObj);
+    await this.emitMemberCreated(member);
+  }
+
+  /**
+   * `member.created` (configurable tax treatment, decision 18): the notification listener sends the welcome email
+   * while `member_welcome` is active. The franchise's name and contacts travel with the event (the notification
+   * module doesn't read franchises). A failure here never fails the member's creation.
+   */
+  private async emitMemberCreated(member: TxnMember): Promise<void> {
+    try {
+      const franchise = member.franchiseId ? await this.franchiseService.fetchById(member.franchiseId).catch(() => null) : null;
+      const phone = [member.countryCode, member.contactNumber].map((part) => (part ?? '').trim()).filter((part) => part).join(' ');
+      this.eventEmitter.emit('member.created', {
+        memberId: member.memberId,
+        memberName: `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim(),
+        emailId: member.emailId || null,
+        phoneNumber: phone || null,
+        franchiseName: franchise?.companyName || '',
+        supportEmail: franchise?.emailId || null,
+        supportPhone: franchise?.contactNumber || null,
+      });
+    } catch (error: unknown) {
+      this.logger.error(`member.created not emitted for member ${member.memberId}: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   public async update(id: number, obj: IManageMember, cIp: string, adminId: number): Promise<void> {
@@ -321,7 +350,7 @@ export class MemberService {
 
     if (!defaultFranchise) {
       throw new BadRequestException(
-        'No franchise found for the specified country and no default franchise is configured',
+        'No franchise serves this country and no default franchise is configured (set is_default on a franchise in the admin)',
       );
     }
 
@@ -332,12 +361,6 @@ export class MemberService {
     obj: IManageMember,
     cIp: string,
   ): Promise<{ memberId: number; isNew: boolean; checkoutToken: string }> {
-    // Determine franchise based on countryId if not provided
-    let franchiseId = obj.franchiseId;
-    if (!franchiseId && obj.countryId) {
-      franchiseId = await this.determineFranchiseByCountry(obj.countryId);
-    }
-
     // Check if member exists by email or phone
     const existingMember = await this.memberRepository.findOne({
       where: {
@@ -349,36 +372,9 @@ export class MemberService {
     });
 
     if (existingMember) {
-      // Update existing member
-      const updateObj: any = {
-        firstName: obj.firstName,
-        lastName: obj.lastName,
-        countryCode: obj.countryCode,
-        franchiseId: franchiseId,
-        countryId: obj.countryId,
-        referrerId: obj.referrerId || null,
-        nutritionistId: obj.nutritionistId || null,
-        active: obj.active !== undefined ? obj.active : existingMember.active,
-        hasAnyPlan: obj.hasAnyPlan !== undefined ? obj.hasAnyPlan : existingMember.hasAnyPlan,
-        modifiedIp: cIp,
-      };
-
-      // Update password if provided
-      if (obj.password) {
-        const hashedPassword = await CryptoUtil.generateHash(obj.password);
-        updateObj.password = hashedPassword;
-        updateObj.passwordTemp = hashedPassword;
-      }
-
-      // Update profile picture if provided
-      if (obj.profilePicture && obj.profilePicture.length > 0) {
-        updateObj.profilePicture = obj.profilePicture;
-      }
-
-      await this.memberRepository.update(updateObj, {
-        where: { memberId: existingMember.memberId },
-      });
-
+      // This route is unauthenticated (anyone can type an email or phone), so an existing
+      // member's profile is never changed here. The checkout token it returns only reaches
+      // orders created in this session (see CheckoutTokenGuard `checkoutTokenIssuedAt`).
       return {
         memberId: existingMember.memberId,
         isNew: false,
@@ -386,6 +382,11 @@ export class MemberService {
       };
     } else {
       // Create new member
+      // The franchise follows the country only for a new member; an existing member keeps theirs
+      let franchiseId = obj.franchiseId;
+      if (!franchiseId && obj.countryId) {
+        franchiseId = await this.determineFranchiseByCountry(obj.countryId);
+      }
       // Generate a temporary password if not provided
       let hashedPassword = '';
       if (obj.password) {
@@ -420,6 +421,7 @@ export class MemberService {
 
       try {
         const newMember = await this.memberRepository.create(createObj);
+        await this.emitMemberCreated(newMember);
         return {
           memberId: newMember.memberId,
           isNew: true,

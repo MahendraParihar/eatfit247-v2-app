@@ -1,5 +1,6 @@
 import {
   CanActivate,
+  createParamDecorator,
   ExecutionContext,
   ForbiddenException,
   Injectable,
@@ -53,6 +54,9 @@ export class CheckoutTokenGuard implements CanActivate {
 
     // Expose the verified memberId downstream (controllers can read it via @Req())
     (request as Request & { checkoutMemberId: number }).checkoutMemberId = payload.sub;
+    // Records created in this checkout session carry this id (public invoice downloads match it)
+    (request as Request & { checkoutSessionId: string | null }).checkoutSessionId =
+      payload.jti ?? null;
 
     return true;
   }
@@ -65,3 +69,16 @@ export class CheckoutTokenGuard implements CanActivate {
     return null;
   }
 }
+
+/**
+ * The verified checkout token's session id (jti), set by CheckoutTokenGuard; null for
+ * tokens issued before session ids existed.
+ *
+ * A checkout token can be obtained by anyone who knows a member's email or phone, so
+ * public reads of earlier records must be limited to the session that created them.
+ */
+export const CheckoutSessionId = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): string | null =>
+    context.switchToHttp().getRequest<Request & { checkoutSessionId?: string | null }>()
+      .checkoutSessionId ?? null,
+);

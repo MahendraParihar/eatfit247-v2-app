@@ -48,6 +48,13 @@ export enum AdminSubjectEnum {
     Report           = 'Report',
     Dashboard        = 'Dashboard',
     TaxMaster        = 'TaxMaster',
+    FranchiseLut     = 'FranchiseLut',
+    ExchangeRate     = 'ExchangeRate',
+    CreditNote       = 'CreditNote',
+    /** Finance decision on a zero-rating evidence mismatch (franchise-scoped, migration 147) */
+    TaxEvidence      = 'TaxEvidence',
+    /** Email / WhatsApp template on-off switches (global, migration 147) */
+    EmailTemplate    = 'EmailTemplate',
     LovMaster        = 'LovMaster',
     Referrer         = 'Referrer',
     PocketGuide      = 'PocketGuide',

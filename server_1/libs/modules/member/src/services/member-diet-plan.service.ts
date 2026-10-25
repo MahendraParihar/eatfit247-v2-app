@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
@@ -16,8 +16,9 @@ import {
   IMemberDietDetail,
   IMemberDietPlan,
   MediaForEnum,
+  PaymentStatusEnum,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, Env, MstAdminUser } from '@server_1/core';
+import { CommonFunctionsUtil, Env, MstAdminUser, MstFranchise } from '@server_1/core';
 import { MstProgram } from '@server_1/modules/program-plan';
 import { RecipeCategoryService, RecipeService } from '@server_1/modules/recipe';
 import { DietTemplateService, TxnDietTemplateDietDetail } from '@server_1/modules/diet';
@@ -823,6 +824,31 @@ export class MemberDietPlanService {
   }
 
   /**
+   * Payment before diet plan (principle 7): diet work and delivery need a PAID payment,
+   * not just the diet-plan container that is created with a PENDING checkout record.
+   */
+  private async assertDietPlanPaid(memberId: number, memberDietPlanId: number): Promise<void> {
+    const dietPlan = await this.memberDietPlanRepository.findOne({
+      attributes: ['memberDietPlanId'],
+      where: { memberDietPlanId, memberId, active: true },
+      include: [
+        {
+          model: TxnMemberPayment,
+          as: 'memberPayment',
+          attributes: ['memberPaymentId', 'paymentStatusId'],
+          required: false,
+        },
+      ],
+    });
+    if (!dietPlan) {
+      throw new NotFoundException('Diet plan not found');
+    }
+    if (dietPlan.memberPayment?.paymentStatusId !== PaymentStatusEnum.PAID) {
+      throw new BadRequestException('The payment for this plan is not complete yet');
+    }
+  }
+
+  /**
    * Create or update diet plan detail
    * @param memberId - Member ID
    * @param body - Diet plan detail DTO
@@ -835,6 +861,7 @@ export class MemberDietPlanService {
     cIp: string,
     adminId: number,
   ): Promise<void> {
+    await this.assertDietPlanPaid(memberId, body.dietPlanId);
     const t = await this.sequelize.transaction();
     try {
       const dietPlanDetail = await this.memberDietPlanRepository.findOne({
@@ -1013,6 +1040,7 @@ export class MemberDietPlanService {
     cIp: string,
     adminId: number,
   ): Promise<void> {
+    await this.assertDietPlanPaid(memberId, body.memberDietPlanId);
     const t = await this.sequelize.transaction();
     try {
       const promiseAll = await Promise.all([
@@ -1259,9 +1287,12 @@ export class MemberDietPlanService {
     cycleNo: number,
     dayNo: number = null,
   ): Promise<void> {
+    await this.assertDietPlanPaid(memberId, dietPlanId);
     const member = await this.memberRepository.findOne({
       where: { memberId },
       attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'countryCode', 'contactNumber'],
+      // The email's header and footer name the member's franchise
+      include: [{ model: MstFranchise, as: 'franchise', attributes: ['franchiseId', 'companyName', 'emailId', 'timeZone'], required: false }],
     });
     if (!member) {
       throw new NotFoundException(`Member with ID ${memberId} not found`);
@@ -1285,6 +1316,9 @@ export class MemberDietPlanService {
       dayNo,
       dietPdfPath: pdfFile.filePath,
       dietPdfFileName: pdfFile.fileName,
+      franchiseName: member.franchise?.companyName ?? null,
+      supportEmail: member.franchise?.emailId ?? null,
+      timeZone: member.franchise?.timeZone ?? null,
     });
 
     this.logger.log(`diet.plan.generated event emitted for member ${memberId}`);

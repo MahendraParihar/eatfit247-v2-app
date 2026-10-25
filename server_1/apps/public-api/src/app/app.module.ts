@@ -51,7 +51,8 @@ import { DeliveryWebhookModule } from '@server_1/modules/delivery';
     GoogleReviewModule,
     NotificationModule,
     DeliveryWebhookModule,
-    CommonModule.forRoot(['Common', 'Email', 'Google', 'Payment', 'Whatsapp'], PlatformModule.getModels()),
+    // 'Invoice': DIET_SAC_CODE, the SAC printed on invoices priced before 144 (public checkout downloads them too)
+    CommonModule.forRoot(['Common', 'Email', 'Google', 'Invoice', 'Payment', 'Whatsapp'], PlatformModule.getModels()),
   ],
   controllers: [AppController],
   providers: [

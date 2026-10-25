@@ -40,6 +40,7 @@
       "dashboard": ["libs/admin/dashboard/src/index.ts"],
       "reports": ["libs/admin/reports/src/index.ts"],
       "tax-master": ["libs/admin/tax-master/src/index.ts"],
+      "email-templates": ["libs/admin/email-templates/src/index.ts"],
       "courier-providers": ["libs/admin/courier-providers/src/index.ts"],
       "courier-provider-accounts": ["libs/admin/courier-provider-accounts/src/index.ts"],
       "warehouses": ["libs/admin/warehouses/src/index.ts"],

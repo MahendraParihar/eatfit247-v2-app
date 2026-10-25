@@ -10,8 +10,9 @@ import { LogErrorService } from '../logging/log-error.service';
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-// Mock @eatfit247-shared-lib to provide ConfigParam
+// Mock @eatfit247-shared-lib to provide ConfigParam (the rest stays real: @server_1/core needs it)
 jest.mock('@eatfit247-shared-lib', () => ({
+  ...(jest.requireActual('@eatfit247-shared-lib') as object),
   ConfigParam: {
     GOOGLE_KEY: 'GOOGLE_KEY',
     GOOGLE_PLACE_ID: 'GOOGLE_PLACE_ID',

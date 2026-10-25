@@ -6,11 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { BaseListComponent, DataTableComponent, ITableAction, ITableColumn } from '@shared';
 import { IFranchise } from '@eatfit247-shared-lib';
 import { FranchiseApiService } from './api.service';
+import { TurnoverBadgeComponent } from './turnover-badge/turnover-badge.component';
 
 @Component({
   selector: 'lib-franchise',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, RouterLink],
+  imports: [CommonModule, DataTableComponent, MatButtonModule, MatIconModule, RouterLink, TurnoverBadgeComponent],
   templateUrl: './franchise.html',
   styleUrl: './franchise.scss',
 })

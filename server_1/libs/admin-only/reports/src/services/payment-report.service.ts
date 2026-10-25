@@ -51,6 +51,9 @@ const MAX_PAGE_SIZE = 500;
 /** Each invoice spawns a Puppeteer render, so the ZIP export needs a hard ceiling. */
 const MAX_ZIP_EXPORT_ROWS = 500;
 
+/** An issued invoice number (proformas have none). */
+const HAS_INVOICE_NUMBER = { [Op.and]: [{ [Op.ne]: null }, { [Op.ne]: '' }] };
+
 @Injectable()
 export class PaymentReportService {
   private readonly logger = new Logger(PaymentReportService.name);
@@ -129,7 +132,8 @@ export class PaymentReportService {
     const { where, include } = this.buildQuery(filter, user);
 
     const payments = await this.memberPaymentRepository.findAll({
-      where,
+      // Only issued invoices: entries without a number are proformas (roadmap 4.7 decision 11)
+      where: { [Op.and]: [where, { invoiceId: HAS_INVOICE_NUMBER }] },
       include,
       order: [
         ['paymentDate', 'DESC'],

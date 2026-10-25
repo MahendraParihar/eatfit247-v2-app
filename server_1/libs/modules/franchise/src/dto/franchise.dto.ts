@@ -7,12 +7,22 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsString,
+  Matches,
+  Max,
   MaxLength,
+  Min,
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { BusinessTypeEnum, IManageFranchise, InputLengthEnum, InternationalTaxModeEnum } from '@eatfit247-shared-lib';
+import { Transform, Type } from 'class-transformer';
+import {
+  BusinessTypeEnum,
+  IManageFranchise,
+  InputLengthEnum,
+  INVOICE_NUMBER_FORMAT_MAX_LENGTH,
+  InternationalTaxModeEnum,
+} from '@eatfit247-shared-lib';
 import { CreateAddressDto, MediaUploadDto } from '@server_1/core';
 
 export class CreateFranchiseDto implements IManageFranchise {
@@ -135,5 +145,28 @@ export class CreateFranchiseDto implements IManageFranchise {
   @ValidateNested()
   @Type(() => CreateAddressDto)
   addressObj?: CreateAddressDto;
+
+  /** Checked against the template by InvoiceNumberFormatUtil in the service (decision 6) */
+  @IsOptional()
+  @IsString()
+  @MaxLength(InputLengthEnum.CHAR_10)
+  invoicePrefix?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(INVOICE_NUMBER_FORMAT_MAX_LENGTH)
+  invoiceNumberFormat?: string | null;
+
+  /** GST registration threshold in INR (turnover warning, decision 12) */
+  @IsOptional()
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(999999999999.99)
+  registrationThresholdAmount?: number | null;
+  /** Working currency, ISO 4217 (configurable tax treatment, decision 17); defaults to the address country's */
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toUpperCase() || null : value))
+  @Matches(/^[A-Z]{3}$/, { message: 'Currency must be an ISO 4217 code' })
+  currencyCode?: string | null;
 }
 

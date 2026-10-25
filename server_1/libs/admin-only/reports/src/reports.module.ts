@@ -10,15 +10,18 @@ import {
   TxnMemberProduct,
 } from '@server_1/modules/member';
 import { DeliveryModule, TxnShipment } from '@server_1/modules/delivery';
+import { TaxEngineModule } from '@server_1/modules/tax-engine';
 import {
   AnnualDashboardController,
   DashboardController,
+  DocumentsIssuedController,
   MemberProductReportController,
   PaymentReportController,
 } from './controllers';
 import {
   AnnualDashboardService,
   DashboardService,
+  DocumentsIssuedService,
   FinancialYearService,
   MemberProductReportService,
   PaymentReportService,
@@ -28,6 +31,7 @@ import {
   imports: [
     MemberModule,
     DeliveryModule,
+    TaxEngineModule,
     SequelizeModule.forFeature([
       MstFranchise,
       TxnMember,
@@ -43,6 +47,7 @@ import {
     AnnualDashboardController,
     PaymentReportController,
     MemberProductReportController,
+    DocumentsIssuedController,
   ],
   providers: [
     FinancialYearService,
@@ -50,6 +55,7 @@ import {
     AnnualDashboardService,
     PaymentReportService,
     MemberProductReportService,
+    DocumentsIssuedService,
   ],
   exports: [
     SequelizeModule,

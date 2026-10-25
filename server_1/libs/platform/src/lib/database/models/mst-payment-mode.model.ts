@@ -1,4 +1,5 @@
 import { BelongsTo, Column, CreatedAt, DataType, Model, Scopes, Table, UpdatedAt } from 'sequelize-typescript';
+import { PaymentRouteEnum } from '@eatfit247-shared-lib';
 import { CommonScopes, MstAdminUser } from '@server_1/core';
 
 @Table({
@@ -26,6 +27,9 @@ export class MstPaymentMode extends Model<MstPaymentMode> {
     type: DataType.STRING(100),
   })
   declare paymentMode: string;
+  /** Route the tax decision uses for an offline payment in this mode (roadmap 4.6) */
+  @Column({ allowNull: false, defaultValue: 'DOMESTIC', field: 'payment_route', type: DataType.STRING(40) })
+  declare paymentRoute: PaymentRouteEnum;
 
   @Column({
     allowNull: false,

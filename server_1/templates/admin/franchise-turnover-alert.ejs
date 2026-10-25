@@ -1,0 +1,29 @@
+<%- await include('../layout/email-head', {
+  subject: 'GST registration threshold: ' + franchiseName + ' at ' + percent + '%',
+  preheader: franchiseName + ' has reached ' + percent + '% of its GST registration threshold for FY ' + financialYear + '.',
+  franchise: franchise,
+  icon: '₹'
+}) %>
+
+<%- await include('../partials/heading', {
+  title: franchiseName + ' is at ' + percent + '% of its GST registration threshold',
+  lead: (level === 'RED'
+    ? 'The platform turnover has reached the threshold. The franchise must apply for GST registration within 30 days of crossing it (CGST s.25(1)).'
+    : 'The platform turnover has passed 80% of the threshold. Plan the GST registration before it is crossed.')
+}) %>
+
+<%- await include('../partials/section-open', { eyebrow: 'Financial year ' + financialYear }) %>
+  <%- await include('../partials/info-row', { label: 'Franchise', value: franchiseName + ' (' + franchiseCode + ')' }) %>
+  <%- await include('../partials/info-row', { label: 'Turnover on the platform', value: turnover }) %>
+  <%- await include('../partials/info-row', { label: 'Registration threshold', value: threshold }) %>
+  <%- await include('../partials/info-row', { label: 'Reached', value: percent + '% (' + (level === 'RED' ? 'red' : 'amber') + ')', last: true }) %>
+<%- await include('../partials/section-close') %>
+
+<%- await include('../partials/alert', {
+  tone: level === 'RED' ? 'danger' : 'warning',
+  text: 'Platform sales only. This is a lower bound: GST registration counts every supply under the same PAN across India (CGST s.22), so add any sales made outside EatFit247.'
+}) %>
+
+<%- await include('../partials/signoff', { closing: 'Sent automatically,', team: franchise.franchiseName + ' System', franchise: franchise }) %>
+
+<%- await include('../layout/email-foot', { franchise: franchise }) %>

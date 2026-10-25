@@ -19,6 +19,23 @@ export interface IEmailTemplate extends IBaseEmailTemplate, IAdminInfo {
   active: boolean;
 }
 
+/** An email / WhatsApp template's on-off switches (admin Email Templates screen, decision 18). Content is not edited. */
+export interface IEmailTemplateSwitch {
+  emailTemplateId: number;
+  templateName: string;
+  subject: string;
+  active: boolean;
+  sendEmailNotification: boolean;
+  sendWhatsappNotification: boolean;
+}
+
+/** `PATCH email-template/:id`: one or more switches */
+export interface IUpdateEmailTemplateSwitch {
+  active?: boolean;
+  sendEmailNotification?: boolean;
+  sendWhatsappNotification?: boolean;
+}
+
 export interface ISendEmailParams {
   emailTemplate: EmailTemplateEnum;
   to: string | string[];

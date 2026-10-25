@@ -1,57 +1,54 @@
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpService } from './http.service';
-
-export interface PaymentOrderRequest {
-  amount: number;
-  currency: string;
-  description?: string;
-  franchisePaymentGatewayId?: number;
-  customer?: {
-    name?: string;
-    email?: string;
-    contact?: string;
-  };
-  notes?: Record<string, any>;
-}
-
-export interface PaymentOrderResponse {
-  orderId: string;
-  gatewayCode: string;
-  keyId: string;
-  amount: number;
-  currency: string;
-  customer: {
-    name?: string;
-    email?: string;
-    contact?: string;
-  };
-  notes: Record<string, any>;
-}
-
-export interface VerifyPaymentRequest {
-  gatewayCode: string;
-  paymentId: string;
-  orderId?: string;
-  signature?: string;
-}
-
-export interface VerifyPaymentResponse {
-  verified: boolean;
-  paymentDetails?: any;
-}
+import {
+  IPublicCheckoutGatewayPayload,
+  IPublicVerifyPaymentRequest,
+  IPublicVerifyPaymentResponse,
+  PaymentGatewayEnum,
+} from '@eatfit247-shared-library';
 
 export interface PaymentSuccessCallback {
-  (paymentId: string, orderId: string, signature?: string): void;
+  (paymentId: string, orderId: string, signature: string): void;
 }
 
 export interface PaymentErrorCallback {
-  (error: any): void;
+  (error: Error): void;
+}
+
+interface IRazorpaySuccessResponse {
+  razorpay_payment_id: string;
+  razorpay_order_id: string;
+  razorpay_signature: string;
+}
+
+interface IRazorpayFailedResponse {
+  error: { description?: string };
+}
+
+interface IRazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: IRazorpaySuccessResponse) => void;
+  prefill: { name?: string; email?: string; contact?: string };
+  notes: Record<string, string>;
+  theme: { color: string };
+  modal: { ondismiss: () => void };
+}
+
+interface IRazorpayInstance {
+  on(event: 'payment.failed', handler: (response: IRazorpayFailedResponse) => void): void;
+  open(): void;
 }
 
 /**
- * Service to handle embedded payment gateway integration
- * Supports Razorpay, Stripe, and Telr
+ * Embedded payment gateway integration.
+ * The order and its amount always come from the server (`…/order`); this service
+ * only opens the gateway for that order and asks the server to verify the result.
  */
 @Injectable({
   providedIn: 'root'
@@ -59,7 +56,7 @@ export interface PaymentErrorCallback {
 export class PaymentService {
   private readonly httpService = inject(HttpService);
   private readonly platformId = inject(PLATFORM_ID);
-  private razorpayInstance: any = null;
+  private razorpayInstance: IRazorpayInstance | null = null;
 
   private getCheckoutAuthHeaders(): { [key: string]: string } {
     if (!isPlatformBrowser(this.platformId)) return {};
@@ -90,102 +87,41 @@ export class PaymentService {
   }
 
   /**
-   * Create payment order for embedded checkout (products)
-   */
-  async createPaymentOrder(
-    memberId: number,
-    paymentData: PaymentOrderRequest
-  ): Promise<PaymentOrderResponse> {
-    try {
-      const data = await this.httpService.post<PaymentOrderResponse>(
-        `checkout/member/${memberId}/product/payment-order`,
-        paymentData,
-        { headers: this.getCheckoutAuthHeaders() }
-      );
-      if (!data) {
-        throw new Error('Failed to create payment order: No data returned');
-      }
-      return data.data;
-    } catch (error) {
-      console.error('Error creating payment order:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Create payment order for embedded checkout (plans)
-   */
-  async createPlanPaymentOrder(
-    memberId: number,
-    paymentData: PaymentOrderRequest
-  ): Promise<PaymentOrderResponse> {
-    try {
-      const data = await this.httpService.post<PaymentOrderResponse>(
-        `checkout/plan/member/${memberId}/payment-order`,
-        paymentData,
-        { headers: this.getCheckoutAuthHeaders() }
-      );
-      if (!data) {
-        throw new Error('Failed to create payment order: No data returned');
-      }
-      return data.data;
-    } catch (error) {
-      console.error('Error creating plan payment order:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Verify payment after completion (products)
+   * Ask the server to verify a product payment (it checks with the gateway itself)
    */
   async verifyPayment(
     memberId: number,
-    verifyData: VerifyPaymentRequest
-  ): Promise<VerifyPaymentResponse> {
-    try {
-      const data = await this.httpService.post<VerifyPaymentResponse>(
-        `checkout/member/${memberId}/product/verify-payment`,
-        verifyData,
-        { headers: this.getCheckoutAuthHeaders() }
-      );
-      if (!data) {
-        throw new Error('Failed to verify payment: No data returned');
-      }
-      return data.data;
-    } catch (error) {
-      console.error('Error verifying payment:', error);
-      throw error;
-    }
+    verifyData: IPublicVerifyPaymentRequest
+  ): Promise<IPublicVerifyPaymentResponse> {
+    const res = await this.httpService.post<IPublicVerifyPaymentResponse>(
+      `checkout/member/${memberId}/product/verify-payment`,
+      verifyData,
+      { headers: this.getCheckoutAuthHeaders() }
+    );
+    return res.data;
   }
 
   /**
-   * Verify payment after completion (plans)
+   * Ask the server to verify a plan payment (it checks with the gateway itself)
    */
   async verifyPlanPayment(
     memberId: number,
-    verifyData: VerifyPaymentRequest
-  ): Promise<VerifyPaymentResponse> {
-    try {
-      const data = await this.httpService.post<VerifyPaymentResponse>(
-        `checkout/plan/member/${memberId}/verify-payment`,
-        verifyData,
-        { headers: this.getCheckoutAuthHeaders() }
-      );
-      if (!data) {
-        throw new Error('Failed to verify payment: No data returned');
-      }
-      return data.data;
-    } catch (error) {
-      console.error('Error verifying plan payment:', error);
-      throw error;
-    }
+    verifyData: IPublicVerifyPaymentRequest
+  ): Promise<IPublicVerifyPaymentResponse> {
+    const res = await this.httpService.post<IPublicVerifyPaymentResponse>(
+      `checkout/plan/member/${memberId}/verify-payment`,
+      verifyData,
+      { headers: this.getCheckoutAuthHeaders() }
+    );
+    return res.data;
   }
 
   /**
-   * Initialize Razorpay payment
+   * Open Razorpay checkout for the server-created order
    */
   async initializeRazorpayPayment(
-    orderResponse: PaymentOrderResponse,
+    gateway: IPublicCheckoutGatewayPayload,
+    description: string,
     onSuccess: PaymentSuccessCallback,
     onError: PaymentErrorCallback
   ): Promise<void> {
@@ -198,21 +134,23 @@ export class PaymentService {
     try {
       await this.loadRazorpayScript();
 
-      const options = {
-        key: orderResponse.keyId,
-        amount: Math.round(orderResponse.amount * 100), // Convert to paise
-        currency: orderResponse.currency,
+      const options: IRazorpayOptions = {
+        key: gateway.keyId,
+        // Minor units of the order's currency, as computed by the server
+        amount: gateway.amountMinor,
+        currency: gateway.currency,
         name: 'EatFit247',
-        description: orderResponse.notes['description'] || 'Product Order Payment',
-        order_id: orderResponse.orderId,
-        handler: (response: any) => {
+        description,
+        order_id: gateway.gatewayOrderId,
+        handler: (response) => {
           onSuccess(response.razorpay_payment_id, response.razorpay_order_id, response.razorpay_signature);
         },
         prefill: {
-          name: orderResponse.customer.name,
-          email: orderResponse.customer.email,
-          contact: orderResponse.customer.contact
+          name: gateway.customer.name,
+          email: gateway.customer.email,
+          contact: gateway.customer.contact
         },
+        notes: gateway.notes,
         theme: {
           color: '#3399cc'
         },
@@ -224,64 +162,31 @@ export class PaymentService {
       };
 
       this.razorpayInstance = new window.Razorpay(options);
-      this.razorpayInstance.on('payment.failed', (response: any) => {
+      this.razorpayInstance.on('payment.failed', (response) => {
         onError(new Error(response.error.description || 'Payment failed'));
       });
       this.razorpayInstance.open();
     } catch (error) {
       console.error('Error initializing Razorpay payment:', error);
-      onError(error);
+      onError(error instanceof Error ? error : new Error('Failed to open the payment gateway'));
     }
   }
 
   /**
-   * Initialize Stripe payment
-   * Note: Stripe integration requires additional setup with Stripe Elements
-   */
-  async initializeStripePayment(
-    orderResponse: PaymentOrderResponse,
-    onSuccess: PaymentSuccessCallback,
-    onError: PaymentErrorCallback
-  ): Promise<void> {
-    // TODO: Implement Stripe Elements integration
-    // This requires loading Stripe.js and creating payment elements
-    onError(new Error('Stripe payment integration not yet implemented'));
-  }
-
-  /**
-   * Initialize Telr payment
-   * Note: Telr typically uses redirect-based payment
-   */
-  async initializeTelrPayment(
-    orderResponse: PaymentOrderResponse,
-    onSuccess: PaymentSuccessCallback,
-    onError: PaymentErrorCallback
-  ): Promise<void> {
-    // TODO: Implement Telr payment integration
-    // Telr typically uses redirect-based payment flow
-    onError(new Error('Telr payment integration not yet implemented'));
-  }
-
-  /**
-   * Initialize payment based on gateway code
+   * Open the gateway checkout for the server-created order
    */
   async initializePayment(
-    orderResponse: PaymentOrderResponse,
+    gateway: IPublicCheckoutGatewayPayload,
+    description: string,
     onSuccess: PaymentSuccessCallback,
     onError: PaymentErrorCallback
   ): Promise<void> {
-    switch (orderResponse.gatewayCode.toUpperCase()) {
-      case 'RAZORPAY':
-        await this.initializeRazorpayPayment(orderResponse, onSuccess, onError);
-        break;
-      case 'STRIPE':
-        await this.initializeStripePayment(orderResponse, onSuccess, onError);
-        break;
-      case 'TELR':
-        await this.initializeTelrPayment(orderResponse, onSuccess, onError);
+    switch (gateway.gatewayCode) {
+      case PaymentGatewayEnum.RAZORPAY:
+        await this.initializeRazorpayPayment(gateway, description, onSuccess, onError);
         break;
       default:
-        onError(new Error(`Unsupported payment gateway: ${orderResponse.gatewayCode}`));
+        onError(new Error(`Unsupported payment gateway: ${gateway.gatewayCode}`));
     }
   }
 }
@@ -289,7 +194,6 @@ export class PaymentService {
 // Extend Window interface for Razorpay
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay: new (options: IRazorpayOptions) => IRazorpayInstance;
   }
 }
-

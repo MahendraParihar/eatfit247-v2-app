@@ -31,6 +31,7 @@ export * from './promo-code.interface';
 export * from './payment-gateway.interface';
 export * from './public.types';
 export * from './checkout.interface';
+export * from './public-checkout.interface';
 export * from './success-story.interface';
 export * from './product.interface';
 export * from './invoice';
@@ -46,4 +47,5 @@ export * from './member/index';
 export * from './courier/warehouse.interface';
 export * from './admin-rbac.interface';
 export * from './google-review.interface';
-
+export * from './documents-issued.interface';
+export * from './tax/index';

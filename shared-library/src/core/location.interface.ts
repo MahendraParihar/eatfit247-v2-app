@@ -7,6 +7,8 @@ export interface IBaseCountry {
   phoneNumberCode?: string;
   taxType?: TaxTypeEnum | string;
   defaultTaxPercentage?: number;
+  /** ISO 4217 functional currency of franchises in this country (INR, AED, USD) */
+  currencyCode?: string | null;
 }
 
 export interface IManageCountry extends IBaseCountry {

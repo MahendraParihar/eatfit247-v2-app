@@ -46,6 +46,8 @@ export interface ITableColumn<T> {
   /** When set, sent as the sort field to the API instead of {@link dataKey} or {@link key}. */
   sortField?: string;
   type?: 'image' | 'text' | 'number' | 'date' | 'boolean' | 'custom';
+  /** Angular date pipe format for `type: 'date'` (default 'dd MMM yyyy hh:mm a'; date-only values use 'dd MMM yyyy') */
+  dateFormat?: string;
   sortable?: boolean;
   sortFn?: (a: T, b: T) => number;
   searchable?: boolean;

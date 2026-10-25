@@ -20,6 +20,7 @@ const PROGRAM_PLAN_LIST_SORT_FIELDS = new Set<string>([
   'noOfDaysInCycle',
   'isOnline',
   'isVisibleOnWeb',
+  'isElectronicService',
   'active',
   'createdAt',
   'updatedAt',
@@ -89,6 +90,7 @@ export class ProgramPlanService {
       noOfDaysInCycle: item.noOfDaysInCycle,
       isOnline: item.isOnline,
       isVisibleOnWeb: item.isVisibleOnWeb,
+      isElectronicService: item.isElectronicService ?? false,
       programPlanFees: fees,
       imagePath: CommonFunctionsUtil.buildImageUrl(item.imagePath),
       active: item.active,
@@ -125,6 +127,7 @@ export class ProgramPlanService {
       noOfDaysInCycle: obj.noOfDaysInCycle,
       isOnline: obj.isOnline,
       isVisibleOnWeb: obj.isVisibleOnWeb,
+      isElectronicService: obj.isElectronicService ?? false,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
       createdBy: adminId,
@@ -179,6 +182,7 @@ export class ProgramPlanService {
       noOfDaysInCycle: obj.noOfDaysInCycle,
       isOnline: obj.isOnline,
       isVisibleOnWeb: obj.isVisibleOnWeb,
+      isElectronicService: obj.isElectronicService ?? false,
       imagePath: obj.imagePath && obj.imagePath.length > 0 ? obj.imagePath : null,
       active: obj.active,
       modifiedBy: adminId,
@@ -278,6 +282,19 @@ export class ProgramPlanService {
       tableData: resList,
       count: count,
     };
+  }
+
+  /** One plan for the website checkout (`?plan=<id>`): only an active plan visible on the web. */
+  public async findPublicById(id: number): Promise<any> {
+    const find = await this.programPlanRepository.scope('details').findOne({
+      where: { programPlanId: id, active: true, isVisibleOnWeb: true },
+    });
+    if (!find) {
+      throw new NotFoundException('Program plan not found');
+    }
+    const plain = find.get({ plain: true });
+    plain.programPlanFees = plain.programPlanFees || [];
+    return this.convertToPublic(this.convertToModel(plain));
   }
 
   /**

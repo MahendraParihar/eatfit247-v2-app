@@ -1,57 +1,143 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { InvoiceSequenceModel } from '../database/models';
-import { BusinessTypeEnum } from '@eatfit247-shared-lib';
+import { BusinessTypeEnum, CREDIT_NOTE_SEQUENCE_TYPE, InvoiceNumberFormatUtil, InvoiceSeriesEnum } from '@eatfit247-shared-lib';
+import { FranchiseDateUtil } from '../utils/franchise-date.util';
+
+/** Counter type of credit notes in mst_invoice_sequences (shared-library; re-exported for existing imports). */
+export { CREDIT_NOTE_SEQUENCE_TYPE };
+
+export interface IInvoiceNumberRequest {
+  franchiseId: number;
+  franchiseCode: string;
+  /** Month the franchise's financial year starts (4 = April, 1 = January) */
+  fyStartMonth: number;
+  invoiceType: BusinessTypeEnum;
+  series: InvoiceSeriesEnum;
+  /** Date of issue, `YYYY-MM-DD` in the franchise's timezone; the FY comes from it */
+  invoiceDate: string;
+  /** `mst_franchises.invoice_prefix`; used with `invoiceNumberFormat` */
+  invoicePrefix?: string | null;
+  /** `mst_franchises.invoice_number_format`; null = the legacy format */
+  invoiceNumberFormat?: string | null;
+  /** Indian franchise: a number that breaks Rule 46 (≤16 characters) is refused (decision 7) */
+  gstLimit?: boolean;
+}
+
+export type ICreditNoteNumberRequest = Pick<
+  IInvoiceNumberRequest,
+  'franchiseId' | 'franchiseCode' | 'fyStartMonth' | 'invoiceDate' | 'invoicePrefix' | 'invoiceNumberFormat' | 'gstLimit'
+>;
+
+export interface IIssuedInvoiceNumber {
+  invoiceId: string;
+  invoiceSeries: InvoiceSeriesEnum;
+  invoiceDate: string;
+}
 
 @Injectable()
 export class InvoiceSequenceService {
+  private readonly logger = new Logger(InvoiceSequenceService.name);
+
   constructor(
     @InjectModel(InvoiceSequenceModel)
     private readonly invoiceSequenceModel: typeof InvoiceSequenceModel,
   ) {}
 
   /**
-   * Generate a unique invoice number based on entity, invoice type, and financial year
-   * @param franchiseId
-   * @param startMonth
-   * @param franchiseCode
-   * @param invoiceType - Type of invoice: 'PRODUCT' or 'SERVICE'
-   * @param trx - Database transaction
-   * @returns Generated invoice number in format: {entityCode}/{financialYear}/{typeCode}/{sequenceNumber}
+   * Next gap-free invoice number for (franchise, type, FY, series), inside the caller's transaction.
+   * The counter row is created on first use and locked FOR UPDATE until the caller commits.
+   *
+   * With a franchise template (compliant invoice numbering) the number is rendered from it, e.g.
+   * `EFM/2627/S/00492`; the counter key and value are the same, so the sequence continues.
+   * Without one (legacy, e.g. HCUAE): DOMESTIC `{code}/{FY}/{S|P}/{000001}`,
+   * EXPORT `{code}/EXP/{FY}/{S|P}/{000001}`.
    */
-  async generateInvoiceNumber(
-    franchiseId: number,
-    startMonth: number,
-    franchiseCode: string,
-    invoiceType: BusinessTypeEnum,
+  async generateInvoiceNumber(request: IInvoiceNumberRequest, trx: Transaction): Promise<IIssuedInvoiceNumber> {
+    const fy = FranchiseDateUtil.financialYear(request.invoiceDate, request.fyStartMonth);
+    const invoiceId = await this.nextNumber(request, request.invoiceType, request.series, fy, trx, (next) => {
+      if (this.hasTemplate(request)) {
+        return this.renderTemplated(request, InvoiceNumberFormatUtil.typeLetter(request.invoiceType, request.series), next);
+      }
+      const typeCode = request.invoiceType === BusinessTypeEnum.PRODUCT ? 'P' : 'S';
+      const seriesPart = request.series === InvoiceSeriesEnum.EXPORT ? 'EXP/' : '';
+      return `${request.franchiseCode}/${seriesPart}${fy}/${typeCode}/${String(next).padStart(6, '0')}`;
+    });
+    return {
+      invoiceId,
+      invoiceSeries: request.series,
+      invoiceDate: request.invoiceDate,
+    };
+  }
+
+  /**
+   * Next gap-free credit-note number for (franchise, FY), inside the caller's transaction (counter
+   * rows with invoice_type 'credit'): from the franchise template with type `C` (decision 8), else
+   * the legacy `{code}/{FY}/CN/{000001}`.
+   */
+  async generateCreditNoteNumber(request: ICreditNoteNumberRequest, trx: Transaction): Promise<string> {
+    const fy = FranchiseDateUtil.financialYear(request.invoiceDate, request.fyStartMonth);
+    return this.nextNumber(request, CREDIT_NOTE_SEQUENCE_TYPE, InvoiceSeriesEnum.DOMESTIC, fy, trx, (next) =>
+      this.hasTemplate(request)
+        ? this.renderTemplated(request, InvoiceNumberFormatUtil.typeLetter(BusinessTypeEnum.SERVICE, InvoiceSeriesEnum.DOMESTIC, true), next)
+        : `${request.franchiseCode}/${fy}/CN/${String(next).padStart(6, '0')}`,
+    );
+  }
+
+  /**
+   * Locks (creating on first use) the counter row, renders the next number and only then saves the
+   * counter. The Rule 46 guard (decision 7) runs before the save for every number of an Indian
+   * franchise, so a refused number is never consumed even if a caller commits after catching the error.
+   */
+  private async nextNumber(
+    request: ICreditNoteNumberRequest,
+    invoiceType: string,
+    series: InvoiceSeriesEnum,
+    fy: string,
     trx: Transaction,
-  ) {
-    const fy = this.getFinancialYear(new Date(), startMonth);
+    render: (next: number) => string,
+  ): Promise<string> {
     const [sequence] = await this.invoiceSequenceModel.findOrCreate({
       where: {
-        franchiseId: franchiseId,
+        franchiseId: request.franchiseId,
         invoiceType,
         financialYear: fy,
+        series,
       },
       defaults: { currentNumber: 0 },
       transaction: trx,
       lock: trx.LOCK.UPDATE,
     });
-    sequence.currentNumber += 1;
+    const next = sequence.currentNumber + 1;
+    const number = render(next);
+    // Every number of an Indian franchise, templated or legacy (decision 7, amended in group 7)
+    if (request.gstLimit && !InvoiceNumberFormatUtil.isRule46Compliant(number)) {
+      this.logger.error(
+        `Refused invoice number ${number} for franchise ${request.franchiseId}: it breaks Rule 46 (at most 16 characters, ` +
+          `letters, digits, / and -). Fix the franchise's invoice number format.`,
+      );
+      throw new BadRequestException(
+        `The invoice number ${number} breaks the GST limit of 16 characters. Ask an admin to fix the franchise's invoice number format.`,
+      );
+    }
+    sequence.currentNumber = next;
     await sequence.save({ transaction: trx });
-    const typeCode = invoiceType === BusinessTypeEnum.PRODUCT ? 'P' : 'S';
-    return `${franchiseCode}/${fy}/${typeCode}/${String(sequence.currentNumber).padStart(6, '0')}`;
+    return number;
   }
 
-  private getFinancialYear(date: Date, fyStartMonth: number) {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    if (month >= fyStartMonth) {
-      return fyStartMonth === 1 ? `${year}` : `${year}-${String(year + 1).slice(-2)}`;
-    } else {
-      return fyStartMonth === 1 ? `${year - 1}` : `${year - 1}-${String(year).slice(-2)}`;
-    }
+  private hasTemplate(request: ICreditNoteNumberRequest): boolean {
+    return !!request.invoiceNumberFormat?.trim() && !!request.invoicePrefix?.trim();
+  }
+
+  private renderTemplated(request: ICreditNoteNumberRequest, typeLetter: string, sequence: number): string {
+    return InvoiceNumberFormatUtil.render({
+      template: (request.invoiceNumberFormat as string).trim(),
+      prefix: (request.invoicePrefix as string).trim(),
+      fyStartMonth: request.fyStartMonth,
+      invoiceDate: request.invoiceDate,
+      typeLetter,
+      sequence,
+    });
   }
 }
-

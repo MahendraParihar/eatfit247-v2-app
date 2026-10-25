@@ -52,6 +52,13 @@
       object-fit: contain;
     }
 
+    .fx-note {
+      margin-top: 6px;
+      font-size: 10px;
+      color: #555;
+      text-align: right;
+    }
+
     .invoice-header-title {
       flex: 1;
       text-align: center;
@@ -160,7 +167,8 @@
 
     .summary-section {
       display: flex;
-      justify-content: flex-end;
+      flex-direction: column;
+      align-items: flex-end;
       margin-bottom: 8px;
     }
 
@@ -192,6 +200,18 @@
       font-size: 9px;
       background-color: #333;
       color: #fff;
+    }
+
+    .summary-table .total-row td,
+    .summary-table .total-row td:first-child {
+      background-color: #333;
+      color: #fff;
+    }
+
+    .amount-words {
+      margin-top: 4px;
+      font-size: 8px;
+      text-align: right;
     }
 
     .tax-note {
@@ -352,18 +372,26 @@
   </div>
   <div class="invoice-header-title">{{invoice.header.title}}</div>
   <div class="invoice-header-invoice-meta">
+    {{#unless invoice.header.isProforma}}
+      <div class="invoice-meta-item">
+        <span class="invoice-meta-label">{{#if invoice.header.numberLabel}}{{invoice.header.numberLabel}}:{{else}}Invoice No:{{/if}}</span>
+        <span>{{invoice.header.invoiceNumber}}</span>
+      </div>
+    {{/unless}}
     <div class="invoice-meta-item">
-      <span class="invoice-meta-label">Invoice No:</span>
-      <span>{{invoice.header.invoiceNumber}}</span>
-    </div>
-    <div class="invoice-meta-item">
-      <span class="invoice-meta-label">Invoice Date:</span>
+      <span class="invoice-meta-label">{{#if invoice.header.isProforma}}Date:{{else}}{{#if invoice.header.numberLabel}}Date:{{else}}Invoice Date:{{/if}}{{/if}}</span>
       <span>{{formatDate invoice.header.invoiceDate}}</span>
     </div>
-    {{#if invoice.header.playOfSupply}}
+    {{#if invoice.header.placeOfSupply}}
       <div class="invoice-meta-item">
         <span class="invoice-meta-label">Place of Supply:</span>
-        <span>{{formatDate invoice.header.playOfSupply}}</span>
+        <span>{{invoice.header.placeOfSupply}}</span>
+      </div>
+    {{/if}}
+    {{#if invoice.header.countryOfDestination}}
+      <div class="invoice-meta-item">
+        <span class="invoice-meta-label">Country of Destination:</span>
+        <span>{{invoice.header.countryOfDestination}}</span>
       </div>
     {{/if}}
   </div>
@@ -378,7 +406,7 @@
     <div class="party-address">
       {{#if invoice.seller.address.line1}}{{invoice.seller.address.line1}}<br>{{/if}}
       {{#if invoice.seller.address.line2}}{{invoice.seller.address.line2}}<br>{{/if}}
-      {{invoice.seller.address.city}}{{#if invoice.seller.address.state}}, {{invoice.seller.address.state}}{{#if invoice.seller.address.stateCode}}({{invoice.seller.address.stateCode}}){{/if}}{{/if}}<br>
+      {{#if invoice.seller.address.city}}{{invoice.seller.address.city}}{{#if invoice.seller.address.state}}, {{/if}}{{/if}}{{#if invoice.seller.address.state}}{{invoice.seller.address.state}}{{#if invoice.seller.address.stateCode}} ({{invoice.seller.address.stateCode}}){{/if}}{{/if}}<br>
       {{invoice.seller.address.postalCode}}<br>
       {{invoice.seller.address.country}}
     </div>
@@ -406,7 +434,7 @@
     <div class="party-address">
       {{#if invoice.buyer.address.line1}}{{invoice.buyer.address.line1}}<br>{{/if}}
       {{#if invoice.buyer.address.line2}}{{invoice.buyer.address.line2}}<br>{{/if}}
-      {{invoice.buyer.address.city}}{{#if invoice.buyer.address.state}}, {{invoice.buyer.address.state}}{{#if invoice.buyer.address.stateCode}}({{invoice.buyer.address.stateCode}}){{/if}}{{/if}}<br>
+      {{#if invoice.buyer.address.city}}{{invoice.buyer.address.city}}{{#if invoice.buyer.address.state}}, {{/if}}{{/if}}{{#if invoice.buyer.address.state}}{{invoice.buyer.address.state}}{{#if invoice.buyer.address.stateCode}} ({{invoice.buyer.address.stateCode}}){{/if}}{{/if}}<br>
       {{invoice.buyer.address.postalCode}}<br>
       {{invoice.buyer.address.country}}
     </div>
@@ -547,11 +575,21 @@
         <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxableAmount }}</strong></td>
       </tr>
     {{/if}}
-    {{#if invoice.pricing.taxAmount}}
-      <tr>
-        <td><strong>Tax</strong></td>
-        <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxAmount }}</strong></td>
-      </tr>
+    {{#if isGstTaxType}}
+      {{#if invoice.pricing.taxAmount}}
+        <tr>
+          <td><strong>Tax</strong></td>
+          <td class="text-right"><strong>{{formatCurrency invoice.pricing.taxAmount }}</strong></td>
+        </tr>
+      {{/if}}
+    {{else}}
+      {{!-- VAT and other systems: each tax line with its category and rate, shown even at 0% --}}
+      {{#each invoice.tax.rows}}
+        <tr>
+          <td><strong>{{taxRowLabel this}}</strong></td>
+          <td class="text-right"><strong>{{formatCurrency this.amount}}</strong></td>
+        </tr>
+      {{/each}}
     {{/if}}
     {{#if invoice.pricing.totalAmount}}
       <tr class="total-row">
@@ -560,6 +598,17 @@
       </tr>
     {{/if}}
   </table>
+  {{#if invoice.pricing.totalAmount}}
+    {{!-- helper call (the registered helper shadows the context value of the same name) --}}
+    <div class="amount-words"><strong>Amount in words:</strong> {{amountInWords invoice.pricing.totalAmount invoice.currencyCode}}</div>
+  {{/if}}
+  {{#if invoice.fx}}
+    <div class="fx-note">
+      Exchange rate: 1 {{invoice.fx.fromCurrency}} = {{invoice.fx.rate}} {{invoice.fx.currency}}
+      ({{invoice.fx.source}}, {{formatDate invoice.fx.rateDate}}) ·
+      Total {{invoice.fx.currency}} {{formatCurrency invoice.fx.totalAmount}} · Tax {{invoice.fx.currency}} {{formatCurrency invoice.fx.taxAmount}}
+    </div>
+  {{/if}}
 </div>
 
 <!-- Three Column Section: Terms, QR Code, Notes -->
@@ -615,16 +664,20 @@
 {{#if invoice.tax.note}}
   <div class="tax-note">
     <strong>Note:</strong> {{invoice.tax.note}}
+    {{#if invoice.tax.lutArn}}<br /><strong>LUT ARN:</strong> {{invoice.tax.lutArn}}{{/if}}
   </div>
 {{/if}}
 
-<!-- Payment Information -->
+<!-- Payment Information (not on credit notes, which carry their own number label) -->
+{{#unless invoice.header.numberLabel}}
 <div class="payment-info">
   <strong>Payment Information:</strong><br>
   <strong>Status:</strong> {{invoice.payment.status}}<br>
   <strong>Method:</strong> {{#each invoice.payment.methods}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
   {{#if invoice.payment.transactionId}}<br><strong>Transaction ID:</strong> {{invoice.payment.transactionId}}{{/if}}
+  {{#if invoice.payment.remittanceReference}}<br><strong>Remittance reference (FIRC / e-FIRA):</strong> {{invoice.payment.remittanceReference}}{{/if}}
 </div>
+{{/unless}}
 
 <!-- Footer -->
 <div class="footer">

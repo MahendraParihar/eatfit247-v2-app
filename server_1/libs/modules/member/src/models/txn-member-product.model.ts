@@ -17,7 +17,14 @@ import {
 } from '@server_1/core';
 import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { TxnMember } from './txn-member.model';
-import { InputLengthEnum, PaymentSourceEnum } from '@eatfit247-shared-lib';
+import {
+  CustomerTypeEnum,
+  ITaxEvidence,
+  InputLengthEnum,
+  InvoiceSeriesEnum,
+  PaymentRouteEnum,
+  PaymentSourceEnum,
+} from '@eatfit247-shared-lib';
 import { TxnMemberProductOrderItem } from './txn-member-product-order-item.model';
 import { MstProduct } from '@server_1/models/product';
 
@@ -157,10 +164,9 @@ import { MstProduct } from '@server_1/models/product';
         attributes: [
           'franchiseId',
           'companyName',
-          'gstNumber',
           'tanNumber',
-          'vatNumber',
           'lutNumber',
+          'timeZone',
           'brandName',
         ],
       },
@@ -237,6 +243,30 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     type: DataType.STRING(100),
   })
   declare invoiceId: string;
+  @Column({
+    allowNull: true,
+    field: 'invoice_series',
+    type: DataType.STRING(10),
+  })
+  declare invoiceSeries: InvoiceSeriesEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'invoice_date',
+    type: DataType.DATEONLY,
+  })
+  declare invoiceDate: string | null;
+  @Column({ allowNull: true, field: 'fx_rate', type: DataType.DECIMAL(18, 8) })
+  declare fxRate: number | null;
+  @Column({ allowNull: true, field: 'fx_rate_date', type: DataType.DATEONLY })
+  declare fxRateDate: string | null;
+  @Column({ allowNull: true, field: 'fx_source', type: DataType.STRING(20) })
+  declare fxSource: string | null;
+  @Column({ allowNull: true, field: 'functional_currency', type: DataType.STRING(3) })
+  declare functionalCurrency: string | null;
+  @Column({ allowNull: true, field: 'functional_total_amount', type: DataType.DECIMAL(14, 3) })
+  declare functionalTotalAmount: number | null;
+  @Column({ allowNull: true, field: 'functional_tax_amount', type: DataType.DECIMAL(14, 3) })
+  declare functionalTaxAmount: number | null;
 
   @Column({
     allowNull: false,
@@ -319,10 +349,65 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
 
   @Column({
     allowNull: true,
+    field: 'franchise_payment_gateway_id',
+    type: DataType.INTEGER,
+  })
+  declare franchisePaymentGatewayId: number | null;
+  /** Checkout token (jti) that created a public-checkout record; scopes public invoice downloads. */
+  @Column({
+    allowNull: true,
+    field: 'checkout_session_id',
+    type: DataType.STRING(64),
+  })
+  declare checkoutSessionId: string | null;
+
+  @Column({
+    allowNull: true,
     field: 'payment_link',
     type: DataType.STRING(500),
   })
   declare paymentLink: string;
+
+  @Column({
+    allowNull: true,
+    field: 'payment_route',
+    type: DataType.ENUM(...Object.values(PaymentRouteEnum)),
+  })
+  declare paymentRoute: PaymentRouteEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'remittance_reference',
+    type: DataType.STRING(100),
+  })
+  declare remittanceReference: string | null;
+  /** The franchise registration the sale is invoiced under; null = unregistered */
+  @Column({
+    allowNull: true,
+    field: 'tax_registration_id',
+    type: DataType.INTEGER,
+  })
+  declare taxRegistrationId: number | null;
+  /** Zero-rating evidence and any finance decision (decision 9) */
+  @Column({
+    allowNull: true,
+    field: 'tax_evidence',
+    type: DataType.JSONB,
+  })
+  declare taxEvidence: ITaxEvidence | null;
+  /** B2B with a valid customer GSTIN / TRN, else B2C (decision 10) */
+  @Column({
+    allowNull: true,
+    field: 'customer_type',
+    type: DataType.STRING(3),
+  })
+  declare customerType: CustomerTypeEnum | null;
+  /** Country of the customer's GSTIN / TRN (IN / AE); null for B2C (decision 10) */
+  @Column({
+    allowNull: true,
+    field: 'customer_registration_country',
+    type: DataType.STRING(3),
+  })
+  declare customerRegistrationCountry: string | null;
 
   @Column({
     allowNull: true,

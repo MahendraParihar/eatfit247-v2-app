@@ -1,7 +1,11 @@
 import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from 'sequelize-typescript';
 import { TxnMemberProduct } from './txn-member-product.model';
 import { MstProduct, MstProductVariant } from '@server_1/models/product';
-import { TaxMode, TaxTypeEnum } from '@eatfit247-shared-lib';
+import {
+  TaxCategoryEnum,
+  TaxMode,
+  TaxTypeEnum,
+} from '@eatfit247-shared-lib';
 
 @Table({
   freezeTableName: true,
@@ -168,5 +172,55 @@ export class TxnMemberProductOrderItem extends Model<TxnMemberProductOrderItem> 
     type: DataType.TEXT,
   })
   declare invoiceNote: string;
+  @Column({
+    allowNull: true,
+    field: 'tax_category',
+    type: DataType.STRING(20),
+  })
+  declare taxCategory: TaxCategoryEnum | null;
+  @Column({
+    allowNull: true,
+    field: 'lut_arn',
+    type: DataType.STRING(30),
+  })
+  declare lutArn: string | null;
+  @Column({
+    allowNull: true,
+    field: 'tax_decision_reason',
+    type: DataType.STRING(255),
+  })
+  declare taxDecisionReason: string | null;
+  @Column({
+    allowNull: true,
+    field: 'place_of_supply_country_code',
+    type: DataType.STRING(3),
+  })
+  declare placeOfSupplyCountryCode: string | null;
+  @Column({
+    allowNull: true,
+    field: 'place_of_supply_state_code',
+    type: DataType.STRING(10),
+  })
+  declare placeOfSupplyStateCode: string | null;
+  @Column({
+    allowNull: true,
+    field: 'hsn_sac_code',
+    type: DataType.STRING(8),
+  })
+  declare hsnSacCode: string | null;
+  /** The Tax Master rule that priced the sale (configurable tax treatment, decision 13) */
+  @Column({
+    allowNull: true,
+    field: 'tax_master_id',
+    type: DataType.INTEGER,
+  })
+  declare taxMasterId: number | null;
+  /** The franchise registration the sale is invoiced under; null = unregistered */
+  @Column({
+    allowNull: true,
+    field: 'tax_registration_id',
+    type: DataType.INTEGER,
+  })
+  declare taxRegistrationId: number | null;
 }
 

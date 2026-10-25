@@ -1,12 +1,16 @@
-import {PaymentSourceEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {CustomerTypeEnum, ExportDocumentTypeEnum, InvoiceSeriesEnum, PaymentRouteEnum, PaymentSourceEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {ITaxEvidence} from "../tax/tax-rule.interface";
 import {IAdminInfo, IDropdownItem} from "../../base.interface";
 import {IAddress} from "../location.interface";
 import {IShipment} from "../shipment.interface";
 import {IProduct} from "../product.interface";
 import {ICalculateTaxResponse} from "../tax-calculation.interface";
+import {IInvoiceFx} from "../tax-master.interface";
 
 export interface ICalculateProductVariantTaxRequest {
   items: IMemberProductOrderItemBasic[];
+  /** The customer's GSTIN / TRN (B2B), validated for the billing country */
+  gstNumber?: string;
   billingAddressId?: number;
   addressId?: number;
   discountAmount?: number;
@@ -56,15 +60,32 @@ export interface IMemberProductOrderItem {
   isLutApplied?: boolean;
   jurisdiction?: any;
   invoiceNote?: string;
+  taxCategory?: TaxCategoryEnum | null;
+  lutArn?: string | null;
+  taxDecisionReason?: string | null;
+  /** ISO country of the place of supply, stored with the tax decision (Circular 242/36/2024) */
+  placeOfSupplyCountryCode?: string | null;
+  /** State code of the place of supply (GST state code in India); null for exports */
+  placeOfSupplyStateCode?: string | null;
+  /** HSN / SAC of the rule that priced this line, stored at decision time */
+  hsnSacCode?: string | null;
+  /** The Tax Master rule that priced the line (decision 13) */
+  taxMasterId?: number | null;
+  /** The registration that charged the tax; null = unregistered */
+  taxRegistrationId?: number | null;
 }
 
-export interface IBasicMemberProduct {
+export interface IBasicMemberProduct extends IInvoiceFx {
   memberId: number;
   paymentModeId?: number | null;
   addressId?: number | null;
   transactionId?: string;
   paymentDate: Date;
   invoiceId?: string;
+  /** Series of `invoiceId`, set when the number is issued (null for Q1 FY 2026-27 and earlier) */
+  invoiceSeries?: InvoiceSeriesEnum | null;
+  /** Date of issue in the franchise's timezone (YYYY-MM-DD); the FY in the number comes from it */
+  invoiceDate?: string | null;
   paymentStatusId: number;
   franchiseId?: number | null;
   promoCode?: string;
@@ -85,6 +106,23 @@ export interface IBasicMemberProduct {
   gatewayOrderId?: string;
   gatewayPaymentId?: string;
   paymentLink?: string;
+  paymentRoute?: PaymentRouteEnum | null;
+  remittanceReference?: string | null;
+  /** The registration that charged the tax; null = unregistered (or priced before 4.14) */
+  taxRegistrationId?: number | null;
+  /** Zero-rating evidence and any finance decision (decision 9) */
+  taxEvidence?: ITaxEvidence | null;
+  /** B2B when a valid customer GSTIN / TRN was given (decision 10) */
+  customerType?: CustomerTypeEnum | null;
+  /** Country of the customer's GSTIN / TRN */
+  customerRegistrationCountry?: string | null;
+  /** Country of the account the client paid from (VAT evidence) */
+  payerAccountCountry?: string | null;
+  /** Goods-export record of an export-mode order (decision 11) */
+  exportDocumentType?: ExportDocumentTypeEnum | null;
+  exportDocumentNumber?: string | null;
+  exportDocumentDate?: string | null;
+  exportPortCode?: string | null;
 }
 
 export interface IManageMemberProduct {
@@ -104,7 +142,12 @@ export interface IManageMemberProduct {
   paymentLink?: string;
   gatewayProvider?: string;
   gatewayOrderId?: string;
+  /** Admin's gateway choice for a PAYMENT_GATEWAY record; the server creates the link after saving. */
+  franchisePaymentGatewayId?: number;
   gatewayPaymentId?: string;
+  /** Manual orders only: how the money arrived */
+  paymentRoute?: PaymentRouteEnum | null;
+  remittanceReference?: string | null;
   orderItems: IMemberProductOrderItemBasic[];
 }
 

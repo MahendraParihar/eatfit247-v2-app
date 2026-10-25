@@ -115,6 +115,7 @@ export class PermissionResolutionService {
       permissions: permissionsResult,
       franchiseIds,
       subjectMeta,
+      allFranchises: hasGrantAll,
     };
   }
 

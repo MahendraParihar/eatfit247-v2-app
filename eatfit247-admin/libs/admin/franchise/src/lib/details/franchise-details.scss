@@ -176,3 +176,11 @@
     }
   }
 }
+
+.turnover-slot {
+  margin-top: 16px;
+
+  &:empty {
+    display: none;
+  }
+}

@@ -53,7 +53,7 @@
             </div>
             <div class="detail-item">
               <span class="label">Payment Date:</span>
-              <span class="value">{{ (payment.paymentDate | date:'medium') ?? 'N/A' }}</span>
+              <span class="value">{{ (payment.paymentDate | date:'dd MMM yyyy') ?? 'N/A' }}</span>
             </div>
             <div class="detail-item">
               <span class="label">Payment Status:</span>

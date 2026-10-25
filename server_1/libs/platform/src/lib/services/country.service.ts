@@ -27,6 +27,7 @@ export class CountryService {
           'phoneNumberCode',
           'taxType',
           'defaultTaxPercentage',
+          'currencyCode',
           'active',
           'createdAt',
           'updatedAt',
@@ -51,6 +52,7 @@ export class CountryService {
       phoneNumberCode: item.phoneNumberCode,
       taxType: item.taxType,
       defaultTaxPercentage: item.defaultTaxPercentage ? parseFloat(item.defaultTaxPercentage) : 0,
+      currencyCode: item.currencyCode ?? null,
       active: item.active,
       createdBy: item.createdBy,
       modifiedBy: item.modifiedBy,
@@ -80,6 +82,7 @@ export class CountryService {
       phoneNumberCode: obj.phoneNumberCode || null,
       taxType: (obj.taxType as TaxTypeEnum) || TaxTypeEnum.NONE,
       defaultTaxPercentage: obj.defaultTaxPercentage || 0,
+      currencyCode: obj.currencyCode?.trim().toUpperCase() || null,
       active: obj.active,
       createdBy: adminId,
       modifiedBy: adminId,
@@ -100,6 +103,7 @@ export class CountryService {
       phoneNumberCode: obj.phoneNumberCode || null,
       taxType: (obj.taxType as TaxTypeEnum) || TaxTypeEnum.NONE,
       defaultTaxPercentage: obj.defaultTaxPercentage || 0,
+      currencyCode: obj.currencyCode?.trim().toUpperCase() || null,
       active: obj.active,
       modifiedBy: adminId,
       modifiedIp: cIp,
@@ -123,7 +127,8 @@ export class CountryService {
       nest: true,
     });
     return tempList.map((t) => {
-      return <IDropdownItem>{ id: t.countryId, label: t.country, selected: false };
+      // countryCode lets forms apply country rules (e.g. the Indian 16-character invoice number limit)
+      return <IDropdownItem>{ id: t.countryId, label: t.country, selected: false, metadata: { countryCode: t.countryCode } };
     });
   }
 

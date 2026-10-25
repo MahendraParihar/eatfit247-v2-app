@@ -1,0 +1,77 @@
+<div class="templates-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Email Templates</mat-card-title>
+      <mat-card-subtitle>
+        Switch each template on or off, and whether it sends its email and its WhatsApp message. An inactive template
+        sends nothing. The welcome email ships switched off.
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      @if (loading()) {
+        <shared-ui-loader [diameter]="40"></shared-ui-loader>
+      } @else {
+        <table mat-table [dataSource]="templates()" class="templates-table">
+          <ng-container matColumnDef="template">
+            <th mat-header-cell *matHeaderCellDef>Template</th>
+            <td mat-cell *matCellDef="let t">
+              <div class="template-name">
+                {{ label(t.templateName) }}
+                @if (isAccountTemplate(t.templateName)) {
+                  <mat-icon
+                    class="account-icon"
+                    inline
+                    matTooltip="Account email: switching it off stops it from going out (password resets, new accounts)."
+                  >warning</mat-icon>
+                }
+              </div>
+              <div class="template-code">{{ t.templateName }}</div>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="subject">
+            <th mat-header-cell *matHeaderCellDef>Subject</th>
+            <td mat-cell *matCellDef="let t" class="subject">{{ t.subject }}</td>
+          </ng-container>
+          <ng-container matColumnDef="active">
+            <th mat-header-cell *matHeaderCellDef>Active</th>
+            <td mat-cell *matCellDef="let t">
+              <mat-slide-toggle
+                [checked]="t.active"
+                [disabled]="!canUpdate() || isSaving(t, 'active')"
+                (change)="toggle(t, 'active', $event)"
+                [attr.aria-label]="label(t.templateName) + ' active'"
+              ></mat-slide-toggle>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="sendEmailNotification">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let t">
+              <mat-slide-toggle
+                [checked]="t.sendEmailNotification"
+                [disabled]="!canUpdate() || isSaving(t, 'sendEmailNotification')"
+                (change)="toggle(t, 'sendEmailNotification', $event)"
+                [attr.aria-label]="label(t.templateName) + ' email'"
+              ></mat-slide-toggle>
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="sendWhatsappNotification">
+            <th mat-header-cell *matHeaderCellDef>WhatsApp</th>
+            <td mat-cell *matCellDef="let t">
+              <mat-slide-toggle
+                [checked]="t.sendWhatsappNotification"
+                [disabled]="!canUpdate() || isSaving(t, 'sendWhatsappNotification')"
+                (change)="toggle(t, 'sendWhatsappNotification', $event)"
+                [attr.aria-label]="label(t.templateName) + ' WhatsApp'"
+              ></mat-slide-toggle>
+            </td>
+          </ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns" [class.inactive]="!row.active"></tr>
+        </table>
+        @if (!canUpdate()) {
+          <p class="read-only-note">You can view these switches; changing them needs the Email Templates update permission.</p>
+        }
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

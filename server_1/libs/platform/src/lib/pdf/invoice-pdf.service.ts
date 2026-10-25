@@ -254,56 +254,63 @@ export class InvoicePdfService {
   }
 
   /**
-   * Converts amount to words (Indian numbering system)
-   * Returns format: "Rupees [amount in words] Only"
+   * Amount in words in the invoice currency: "Rupees … and … Paise Only" (Indian numbering) for INR,
+   * "Dirhams … and … Fils Only" for AED, "Dollars … and … Cents Only" for USD, and so on
+   * (international numbering) for other currencies.
    */
   private getAmountInWords(amount: number, currencyCode?: string): string {
+    const [major, minor] = this.getCurrencyName(currencyCode);
+    const indian = (currencyCode || 'INR').toUpperCase() === 'INR';
     if (amount === undefined || amount === null || isNaN(amount)) {
-      return 'Rupees Zero Only';
+      return `${major} Zero Only`;
     }
-
     const absAmount = Math.abs(amount);
-    const rupees = Math.floor(absAmount);
-    const paise = Math.round((absAmount - rupees) * 100);
-
-    const currencyName = this.getCurrencyName(currencyCode);
-    let result = '';
-
-    if (rupees === 0) {
-      result = 'Zero';
-    } else {
-      result = this.numberToWords(rupees);
+    const whole = Math.floor(absAmount);
+    const fraction = Math.round((absAmount - whole) * 100);
+    const words = (n: number): string => (indian ? this.numberToWords(n) : this.numberToWordsInternational(n));
+    let amountInWords = `${major} ${whole === 0 ? 'Zero' : words(whole)}`;
+    if (fraction > 0 && minor) {
+      amountInWords += ` and ${words(fraction)} ${minor}`;
     }
-
-    let amountInWords = `${currencyName} ${result}`;
-
-    if (paise > 0) {
-      const paiseWords = this.numberToWords(paise);
-      amountInWords += ` and ${paiseWords} Paise`;
-    }
-
     return `${amountInWords} Only`;
   }
 
-  /**
-   * Gets currency name from currency code
-   */
-  private getCurrencyName(currencyCode?: string): string {
-    if (!currencyCode || typeof currencyCode !== 'string') {
-      return 'Rupees';
-    }
-
-    const currencyMap: Record<string, string> = {
-      INR: 'Rupees',
-      USD: 'Dollars',
-      EUR: 'Euros',
-      GBP: 'Pounds',
-      AUD: 'Dollars',
-      CAD: 'Dollars',
-      JPY: 'Yen',
+  /** Major and minor unit names of a currency. */
+  private getCurrencyName(currencyCode?: string): [string, string] {
+    const currencyMap: Record<string, [string, string]> = {
+      INR: ['Rupees', 'Paise'],
+      AED: ['Dirhams', 'Fils'],
+      USD: ['Dollars', 'Cents'],
+      EUR: ['Euros', 'Cents'],
+      GBP: ['Pounds', 'Pence'],
+      AUD: ['Dollars', 'Cents'],
+      CAD: ['Dollars', 'Cents'],
+      SGD: ['Dollars', 'Cents'],
+      JPY: ['Yen', ''],
     };
+    const code = typeof currencyCode === 'string' ? currencyCode.toUpperCase() : 'INR';
+    return currencyMap[code] ?? [code, ''];
+  }
 
-    return currencyMap[currencyCode.toUpperCase()] || 'Rupees';
+  /** Number to words with thousand / million / billion grouping. */
+  private numberToWordsInternational(num: number): string {
+    if (num === 0) {
+      return 'Zero';
+    }
+    const scales = ['', 'Thousand', 'Million', 'Billion'];
+    const parts: string[] = [];
+    let remaining = Math.floor(num);
+    let scale = 0;
+    while (remaining > 0 && scale < scales.length) {
+      const chunk = remaining % 1000;
+      if (chunk > 0) {
+        // numberToWords handles 1–999 the same in both systems
+        parts.unshift(`${this.numberToWords(chunk)}${scales[scale] ? ` ${scales[scale]}` : ''}`);
+      }
+      remaining = Math.floor(remaining / 1000);
+      scale += 1;
+    }
+    return parts.join(' ');
   }
 
   /**

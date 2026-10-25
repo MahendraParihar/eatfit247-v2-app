@@ -1,0 +1,16 @@
+@if (tracked.length > 0) {
+  <mat-card class="gst-threshold-alerts">
+    <mat-card-header>
+      <mat-card-title>GST registration threshold</mat-card-title>
+      <mat-card-subtitle>Franchises without a GSTIN; amber from 80%, red from 100%</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      @for (franchise of tracked; track franchise.franchiseId) {
+        <div class="franchise-row">
+          <div class="franchise-name">{{ franchise.companyName }} ({{ franchise.franchiseCode }})</div>
+          <lib-turnover-badge mode="card" [franchise]="franchise"></lib-turnover-badge>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+}

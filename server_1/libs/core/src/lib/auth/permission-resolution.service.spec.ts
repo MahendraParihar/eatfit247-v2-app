@@ -113,6 +113,7 @@ describe('PermissionResolutionService', () => {
       AdminActionEnum.Read,
     ]);
     expect(Object.keys(result.permissions)).toHaveLength(1);
+    expect(result.allFranchises).toBe(false);
   });
 
   it('should merge permissions across multiple roles (union)', async () => {
@@ -297,6 +298,21 @@ describe('PermissionResolutionService', () => {
     }
 
     expect(Object.keys(result.permissions)).toHaveLength(allSubjectCodes.length);
+    expect(result.allFranchises).toBe(true);
+  });
+
+  it('a grant-all role sees every franchise even when mapped to one (configurable tax treatment 3b.1)', async () => {
+    mockAdminRepo.findOne.mockResolvedValue({ adminId: 100, franchiseId: 1 });
+    mockUserRoleRepo.findAll.mockResolvedValue([
+      createRoleAssignment({
+        roleId: 1,
+        adminId: 100,
+        role: { roleId: 1, role: 'Super Admin', roleCode: 'super_admin', grantAllOnNewSubject: true },
+      }),
+    ]);
+    const result = await service.resolveForAdmin(100);
+    expect(result.franchiseIds).toEqual([1]);
+    expect(result.allFranchises).toBe(true);
   });
 
   it('should not include permissions for inactive subjects', async () => {

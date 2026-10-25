@@ -57,6 +57,7 @@ export class AdminUserService {
       roles: cachedPermissions?.roles,
       permissions: cachedPermissions?.permissions,
       subjectMeta: cachedPermissions?.subjectMeta,
+      allFranchises: cachedPermissions?.allFranchises === true,
     };
   }
 

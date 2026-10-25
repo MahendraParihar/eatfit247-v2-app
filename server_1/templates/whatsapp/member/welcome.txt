@@ -1,8 +1,8 @@
 Hello {{memberName}}! 👋
 
-Welcome to *{{franchiseName}}*! Your account has been successfully created.
+Welcome to *{{franchiseName}}*! Your account has been created.
 
-We're excited to begin your health & nutrition journey with you. Log in to your account to explore your personalized dashboard and get started.
+We're excited to begin your health & nutrition journey with you. Your nutritionist will be in touch to set up your first diet plan.
 
 If you need any help, reach us at {{supportEmail}}.
 

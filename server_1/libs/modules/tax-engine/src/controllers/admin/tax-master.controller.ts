@@ -9,30 +9,46 @@ import {
   UpdateActiveDto,
 } from '@server_1/core';
 import { TaxMasterService } from '../../services/tax-master.service';
-import { CreateTaxMasterDto } from '../../dto/tax-master.dto';
+import { TaxEngineService } from '../../services/tax-engine.service';
+import { CreateTaxMasterDto, TaxRulePreviewDto } from '../../dto/tax-master.dto';
 import {
   AdminActionEnum,
   AdminSubjectEnum,
   IAuthUser,
   ITableList,
   ITaxMaster,
+  ITaxRulePreviewResponse,
+  ITaxRuleSaveResult,
 } from '@eatfit247-shared-lib';
 
 @Controller('tax-master')
 @UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class TaxMasterController {
-  constructor(private readonly service: TaxMasterService) {}
+  constructor(
+    private readonly service: TaxMasterService,
+    private readonly taxEngineService: TaxEngineService,
+  ) {}
 
   @Get('list')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.TaxMaster)
-  async list(@Query() req: BasicSearchDto): Promise<ITableList<ITaxMaster>> {
-    return await this.service.findAll(req);
+  async list(@Query() req: BasicSearchDto, @CurrentUser() currentUser: IAuthUser): Promise<ITableList<ITaxMaster>> {
+    return await this.service.findAll(req, currentUser);
   }
 
   @Get('manage/:id')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.TaxMaster)
-  async getById(@Param('id') id: number): Promise<ITaxMaster> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number, @CurrentUser() currentUser: IAuthUser): Promise<ITaxMaster> {
+    return await this.service.fetchById(id, currentUser);
+  }
+
+  /**
+   * Which rule would price a sale (decision 7): winner, runners-up, warnings and, given an amount, the computed
+   * tax. Saves nothing; franchise-scoped.
+   */
+  @Post('preview')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.TaxMaster)
+  async preview(@Body() body: TaxRulePreviewDto, @CurrentUser() currentUser: IAuthUser): Promise<ITaxRulePreviewResponse> {
+    return await this.taxEngineService.preview(body, currentUser);
   }
 
   @Post('manage')
@@ -41,8 +57,8 @@ export class TaxMasterController {
     @Body() body: CreateTaxMasterDto,
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
-  ): Promise<void> {
-    await this.service.create(body, requestedIp, currentUser.adminId);
+  ): Promise<ITaxRuleSaveResult> {
+    return await this.service.create(body, requestedIp, currentUser);
   }
 
   @Put('manage/:id')
@@ -52,8 +68,8 @@ export class TaxMasterController {
     @Body() body: CreateTaxMasterDto,
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
-  ): Promise<void> {
-    await this.service.update(id, body, requestedIp, currentUser.adminId);
+  ): Promise<ITaxRuleSaveResult> {
+    return await this.service.update(id, body, requestedIp, currentUser);
   }
 
   @Patch('update-status/:id')
@@ -64,7 +80,7 @@ export class TaxMasterController {
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);
+    await this.service.changeStatus(id, body.active, requestedIp, currentUser);
   }
 }
 
