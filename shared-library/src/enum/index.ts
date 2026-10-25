@@ -28,3 +28,4 @@ export * from "./google-review.enum";
 
 export * from "./payment-gateway-event.enum";
 export * from "./turnover-alert-level.enum";
+export * from "./tax-rule.enum";

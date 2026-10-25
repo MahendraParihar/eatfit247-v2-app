@@ -31,6 +31,8 @@ export interface IBaseFranchise {
   invoiceNumberFormat?: string | null;
   /** GST registration threshold (INR) for the turnover warning; applies while there is no GSTIN */
   registrationThresholdAmount?: number | null;
+  /** Working (functional) currency, ISO 4217 (configurable tax treatment, decision 17) */
+  currencyCode?: string | null;
   startDate: Date;
   endDate?: Date;
   isPrimary: boolean;

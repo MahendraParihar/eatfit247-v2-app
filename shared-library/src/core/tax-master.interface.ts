@@ -1,6 +1,8 @@
 import { IAdminInfo } from '../base.interface';
+import { ITaxRuleConditions, ITaxRuleTreatment } from './tax/tax-rule.interface';
 
-export interface ITaxMaster extends IAdminInfo {
+/** A Tax Master rule. Conditions and treatment (migration 146) are optional until the admin form sends them (group 13). */
+export interface ITaxMaster extends IAdminInfo, Partial<ITaxRuleConditions>, Partial<ITaxRuleTreatment> {
   id: number;
   franchiseId: number;
   referenceId: number;
@@ -105,6 +107,8 @@ export interface ICreditNote extends IInvoiceFx {
   taxPercentage: number | null;
   /** Issued more than 14 days after the event (UAE deadline) */
   lateIssue: boolean;
+  /** The registration the credit note is issued under (decision 12) */
+  taxRegistrationId?: number | null;
 }
 
 export interface ICreateCreditNote {

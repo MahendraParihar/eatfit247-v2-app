@@ -1,4 +1,5 @@
-import {InvoiceSeriesEnum, PaymentRouteEnum, PaymentSourceEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {CustomerTypeEnum, ExportDocumentTypeEnum, InvoiceSeriesEnum, PaymentRouteEnum, PaymentSourceEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {ITaxEvidence} from "../tax/tax-rule.interface";
 import {IAdminInfo, IDropdownItem} from "../../base.interface";
 import {IAddress} from "../location.interface";
 import {IShipment} from "../shipment.interface";
@@ -66,6 +67,10 @@ export interface IMemberProductOrderItem {
   placeOfSupplyStateCode?: string | null;
   /** HSN / SAC of the rule that priced this line, stored at decision time */
   hsnSacCode?: string | null;
+  /** The Tax Master rule that priced the line (decision 13) */
+  taxMasterId?: number | null;
+  /** The registration that charged the tax; null = unregistered */
+  taxRegistrationId?: number | null;
 }
 
 export interface IBasicMemberProduct extends IInvoiceFx {
@@ -101,6 +106,21 @@ export interface IBasicMemberProduct extends IInvoiceFx {
   paymentLink?: string;
   paymentRoute?: PaymentRouteEnum | null;
   remittanceReference?: string | null;
+  /** The registration that charged the tax; null = unregistered (or priced before 4.14) */
+  taxRegistrationId?: number | null;
+  /** Zero-rating evidence and any finance decision (decision 9) */
+  taxEvidence?: ITaxEvidence | null;
+  /** B2B when a valid customer GSTIN / TRN was given (decision 10) */
+  customerType?: CustomerTypeEnum | null;
+  /** Country of the customer's GSTIN / TRN */
+  customerRegistrationCountry?: string | null;
+  /** Country of the account the client paid from (VAT evidence) */
+  payerAccountCountry?: string | null;
+  /** Goods-export record of an export-mode order (decision 11) */
+  exportDocumentType?: ExportDocumentTypeEnum | null;
+  exportDocumentNumber?: string | null;
+  exportDocumentDate?: string | null;
+  exportPortCode?: string | null;
 }
 
 export interface IManageMemberProduct {

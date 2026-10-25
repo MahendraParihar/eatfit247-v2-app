@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS public.mst_franchise_tax_registrations
 );
 
 COMMENT ON TABLE public.mst_franchise_tax_registrations IS 'Tax registrations per franchise × country × tax system (spec 2026-10-25-configurable-tax-treatment, decision 8). No active row = unregistered';
-COMMENT ON COLUMN public.mst_franchise_tax_registrations.state_code IS 'GST: the State of the registration (GSTIN digits 1-2)';
+COMMENT ON COLUMN public.mst_franchise_tax_registrations.state_code IS 'GST: the State of the registration (GSTIN digits 1-2) in the mst_states.code form (7, not 07)';
 COMMENT ON COLUMN public.mst_franchise_tax_registrations.iec_number IS 'Importer-Exporter Code (Foreign Trade Policy), needed for goods exports';
 COMMENT ON COLUMN public.mst_franchise_tax_registrations.currency_code IS 'Currency the registration invoices and files in (ISO 4217)';
 COMMENT ON COLUMN public.mst_franchise_tax_registrations.invoice_prefix IS 'Registration abroad: its own invoice prefix (CHECK and uniqueness added by migration 150)';
@@ -250,7 +250,7 @@ $$;
 INSERT INTO public.mst_franchise_tax_registrations (franchise_id, country_code, tax_system, registration_number, state_code,
                                                     currency_code, effective_from, active,
                                                     created_by, modified_by, created_ip, modified_ip)
-SELECT v.franchise_id, 'IN', 'GST'::public.tax_type, v.gstin, left(v.gstin, 2),
+SELECT v.franchise_id, 'IN', 'GST'::public.tax_type, v.gstin, ltrim(left(v.gstin, 2), '0'),
        coalesce(v.address_currency, 'INR'), v.start_date, v.active,
        1, 1, ':0', ':0'
 FROM tmp146_franchise v

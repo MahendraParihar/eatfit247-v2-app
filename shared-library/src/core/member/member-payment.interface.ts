@@ -1,5 +1,6 @@
 import {IAddress, IMemberAddress} from "../location.interface";
-import {InvoiceSeriesEnum, PaymentRouteEnum, PaymentSourceEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {CustomerTypeEnum, InvoiceSeriesEnum, PaymentRouteEnum, PaymentSourceEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum} from "../../enum";
+import {ITaxEvidence} from "../tax/tax-rule.interface";
 import {IAdminInfo, IDropdownItem} from "../../base.interface";
 import {IInvoiceFx} from "../tax-master.interface";
 
@@ -61,6 +62,18 @@ export interface IBasicMemberPayment extends IInvoiceFx {
   placeOfSupplyStateCode?: string | null;
   /** HSN / SAC of the rule that priced this line, stored at decision time */
   hsnSacCode?: string | null;
+  /** The Tax Master rule that priced the sale (configurable tax treatment, decision 13) */
+  taxMasterId?: number | null;
+  /** The registration that charged the tax; null = unregistered (or priced before 4.14) */
+  taxRegistrationId?: number | null;
+  /** Zero-rating evidence and any finance decision (decision 9) */
+  taxEvidence?: ITaxEvidence | null;
+  /** B2B when a valid customer GSTIN / TRN was given (decision 10) */
+  customerType?: CustomerTypeEnum | null;
+  /** Country of the customer's GSTIN / TRN */
+  customerRegistrationCountry?: string | null;
+  /** Country of the account the client paid from (VAT evidence) */
+  payerAccountCountry?: string | null;
 }
 
 export interface IMemberPayment extends IBasicMemberPayment, IAdminInfo {

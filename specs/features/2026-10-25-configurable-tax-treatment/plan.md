@@ -147,11 +147,11 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
 
 ## Group 2: Shared library
 
-- [ ] 2.1 Enums: treatment, customer scope, State relation, registration / customer-type / electronic / money conditions, applies-to, evidence status, evidence decision, export document type.
-- [ ] 2.2 Interfaces: rules, registrations (with currency), `ITaxEvidence` / `IEvidenceDecision`, preview, save warnings, `IInvoiceRegistration`, email-template switch; franchise `currencyCode`; D13 fields on payment, order and credit note.
-- [ ] 2.3 `TaxRuleMatchUtil`: match (billing for services, delivery for goods, GSTIN State for India B2B services), D4 precedence, duplicate detection.
-- [ ] 2.4 `TaxRegistrationNumberUtil` (GSTIN mod-36 check digit and State; TRN 15 digits) and a dial-code → ISO helper.
-- [ ] 2.5 Specs in `server_1/libs/platform`.
+- [x] 2.1 Enums: treatment, customer scope, State relation, registration / customer-type / electronic / money conditions, applies-to, evidence status, evidence decision, export document type.
+- [x] 2.2 Interfaces: rules, registrations (with currency), `ITaxEvidence` / `IEvidenceDecision`, preview, save warnings, `IInvoiceRegistration`, email-template switch; franchise `currencyCode`; D13 fields on payment, order and credit note.
+- [x] 2.3 `TaxRuleMatchUtil`: match (billing for services, delivery for goods, GSTIN State for India B2B services), D4 precedence, duplicate detection.
+- [x] 2.4 `TaxRegistrationNumberUtil` (GSTIN mod-36 check digit and State; TRN 15 digits) and a dial-code → ISO helper.
+- [x] 2.5 Specs in `server_1/libs/platform`.
 - **Gate:**
   - specs for every seeded rule
   - the row 4 case (REFUSE beats the product rate row)
@@ -160,6 +160,46 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
   - `fallback_only` never matched
   - GSTIN / TRN samples incl. `456789`; dial codes `+971` / `971` / `India` / `+1`
   - `npm run build`; server and admin compile; baseline green
+
+> **As built (group 2, 2026-10-25):**
+> - **Enums** (`shared-library/src/enum/tax-rule.enum.ts`): treatment, customer scope, State relation, registration / customer-type / electronic / money conditions, `MoneyOriginEnum` (the sale's fact), applies-to, evidence status, evidence indicator result, evidence decision, export document type. Values = the 146 column values.
+> - **Interfaces** (`src/core/tax/tax-rule.interface.ts`):
+>   - rule conditions and treatment, `ITaxRuleMatchable`, facts, place of supply, resolution, save warning
+>   - preview request / response, registrations (with currency), `IInvoiceRegistration`, `ITaxEvidence` / `IEvidenceDecision`
+>   - `ITaxMaster` takes the conditions and treatment as optional fields until the admin form sends them (group 13)
+>   - D13 fields on payments, order headers (plus the export documents), order items and credit notes; `taxMasterId`, `taxRegistrationId` and `taxEvidence` on `ICalculateTaxResponse`; `currencyCode` on the franchise
+>   - `IEmailTemplateSwitch` / `IUpdateEmailTemplateSwitch`
+> - **`TaxRuleMatchUtil`:** `placeOfSupply`, `moneyOrigin`, `matches`, `rank` / `compare` (D4), `resolve` (winner, runners-up, `ambiguous` on a full tie), `key` / `duplicates` (the `ux_mst_tax_master_rule` key), `shadowingWarnings`.
+> - **`TaxRegistrationNumberUtil`** (GSTIN pattern, State set 01–38 / 97 / 99, GSTN mod-36 check character; TRN 15 digits; per-country check; labels) and **`DialCodeUtil`**.
+> - **Specs** in `server_1/libs/platform/src/lib/utils/`. A first mutation check (applies-to moved to dimension 1) failed 4 tests.
+> - **Builds:** admin dev and website SSR build against the new contract.
+> - **Review:** a subagent found 3 confirmed issues (the specs didn't pin the D4 order; an unknown country counted as foreign; the GSTIN State `07` vs the master's `7`) and 5 plausible ones. Fixed as group 2b.
+
+
+## Group 2b: Review fixes for the shared-library matcher (subagent review, 2026-10-25)
+
+- [x] 2b.1 **The specs pin the whole D4 order** (finding 1: moving the date, or "applies to", earlier still passed every test). One case per adjacent pair of dimensions, where the loser is set on every later dimension and has the later date, plus "an ALL rule with a B2B / electronic / money condition beats a SPECIFIC rule".
+- [x] 2b.2 **No place-of-supply country, no rule** (finding 2: an empty billing country counted as foreign and matched the export rule). This fails closed, like "an unknown State counts as another State".
+- [x] 2b.3 **One GST State code form: the State master's, unpadded** (`7` for Delhi, as in `mst_states.code` and the stored place of supply) (finding 3). The GSTIN digits `07` become `7` in `checkGstin` and `placeOfSupply`. Migration 146 stores the registration State the same way, which changes nothing locally (EFMUM is 27).
+- [x] 2b.4 **The GSTIN State applies only to a billing address in India** (finding 4). A legacy GSTIN on a foreign billing address no longer turns an export into a domestic sale.
+- [x] 2b.5 The supply date is read as its day (finding 5).
+- [x] 2b.6 **An unknown payment route is no money fact** (finding 6), so a money-conditioned rule can't match it; before, it counted as foreign money and leaned towards export.
+- [x] 2b.7 **Dial codes with subscriber digits are read by longest prefix** (finding 7): `+9715` → AE, `+917` → IN, `+617` → AU. A city name stays NOT_AVAILABLE.
+- [x] 2b.8 The spec's seeded ids match the local DB, plus a case where two rules differing only in their specific country are not duplicates.
+- **Gate:** group 2's gate again, plus a mutation check: moving the date, and then "applies to", to dimension 1 must each fail the specs.
+
+> **As built (group 2b, 2026-10-25):**
+> - **State codes:** `gstStateCode()` gives the master's form, used by `checkGstin` and `placeOfSupply`. 146 stores `ltrim(left(gstin, 2), '0')` (clone: a Delhi GSTIN → `7`; `eatfit` unchanged, EFMUM is 27).
+> - **Fail-closed facts:**
+>   - `matches` returns false without a place-of-supply country
+>   - the supply date is read as its day
+>   - `moneyOrigin` accepts only `PaymentRouteEnum` values
+>   - the GSTIN State applies only to an Indian billing address
+> - **`DialCodeUtil`:** exact code first, then the longest code of up to 4 digits the number starts with.
+> - **Specs:** fixture ids follow the DB (7 REFUSE, 8 MEMUM export, 9 fallback, 10 zero-rated services, 11 goods); the D4 order is pinned pair by pair (dimensions 1–7, each against all later dimensions plus a later date). Platform specs 88 (was 68).
+> - **Mutation check:** date first → 9 failures; applies-to first → 11 failures.
+> - **Group 1's live checks re-run on the new contract:** 12 `calculate-tax` cases identical, A3 identical.
+
 
 ## Group 3: RBAC (migration 147)
 

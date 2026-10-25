@@ -1,4 +1,5 @@
 import { PaymentRouteEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum } from '../enum';
+import { ITaxEvidence } from './tax/tax-rule.interface';
 
 export interface ICalculateTaxRequest {
   orderAmount: number;
@@ -38,6 +39,12 @@ export interface ICalculateTaxResponse {
   placeOfSupplyStateCode?: string | null;
   /** HSN / SAC of the rule that priced this line */
   hsnSacCode?: string | null;
+  /** The Tax Master rule that priced it (configurable tax treatment, decision 13) */
+  taxMasterId?: number | null;
+  /** The registration that charged the tax; null = unregistered */
+  taxRegistrationId?: number | null;
+  /** Zero-rating evidence when the rule requires it (decision 9) */
+  taxEvidence?: ITaxEvidence | null;
 }
 
 export interface ICalculatePlanTaxRequest {
