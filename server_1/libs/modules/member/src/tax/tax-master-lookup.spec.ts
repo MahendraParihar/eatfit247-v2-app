@@ -1,4 +1,4 @@
-import { SERVICE_DEFAULT_REFERENCE, TaxMasterService } from '@server_1/modules/tax-engine';
+import { LEGACY_RULE_SHAPE, SERVICE_DEFAULT_REFERENCE, TaxMasterService } from '@server_1/modules/tax-engine';
 import { TransactionType } from '@eatfit247-shared-lib';
 
 /** Spec 2026-10-10-tax-mapping-matrix decision 9: plan-specific SERVICE rules fall back to reference 1; PRODUCT never does. */
@@ -32,6 +32,17 @@ describe('TaxMasterService.getApplicableTaxRule reference fallback', () => {
     delete rows['SERVICE/1'];
     expect(await lookup(1, TransactionType.SERVICE)).toBeNull();
     expect(findOne).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads only today\'s rule shape, never the seeded treatment rules (plan 1.7, until the resolver in group 6)', async () => {
+    await lookup(42, TransactionType.SERVICE);
+    expect(findOne.mock.calls[0][0].where).toMatchObject({
+      ...LEGACY_RULE_SHAPE,
+      customerScope: 'SAME_COUNTRY',
+      treatment: 'CHARGE',
+      fallbackOnly: false,
+      active: true,
+    });
   });
 
   it('never falls back for PRODUCT (a product id is not a plan)', async () => {

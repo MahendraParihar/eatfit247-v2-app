@@ -51,20 +51,21 @@ A later group never starts on a red gate. If a gate can't pass as specified, rep
 
 ## Group 1: Database (migration 146)
 
-- [ ] 1.0 Local DB only, through the franchise form: clear the copied GSTIN on HCUAE and MEMUM; enter a test TRN on HCUAE. Baseline stays green.
-- [ ] 1.1 `mst_franchise_tax_registrations` (D8): franchise, country `varchar(3)`, tax system, number, State, IEC, `currency_code`, effective dates, active, prefix, format, FY start, audit columns; partial unique index on (country, tax system, upper(number)) WHERE active.
-- [ ] 1.2 `mst_franchises.currency_code` (D17), backfilled from the address country's `mst_countries.currency_code`.
-- [ ] 1.3 Registrations backfill from `txn_addresses` (`table_id = 4`):
+- [x] 1.0 Local DB only, through the franchise form: clear the copied GSTIN on HCUAE and MEMUM; enter a test TRN on HCUAE. Baseline stays green.
+- [x] 1.1 `mst_franchise_tax_registrations` (D8): franchise, country `varchar(3)`, tax system, number, State, IEC, `currency_code`, effective dates, active, prefix, format, FY start, audit columns; partial unique index on (country, tax system, upper(number)) WHERE active.
+- [x] 1.2 `mst_franchises.currency_code` (D17), backfilled from the address country's `mst_countries.currency_code`.
+- [x] 1.3 Registrations backfill from `txn_addresses` (`table_id = 4`):
   - GST only in IN; VAT in the address country
   - currency from the country
   - a GSTIN on a non-Indian franchise → NOTICE, skipped
   - **abort** on a GSTIN shared by two Indian franchises
   - re-run is a no-op
-- [ ] 1.4 `mst_tax_master`:
+- [x] 1.4 `mst_tax_master`:
   - add `customer_scope`, **`place_of_supply_country_code`**, `state_relation`, `registration_condition`, `customer_type_condition`, `electronic_condition`, `money_condition`, `applies_to`, `treatment`, `refusal_message`, `invoice_note`, `requires_evidence`, `fallback_tax_master_id` and `fallback_only`, with check constraints
-  - `DROP CONSTRAINT uq_tax_master`; a unique index (COALESCE) over the D4 dimensions + `effective_from` WHERE `fallback_only = false`
+  - `DROP CONSTRAINT uq_tax_master`; a unique index (COALESCE) over the D4 dimensions + `effective_from` WHERE `fallback_only = false` **and `active`** (D4 refuses two *active* equal rules; a deactivated rule must not block its re-entry). The key also holds franchise, supplier country and transaction type, and the reference only when `applies_to = SPECIFIC`
   - existing reference-1 service rows → ALL; product rows → SPECIFIC; all → SAME_COUNTRY / CHARGE
-- [ ] 1.5 Seeds (D5), `WHERE NOT EXISTS`, with legal references:
+  - *(replan 2026-10-25)* column defaults are the legacy shape (SAME_COUNTRY, every condition ANY, `applies_to` SPECIFIC, CHARGE, not fallback-only), so a row saved by today's Tax Master form keeps today's meaning until group 5 replaces the save; a new ALL rule stores `reference_id = 0` (ignored), while the legacy reference-1 service rows keep 1 for today's lookup
+- [x] 1.5 Seeds (D5), `WHERE NOT EXISTS`, with legal references:
   - **EFMUM services, any foreign:**
     - money FOREIGN → `EXPORT_LUT_OR_TAX`
     - money DOMESTIC → `CHARGE`
@@ -74,13 +75,75 @@ A later group never starts on a red gate. If a gate can't pass as specified, rep
   - **HCUAE:**
     - any foreign services → `ZERO_RATED_EXPORT` (Art 31 note, `requires_evidence`), with the `fallback_only` rule "any foreign services → `CHARGE` 5% STANDARD"
     - any foreign goods → `ZERO_RATED_EXPORT` (Art 30 note)
-- [ ] 1.6 Sale columns (D13):
+  - *(replan 2026-10-25)* **rates come from today's rule.** Each seed copies the tax system, rate, inclusive flag, HSN/SAC and `effective_from` of the franchise's current same-country rule (EFMUM's and HCUAE's reference-1 service row; MEMUM's active row per product), because today's export and IGST branches price at that rule's rate. So MEMUM's export rule is seeded **per active product** (SPECIFIC), not as ALL; when the owner changes a product's rate, its export rule needs the same edit (the group 5 preview shows both). Fixed values: the HCUAE export rules are VAT 0% ZERO_RATED and the fallback VAT 5% STANDARD; the MEMUM refusal is NONE 0% with today's s.24(i) message. No source rule → that seed is skipped with a NOTICE
+- [x] 1.6 Sale columns (D13):
   - `tax_master_id` on payments and order items
   - `tax_registration_id` on payments, `txn_member_products`, order items and `txn_credit_notes`
   - the evidence jsonb on payments and order headers
   - `customer_type`, `customer_registration_country` and `payer_account_country`
   - export-document columns on `txn_member_products`
-- **Gate:** A1, A2 (clone), A3, A30 (data); apply to `eatfit`; a live admin payment is priced as before; baseline green.
+- [x] 1.7 *(replan 2026-10-25)* **Keep today's engine on today's rows** until group 6. The seeds share franchise, reference, transaction type and supplier country with the existing rows, with an equal or newer `effective_from`, so today's newest-first lookup (`tax-master.service.ts` `findRule`) could pick them: MEMUM's per-product export rule has the same product reference and `effective_from` as its 12% rate row, a tie the lookup breaks arbitrarily (the ALL seeds store reference 0, which today's lookup never asks for, but a later ALL rule with reference 1 would be next). Code: `MstTaxMaster` gains the 1.4 columns (its index block follows 1.4); `findRule` matches only legacy-shaped rows (SAME_COUNTRY, every condition ANY, CHARGE, not fallback-only); the lookup spec asserts that filter. Group 6 replaces `findRule` with the resolver. Deploy order: 146 before this code.
+- **Gate:** A1, A2 (clone), A3, A30 (data); apply to `eatfit`; a live admin payment is priced as before (calculate-tax for EFMUM domestic / foreign INR / foreign USD, HCUAE UAE and US clients, identical before and after 146 + 1.7); baseline green.
+
+> **As built (group 1, 2026-10-25):**
+> - **1.0** was done through `PUT franchise/manage/:id` (the franchise form's endpoint) as the QA super admin, sending every field back unchanged: HCUAE's GSTIN cleared and TRN `100123456700003` set; MEMUM's GSTIN cleared. Diffed against a pre-1.0 clone: only `gst_number`, `vat_number` and the audit columns changed, and the addresses are untouched.
+> - **146** (`db_changes/146_configurable_tax_treatment.sql`), shaped like 144/145:
+>   - The aborts run first, in a DO block, before any DDL (the whole file is one transaction).
+>   - `mst_franchise_tax_registrations` has PK `tax_registration_id`.
+>   - Rule columns are `varchar` + named CHECKs (house style, as `tax_category`). The enums arrive in group 2.
+>   - The rule columns and the reference-1 → ALL mapping run only once (guarded by the `treatment` column).
+>   - `ux_mst_tax_master_rule` replaces `uq_tax_master`.
+>   - The sale columns use `tax_evidence` (jsonb); the export documents are `export_document_type` / `_number` / `_date` and `export_port_code`.
+> - **1.7:** `LEGACY_RULE_SHAPE` in `tax-master.service.ts`; the model gains the 14 columns, and its `uq_tax_master` index block is removed. The tie it prevents was confirmed on `eatfit`: MEMUM product 1 has `GST_12` and `EXPORT_GOODS`, both from 2015-12-31.
+> - **Review:** a subagent ran 146 on its own clones and found 6 confirmed and 5 plausible issues. They are fixed as group 1b, with every gate below re-run after the fixes.
+
+
+## Group 1b: Review fixes for migration 146 (subagent review, 2026-10-25)
+
+The group 1 review ran migration 146 on disposable clones and found these. Each is fixed in `146_configurable_tax_treatment.sql` or the 1.7 code, then group 1's gate is re-run.
+
+- [x] 1b.1 **Every source version is seeded**, not only the newest (finding 1: a future-dated rate row became the only export rule, so earlier supply dates had none). One seed per active legacy rule version, with its `effective_from` **and `effective_to`**; the NOT EXISTS key includes `effective_from`.
+- [x] 1b.2 **Plan-specific service rows get their twins** (finding 2: a plan's own rate and inclusive flag priced its foreign sales today). Each seed copies the source's `applies_to` and reference (0 for ALL).
+- [x] 1b.3 **Seeds follow today's generic branches, not franchise codes**:
+  - export / IGST twins for every Indian GST service rule
+  - zero-rated export twins for every VAT service rule; the evidence policy and the 5% fallback only for UAE suppliers (Art 31, Art 3)
+  - an export twin for every Indian GST product rule
+  - the s.24(i) rule for every Indian franchise selling goods, as `REFUSE`, or as `CHARGE` NONE 0% when `ALLOW_UNREGISTERED_INTERSTATE_GOODS` is `true` (today's CA override, retired by group 7)
+  - the goods-export rule for every VAT franchise
+- [x] 1b.4 **Friendly aborts before any change** (findings 3 and 4):
+  - two active legacy rules that collide on the new key (the old key allowed them when only `tax_code` differed) are listed
+  - an active Indian franchise whose GSTIN, stripped of spaces and punctuation, is not the 15-character shape: today it charges GST, so dropping it would make it unregistered
+  - the GSTIN is stored in that normalised form
+  - an inactive franchise never blocks: its registration is back-filled inactive, and a malformed GSTIN is skipped with a NOTICE
+  - duplicate VAT numbers are checked per address country among active franchises
+- [x] 1b.5 **NOTICEs** (finding 5):
+  - an active franchise left without foreign rules for a business type it runs
+  - a VAT source rule that is inclusive at more than 0% (its exports back out at 0% under D6, not at the domestic rate as today)
+- [x] 1b.6 **Today's Tax Master form keeps today's meaning** (finding 6): `create` / `update` store `applies_to = ALL` for a SERVICE rule with reference 1, else SPECIFIC. Spec case in `tax-master.service.spec.ts`.
+- [x] 1b.7 **Export treatments need a foreign scope** (`ANY_FOREIGN` or `SPECIFIC_COUNTRY`): with scope ANY, an export rule could match a domestic sale. The CHECK is dropped and re-created, so a database that ran the first 146 converges. D7 is amended to match.
+- Not fixed here: editing a seeded row through today's form can hit a CHECK and return 500 instead of 400. Group 5 replaces the save with validation.
+- **Gate:** group 1's gate again, on fresh clones from the post-1.0 dump plus `eatfit` (re-running the fixed 146 must converge to the fresh-clone result), and a clone case per finding (future-dated row, plan-specific row, legacy duplicate, punctuated GSTIN, config true).
+
+> **As built (group 1b, 2026-10-25):**
+> - **146 now works from the generic sources:**
+>   - Temp view `tmp146_franchise` holds the latest address country / currency and the normalised numbers.
+>   - Temp view `tmp146_source` holds the active rule versions of today's shape.
+>   - `pg_temp.rule_exists` suppresses a seed (conditions + `effective_from`, active or not).
+> - **Seeds:**
+>   - The UAE seeds keep "UAE VAT …" names; other VAT countries get a generic name and a "record the legal basis" note.
+>   - The s.24(i) seed reads `ALLOW_UNREGISTERED_INTERSTATE_GOODS`.
+>   - The goods-export rule of a VAT franchise starts at its earliest VAT rule.
+> - **Code:** `legacyAppliesTo()` is used by `create` / `update`. `chk_mst_tax_master_export_scope` is dropped and re-created on every run.
+> - **Clone cases, one per finding, all as specified:**
+>   - legacy duplicate → abort "rules 1 (GST_18), 5 (GST_18_DUP) …"
+>   - `BADGSTIN` on active MEMUM → abort; on inactive MEMUM → NOTICE, skipped
+>   - `27-CSEPS 5397E1Z8` → registration `27CSEPS5397E1Z8`
+>   - a future `GST_40` from 2027-04-01 → twins for both versions (18% from 2015, 40% from 2027)
+>   - plan 7 at 5% inclusive → SPECIFIC twins at 5% inclusive
+>   - CA override true → `NONE_S24_OVERRIDE` CHARGE
+>   - the gap NOTICE (EFMUM given `product`) and the inclusive-VAT NOTICE both fire
+> - **`eatfit`** had the first draft of 146. Re-running the fixed file there converged: its rules equal a fresh clone's (ignoring ids, timestamps and fallback ids, with fallback links compared by `tax_code`), and its registrations and constraints match.
+
 
 ## Group 2: Shared library
 

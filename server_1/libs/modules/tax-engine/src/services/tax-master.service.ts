@@ -10,6 +10,27 @@ import { CreateTaxMasterDto } from '../dto/tax-master.dto';
 /** `reference_id` of a franchise's default SERVICE rule (every plan without its own rule; a plan with id 1 shares it) */
 export const SERVICE_DEFAULT_REFERENCE = 1;
 
+/**
+ * Today's rule shape: the franchise's own-country rate row. Migration 146 seeds treatment rules (exports, refusals,
+ * fallbacks) next to these rows with the same franchise, reference and supplier country, so the lookup below reads
+ * only this shape until the rule resolver replaces it (spec 2026-10-25-configurable-tax-treatment, plan 1.7 / 6.1).
+ */
+export const LEGACY_RULE_SHAPE = {
+  customerScope: 'SAME_COUNTRY',
+  stateRelation: 'ANY',
+  registrationCondition: 'ANY',
+  customerTypeCondition: 'ANY',
+  electronicCondition: 'ANY',
+  moneyCondition: 'ANY',
+  treatment: 'CHARGE',
+  fallbackOnly: false,
+} as const;
+
+/** What today's form means by a reference: reference 1 on a SERVICE rule is the franchise default (all plans). */
+export function legacyAppliesTo(transactionType: TransactionType, referenceId: number): 'ALL' | 'SPECIFIC' {
+  return transactionType === TransactionType.SERVICE && Number(referenceId) === SERVICE_DEFAULT_REFERENCE ? 'ALL' : 'SPECIFIC';
+}
+
 @Injectable()
 export class TaxMasterService {
   constructor(
@@ -37,6 +58,7 @@ export class TaxMasterService {
         referenceId,
         transactionType: input.transactionType,
         countryCode: input.countryCode,
+        ...LEGACY_RULE_SHAPE,
         active: true,
         effectiveFrom: { [Op.lte]: input.onDate },
         [Op.or]: [{ effectiveTo: null }, { effectiveTo: { [Op.gte]: input.onDate } }],
@@ -160,6 +182,7 @@ export class TaxMasterService {
     const createObj = {
       franchiseId: franchiseId,
       referenceId: referenceId,
+      appliesTo: legacyAppliesTo(obj.transactionType, referenceId),
       countryCode: obj.countryCode,
       transactionType: obj.transactionType,
       taxSystem: obj.taxSystem,
@@ -203,6 +226,7 @@ export class TaxMasterService {
     if (obj.referenceId !== undefined) updateObj.referenceId = obj.referenceId;
     updateObj.countryCode = obj.countryCode;
     updateObj.transactionType = obj.transactionType;
+    updateObj.appliesTo = legacyAppliesTo(obj.transactionType ?? find.transactionType, obj.referenceId ?? find.referenceId);
     updateObj.taxSystem = obj.taxSystem;
     updateObj.taxCode = obj.taxCode;
     updateObj.taxName = obj.taxName;

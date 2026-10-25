@@ -33,6 +33,15 @@ describe('TaxMasterService rule consistency', () => {
     );
   });
 
+  it('configurable tax plan 1b.6: today\'s form stores reference 1 on a SERVICE rule as ALL, anything else as SPECIFIC', async () => {
+    await service.create(rule({}), '127.0.0.1', 1);
+    expect(create).toHaveBeenLastCalledWith(expect.objectContaining({ referenceId: 1, appliesTo: 'ALL' }));
+    await service.create(rule({ referenceId: 263 }), '127.0.0.1', 1);
+    expect(create).toHaveBeenLastCalledWith(expect.objectContaining({ referenceId: 263, appliesTo: 'SPECIFIC' }));
+    await service.create(rule({ transactionType: TransactionType.PRODUCT, taxSystem: TaxTypeEnum.NONE, taxCategory: TaxCategoryEnum.STANDARD }), '127.0.0.1', 1);
+    expect(create).toHaveBeenLastCalledWith(expect.objectContaining({ referenceId: 1, appliesTo: 'SPECIFIC' }));
+  });
+
   it('accepts a 0% zero-rated VAT rule for a franchise with a TRN', async () => {
     await service.create(rule({}), '127.0.0.1', 1);
     expect(create).toHaveBeenCalledWith(expect.objectContaining({ taxCategory: TaxCategoryEnum.ZERO_RATED }));
