@@ -192,6 +192,11 @@ export class TaxRuleMatchUtil {
     };
   }
 
+  /** The winning rule, or null. */
+  static winner<T extends ITaxRuleMatchable>(rules: T[], facts: ITaxRuleFacts): T | null {
+    return TaxRuleMatchUtil.resolve(rules, facts).winner;
+  }
+
   /**
    * The key two active rules may not share (D4; the `ux_mst_tax_master_rule` index): franchise, supplier
    * country, type, the conditions, the plan / product of a SPECIFIC rule, and effective_from.

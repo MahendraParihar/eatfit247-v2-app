@@ -124,6 +124,12 @@ export interface ITaxRuleSaveWarning {
   message: string;
 }
 
+/** `POST / PUT tax-master/manage`: the saved rule and the warnings it was saved with (their legal basis is on the rule). */
+export interface ITaxRuleSaveResult {
+  id: number;
+  warnings: ITaxRuleSaveWarning[];
+}
+
 /** A Tax Master row with conditions and treatment. */
 export interface ITaxRule extends ITaxRuleMatchable, ITaxRuleTreatment {
   id: number;

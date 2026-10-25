@@ -354,10 +354,58 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
 
 ## Group 5: Backend: rule resolver, guardrails, preview (tax)
 
-- [ ] 5.1 `TaxMasterService.resolve(facts)` with `TaxRuleMatchUtil`; no match → today's 400.
-- [ ] 5.2 Save-time validation: every D7 block and warning; warnings require `legal_basis`.
-- [ ] 5.3 `POST tax-master/preview` (`TaxMaster` Read, scoped): the winning rule, the runners-up and any shadowing warning. The computed tax is added in group 6.
+- [x] 5.1 `TaxMasterService.resolve(facts)` with `TaxRuleMatchUtil`; no match → today's 400.
+- [x] 5.2 Save-time validation: every D7 block and warning; warnings require `legal_basis`.
+- [x] 5.3 `POST tax-master/preview` (`TaxMaster` Read, scoped): the winning rule, the runners-up and any shadowing warning. The computed tax is added in group 6.
 - **Gate:** unit tests; A7, A8, A12a, A22 (rules) and A31 by curl; A23c; pricing unchanged; baseline green.
+
+> **As built (group 5, 2026-10-25):**
+> - **`TaxRuleGuardrailsUtil`** (shared, for group 13's inline messages): `blocks` (every D7 block and every DB CHECK of 146, so a refused save is a 400), `warnings` (D7, plus `SEEDED_RULE_EDIT`), `fallbackBlocks` (A31).
+> - **`TaxMasterService`:**
+>   - `resolve` / `resolveOrThrow` (5.1; today's "No active tax rule …" 400)
+>   - `preview` + `facts` (5.3)
+>   - `validated`: the guardrails, the VAT registration for an active VAT rule, the foreign registration, the fallback row and D4 duplicates; warnings need a legal basis
+>   - `draftOf` merges a partial body over the stored row
+>   - `changeStatus` reruns the checks on reactivation and refuses to deactivate a fallback in use
+>   - the unique index (and a missing foreign key) map to 400
+>   - saves return `{ id, warnings }`; `POST tax-master/preview` (TaxMaster Read, scoped)
+> - **Facts:** domestic money = the franchise's own currency (no INR literal); B2B = a valid customer GSTIN / TRN; electronic from `mst_program_plans` by name.
+> - **Live:** A7 / A8 / A12a / A31 / A22 / A23c 33/33; the QA rules created were deactivated.
+> - **Review:** a subagent found 7 issues, two of them serious: today's form narrowed ALL goods rules to one product, and picker dates were saved a day early. Fixed as group 5b.
+
+
+## Group 5b: Review fixes for the guardrails (subagent review, 2026-10-25)
+
+- [x] 5b.1 **Today's form never narrows an ALL rule** (finding 1). The problem: MEMUM's refusal (row 7) or HCUAE's goods export would have become one product's rule. `appliesTo` now changes only when it is sent, or when the transaction type or the reference changes **value**.
+- [x] 5b.2 **A picker date is the day the admin chose** (finding 2). The problem: today's form posts local midnight as a UTC timestamp, so 1 Dec in IST arrives as 30 Nov 18:30Z. A timestamp is read as its nearest UTC midnight, which is right for any admin between UTC−11 and UTC+11. Group 13's form sends `YYYY-MM-DD`.
+- [x] 5b.3 **The IGST-on-foreign-money warning also covers money ANY** (finding 3), for any GST CHARGE rule that can match a sale abroad (scope ANY, ANY_FOREIGN or a specific country) unless money is DOMESTIC.
+- [x] 5b.4 **Fallbacks stay valid** (finding 4).
+  - Saving a rule that active rules use as their fallback re-checks it against each of them.
+  - A fallback's dates must cover its rule's.
+- [x] 5b.5 **Smaller fixes:**
+  - a rule can be created staged (`active: false`), so it can be prepared before its registration (finding 5)
+  - the preview takes the franchise's own currency when none is sent (finding 6)
+  - leaving a specific-country scope clears the country (finding 7)
+  - a FOREIGN_REGISTRATION rule needs a registration of its own tax system in that country
+  - an unknown franchise is a 404, not a database error
+  - a rule's supplier country must be its franchise's country
+  - editing a seeded rule's tax fields needs an updated legal basis, while a save that changes nothing tax-related needs none
+- [x] 5b.6 **Tests that bite:** updates sent with the form's full body; a staged VAT rule; a picker date; a fallback edited after use; money ANY; country clearing.
+- **Gate:** group 5's gate again plus a case per finding; seeded rows 7 and 11 saved through today's form stay ALL.
+
+> **As built (group 5b, 2026-10-25):**
+> - **Fixes:**
+>   - `referenceMoved` compares values (5b.1)
+>   - `TaxMasterService.day` rounds a timestamp to its nearest UTC midnight (5b.2)
+>   - the GST-on-foreign-money warning covers money ANY and scope ANY (5b.3)
+>   - `fallbackBlocks` checks dates, and `validated` re-checks every active rule that uses the saved rule as its fallback (5b.4)
+>   - create takes `active` (staged); the preview's currency defaults to the franchise's; a non-specific scope clears the country; FOREIGN_REGISTRATION checks `hasActive(taxSystem, country)`; an unknown franchise is a 404; the rule's country must be the franchise's; a seeded rule's tax change needs a changed legal basis, while an unchanged save passes (5b.5)
+> - **Specs:** updates send today's form body (picker `Date`). Mutants caught: always recompute applies-to (2 failures), UTC day (4), no dependent re-check (1), no seeded-basis check (1).
+> - **Live:**
+>   - today's form re-saved seeded rows 7, 11 and 1 with IST-midnight timestamps: ALL kept, dates kept (2017-07-01, 2025-12-31, 2015-12-31)
+>   - group 5 33/33, A23a 20/20, A23b 12/12
+>   - 12 `calculate-tax` cases identical, A3 identical, rules 1–11 unchanged
+
 
 ## Group 6: Backend: engine refactor (tax core)
 

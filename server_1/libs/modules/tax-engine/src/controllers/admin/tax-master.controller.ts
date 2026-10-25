@@ -9,13 +9,15 @@ import {
   UpdateActiveDto,
 } from '@server_1/core';
 import { TaxMasterService } from '../../services/tax-master.service';
-import { CreateTaxMasterDto } from '../../dto/tax-master.dto';
+import { CreateTaxMasterDto, TaxRulePreviewDto } from '../../dto/tax-master.dto';
 import {
   AdminActionEnum,
   AdminSubjectEnum,
   IAuthUser,
   ITableList,
   ITaxMaster,
+  ITaxRulePreviewResponse,
+  ITaxRuleSaveResult,
 } from '@eatfit247-shared-lib';
 
 @Controller('tax-master')
@@ -35,14 +37,21 @@ export class TaxMasterController {
     return await this.service.fetchById(id, currentUser);
   }
 
+  /** Which rule would price a sale (decision 7): winner, runners-up, warnings. Saves nothing; franchise-scoped. */
+  @Post('preview')
+  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.TaxMaster)
+  async preview(@Body() body: TaxRulePreviewDto, @CurrentUser() currentUser: IAuthUser): Promise<ITaxRulePreviewResponse> {
+    return await this.service.preview(body, currentUser);
+  }
+
   @Post('manage')
   @RequireAbility(AdminActionEnum.Create, AdminSubjectEnum.TaxMaster)
   async create(
     @Body() body: CreateTaxMasterDto,
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
-  ): Promise<void> {
-    await this.service.create(body, requestedIp, currentUser);
+  ): Promise<ITaxRuleSaveResult> {
+    return await this.service.create(body, requestedIp, currentUser);
   }
 
   @Put('manage/:id')
@@ -52,8 +61,8 @@ export class TaxMasterController {
     @Body() body: CreateTaxMasterDto,
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
-  ): Promise<void> {
-    await this.service.update(id, body, requestedIp, currentUser);
+  ): Promise<ITaxRuleSaveResult> {
+    return await this.service.update(id, body, requestedIp, currentUser);
   }
 
   @Patch('update-status/:id')

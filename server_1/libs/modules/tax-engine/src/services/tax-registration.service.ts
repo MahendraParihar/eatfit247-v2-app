@@ -93,6 +93,14 @@ export class TaxRegistrationService {
     return count > 0;
   }
 
+  /** An active registration in that country, of any tax system (FOREIGN_REGISTRATION rules, decision 7). */
+  public async hasActiveIn(franchiseId: number, countryCode: string): Promise<boolean> {
+    const count = await this.registrationRepository.count({
+      where: { franchiseId, countryCode: countryCode.trim().toUpperCase(), active: true },
+    });
+    return count > 0;
+  }
+
   /** Registered for that system and country at any time between `from` and `to` (reports). */
   public async registeredBetween(franchiseId: number, taxSystem: TaxTypeEnum, countryCode: string, from: string, to: string): Promise<boolean> {
     const rows = await this.registrationRepository.findAll({
