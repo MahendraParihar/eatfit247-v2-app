@@ -1,0 +1,8 @@
+{
+  "name": "workshop-invoice",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/modules/workshop-invoice/src",
+  "projectType": "library",
+  "tags": ["type:domain", "scope:workshop-invoice"]
+}
+

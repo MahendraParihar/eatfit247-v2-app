@@ -44,8 +44,8 @@
 
 ## Group 4: Backend domain (`libs/modules/workshop-invoice`)
 
-- [ ] 4.1 Scaffold with `npx nx g feature-module`: model (snake_case → camelCase) and repository.
-- [ ] 4.2 Service:
+- [x] 4.1 Scaffold with `npx nx g feature-module`: model (snake_case → camelCase) and repository.
+- [x] 4.2 Service:
   - **Preview:** quantity × rate is passed to `TaxEngineService.calculate`, with the supplier from the franchise address and the customer from the bill-to country plus the place-of-supply State.
   - **Create and update:** recalculate and store the tax result (decision 5).
   - **Number on PAID:** issue the number on the first move to PAID, inside the transaction, passing `invoiceDate` (decisions 2, 3, 7).
@@ -54,7 +54,7 @@
   - **SAC:** read `ConfigParam.DIET_SAC_CODE` and copy it to the row when the number is issued (decision 9).
   - **Lock and cancel:** money fields locked after issue; cancel with a reason (decision 8).
   - **Franchise scoping:** every read and write is filtered to the admin's franchises.
-- [ ] 4.3 Unit tests:
+- [x] 4.3 Unit tests:
   - 200 × 850 = ₹200,600 and 174 × 850 = ₹174,522, for both CGST+SGST and IGST.
   - The number is issued only on PAID, and once.
   - A rollback leaves the counter unchanged.
@@ -65,6 +65,16 @@
   - Cancel keeps the number.
   - Another franchise's row gets 404/403.
 - **Gate:** `npx nx test workshop-invoice` and `npx nx affected --target=lint,build`.
+- **As built:**
+  - There is no `feature-module` generator in this repo (`nx list` shows only the standard plugins), so the lib copies the pocket-guide lib's `project.json`/tsconfig/jest setup (tags `type:domain`, `scope:workshop-invoice`). Following the codebase pattern there's no separate repository class: the service uses the model through `@InjectModel`.
+  - Imports: tax-engine, franchise, platform (global) and core only, never member.
+  - "Today" is today in `CALENDAR_TIMEZONE` (default `Asia/Kolkata`), since franchises have no timezone column. A server running in UTC therefore doesn't refuse today's date between 00:00 and 05:30 IST.
+  - The backdate warning (decision 4) is checked only when a save is about to issue a number (create or update to PAID); a PENDING row isn't in the series yet. It is a **409** whose message names the latest date (the global filter returns only `message`); the form re-sends with `confirmBackdate: true`. "Latest" = max of member `payment_date` and workshop `invoice_date` over rows whose `invoice_id` starts with `{code}/{FY}/S/` (prefix compare, not LIKE).
+  - Rounding: the base is `round2(qty × rate)`; the tax is rounded on the line, and in a CGST/SGST split SGST takes the odd paisa so the halves always add up.
+  - Payment fields follow `PaymentValidationUtil.validateManualPaymentSource` (mode, date, reference and status always required), as on manual member payments.
+  - After issue, a save may change the bill-to name/contact/email/phone/GSTIN, address line 1/2, city, pincode, notes and payment status/mode/reference/date; the stored tax result is never recalculated. A save re-reads the row `FOR UPDATE` and returns 409 if its number changed in between.
+  - Access: another franchise's row is 404 (service scoping); missing permission is 403 (CASL `subject('WorkshopInvoice', { franchiseId })`). Empty `franchiseIds` = unscoped, as elsewhere.
+  - The engine's plain `Error` (e.g. INR export) becomes a 400.
 
 ## Group 5: Admin API, RBAC and PDF
 
