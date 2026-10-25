@@ -1,6 +1,6 @@
 # Roadmap
 
-> Last updated: 2026-10-10 (replan after the accounting audit)
+> Last updated: 2026-10-25 (4.14 configurable tax treatment added)
 >
 > Status legend: ✅ shipped · 🚧 in progress · 📋 planned · 🔍 needs verification
 >
@@ -55,11 +55,19 @@ Build in this order: each item depends on the ones above it. Audit finding IDs a
   - ~~Exchange rate and INR/AED equivalents stored on each transaction~~ (done in 4.6).
   - Invoice shows place of supply, LUT number and export wording, reverse-charge line, amount in words and per-line tax.
   - [H1, H9, L3, M6]
+  - 2026-10-25, [configurable tax treatment](../features/2026-10-25-configurable-tax-treatment/) (4.14) takes the customer GSTIN / TRN half (matrix gap G15): validated on admin payment and order entry, the GSTIN State as place of supply for India B2B services, `customer_type` stored, and the buyer TRN printed on a UAE B2B tax invoice.
 - 🚧 **4.11 Rate and classification master.** Data half built on `feature/tax-mapping-matrix` ([spec](../features/2026-10-10-tax-mapping-matrix/requirements.md)): seeded tax rules per franchise × country × type with HSN/SAC and legal basis, GST 2.0 (22 Sep 2025) 5% goods rows staged for the CA, per-plan rule reference, stored place-of-supply State (Circular 242/36/2024), s.24(i) guard for unregistered inter-state goods, electronic-service flag, and a table-driven test of the full franchise × customer × goods/services mapping. **Still open, blocked on the CA / UAE adviser:** the consulting SAC/rate decision, Mahi's registration, HCUAE's zero-rating basis, and the recheck of invoices issued since 22 Sep 2025. [H5, M3]
   - 2026-10-17, [compliant invoice numbering](../features/2026-10-17-compliant-invoice-numbering/): registration-threshold warning for a franchise without a GSTIN (Mahi: ₹40 lakh). FY turnover on the franchise list, details and dashboard (amber at 80%, red at 100%), plus a daily email to super admins once per level. Checkout is never blocked. The figure covers platform sales only, so it is a lower bound.
 - 📋 **4.12 Explicit seller entity.** Name the selling franchise for products and for the checkout gateway, instead of taking the first match alphabetically. [H2]
 - 📋 **4.13 Filing reports.** GSTR-1 workbook (B2B, B2CL, B2CS and EXP split; HSN summary; documents issued) and a UAE VAT-201 extract. [H4]
   - Documents issued (GSTR-1 Table 13) was built early by [compliant invoice numbering](../features/2026-10-17-compliant-invoice-numbering/) (decision 13): admin Reports, one row per series, gap check, CSV. The rest of the workbook stays here.
+- 🚧 **4.14 Configurable tax treatment.** Spec 2026-10-25 on `feature/configurable-tax-treatment`, stacked on 4.6 ([spec](../features/2026-10-25-configurable-tax-treatment/requirements.md)).
+  - Tax Master rules carry conditions and a treatment (charge, zero-rated export, export under LUT or tax, out of scope, refuse, foreign registration), seeded to reproduce today's tax outcomes; the legal invariants stay in code.
+  - Save-time guardrails and a rule preview in the admin; Tax Master and registrations scoped to the admin's franchises.
+  - Tax registrations per franchise and country, and a working currency on each franchise.
+  - Invoice counters present for every franchise; a missing counter fails the entry instead of being created on the fly.
+  - The tax and mail switches leave `mst_configs` (`DIET_SAC_CODE` stays); email templates are switched on and off in the admin, and the welcome email ships inactive.
+  - Also delivers G15 (4.10), the export documents of 7.4 (G9) and the admin side of the UAE zero-rating evidence (G7, 8.0). Online-payment parts are deferred until the website is back.
 
 ## Phase 5: Engineering Foundation 📋
 
@@ -84,6 +92,7 @@ Goal: every later feature ships with automated backend integration and e2e tests
 - 📋 **7.2 Partner-owner experience.** Check that a partner owner's login sees only their franchise's members, payments and reports, and fill any reporting gaps they need.
 - 📋 **7.3 Franchise onboarding checklist.** Steps Super Admin follows to bring a new country online: franchise record, tax config, invoice sequences, nutritionist mapping, gateway.
 - 📋 **7.4 Goods export documentation (Mahi).** Shipping bill (CSB-V), port code, IEC, e-way bill, an export-realisation ageing report, and a monthly Export Declaration Form (EDF) extract for service exports. [H8, H10 registers]
+  - 2026-10-25, [configurable tax treatment](../features/2026-10-25-configurable-tax-treatment/) (4.14) takes the export documents on the order (G9): type (shipping bill / CSB-V / postal bill), number, date and port code, a flag when they are missing 30 days after dispatch, and the IEC on the tax registration. The e-way bill, the realisation ageing report and the EDF extract stay here.
 
 ## Phase 8: Online Payments for Partner Franchises 📋
 
@@ -93,6 +102,7 @@ Goal: every later feature ships with automated backend integration and e2e tests
   - Tax Credit Notes.
   - Track e-invoicing readiness for the July 2027 deadline.
   - [H6, M9]
+  - 2026-10-25, [configurable tax treatment](../features/2026-10-25-configurable-tax-treatment/) (4.14) takes the zero-rating evidence on **admin entry** (G7): the declaration, dial code and payer account country are checked against the rule's evidence policy, and a mismatch needs a logged finance decision. The website side (checkout declaration, after-payment card check) is deferred until online payments return (8.1 / 8.2).
 - 📋 **8.1 Telr go-live (Dubai).** Online checkout for Dubai-franchise customers, with webhooks, VAT invoices and reconciliation with offline records.
 - 📋 **8.2 Stripe go-live (international).** Online checkout for customers in other partner countries.
 

@@ -48,7 +48,8 @@ Hill climbing (plan.md § How this plan is built): a group is done only when its
 
 | Group | Owns | Date | New checks | Regression (baseline + earlier gates) | Result |
 |-------|------|------|------------|----------------------------------------|--------|
-| 0 Docs + green baseline | baseline 89/89 | | | | ☐ |
+| 0 Docs + green baseline | baseline 89/89 | 2026-10-25 | tax 89/89 after the 0.4 clock fix; 37 spec links resolve | first run **red**: tax 88/89 (credit-note date bomb), platform `google.service.spec` failed to load, `npm run lint` 5 errors (removed `no-extra-semi` rule); replanned as 0.5–0.7 | ☐ red |
+| 0 Docs + green baseline | baseline 89/89 | 2026-10-25 | as above | member 322, franchise 36, reports 20, platform 36/36; shared-library build, lint (0 errors) and build green | ✅ |
 | 1 Migration 146 | A1, A2, A3, A30 (data) | | | | ☐ |
 | 2 Shared library | util specs (incl. A6 / A7 / A31 cases) | | | | ☐ |
 | 3 RBAC (147) | A23a | | | | ☐ |

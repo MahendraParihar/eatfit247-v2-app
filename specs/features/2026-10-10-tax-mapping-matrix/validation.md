@@ -61,9 +61,9 @@ Tracked in `requirements.md § Open Questions`. Rows 3/4 (Mahi 5% activation), 8
 - Diet consultation: 18%, SAC 999319. Row 1/2 is final.
 - Debloat powder: HSN 3004 @ 5%. The 93 MEMUM invoices issued at 12% stay as issued (G19 closed).
 - HCUAE 0% Z on UAE clients: Art 41 basis confirmed. Row 8 is final.
-- Mahi: has not applied for GST. Only Mahi sells debloat. The rule stays at 12% and the owner edits it in Tax Master. Until a GSTIN is on the franchise, Mahi invoices go out without GST (decision 13, plan group 12). Release: clear MEMUM's GSTIN, which is EFMUM's, on the franchise form.
+- Mahi: has not applied for GST. Only Mahi sells debloat. The rule stays at 12% and the owner edits it in Tax Master. Until a GSTIN is on the franchise, Mahi invoices go out without GST (decision 13, plan group 12). ~~Release: clear MEMUM's GSTIN, which is EFMUM's, on the franchise form.~~ Not needed (2026-10-25): production is clean; only the local DB carries the copy (4.14 step 1.0).
 - Razorpay INR international card + e-FIRA as export proceeds: the owner is unsure. It stays open with the CA, and behaviour is unchanged.
-- Still open: electronic-service flag (row 14) and the zero-rating evidence policy (G7).
+- Still open: electronic-service flag (row 14) and the zero-rating evidence policy (G7). Both become Tax Master configuration in [configurable tax treatment](../2026-10-25-configurable-tax-treatment/requirements.md) (4.14), which also takes G9 and G15.
 
 ## Browser run (2026-10-11, Chrome, local servers; web on :4300)
 

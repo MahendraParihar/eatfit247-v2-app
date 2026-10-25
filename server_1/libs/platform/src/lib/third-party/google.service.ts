@@ -597,7 +597,6 @@ export class GoogleService {
       if (!apiKey) {
         throw new BadRequestException('Google API key is not configured');
       }
-      await this.getPlaceId('EatFit247');
       // Get place ID from parameter or config (you may want to add GOOGLE_PLACE_ID to ConfigParam)
       const targetPlaceId = placeId || this.appConfig.getString(ConfigParam.GOOGLE_PLACE_ID);
       if (!targetPlaceId) {

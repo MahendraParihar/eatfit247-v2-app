@@ -41,7 +41,6 @@
         "plugin:@nx/typescript"
       ],
       "rules": {
-        "@typescript-eslint/no-extra-semi": "error",
         "no-extra-semi": "off"
       }
     },
@@ -54,7 +53,6 @@
         "plugin:@nx/javascript"
       ],
       "rules": {
-        "@typescript-eslint/no-extra-semi": "error",
         "no-extra-semi": "off"
       }
     },

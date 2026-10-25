@@ -28,14 +28,26 @@ A later group never starts on a red gate. If a gate can't pass as specified, rep
 
 ## Group 0: Docs and a green baseline
 
-- [ ] 0.1 Roadmap: add **4.14 Configurable tax treatment** (🚧, link); notes on 4.10 (G15), 7.4 (export documents) and 8.x (G7 admin side; online deferred).
-- [ ] 0.2 Matrix spec: G7, G9 and G15 handled here; row 14 configurable; matrix decisions 8 and 10 superseded by D15; remove the old release step "clear MEMUM's GSTIN".
-- [ ] 0.3 Record for replanning:
+- [x] 0.1 Roadmap: add **4.14 Configurable tax treatment** (🚧, link); notes on 4.10 (G15), 7.4 (export documents) and 8.x (G7 admin side; online deferred).
+- [x] 0.2 Matrix spec: G7, G9 and G15 handled here; row 14 configurable; matrix decision 8 superseded by D15 and decision 10 by D3 (the electronic condition); remove the old release step "clear MEMUM's GSTIN".
+- [x] 0.3 Record for replanning:
   - the principle 1 wording
   - the markets table (treatment is configuration; admin-entered payments; franchise currency)
   - the tech-stack convention "no feature switch in `mst_configs` (`DIET_SAC_CODE` excepted)"
-- [ ] 0.4 Fix the date bomb in `credit-note.service.spec.ts` (A19 case of the tax-engine feature): pin the clock with jest fake timers. Test-only change.
+- [x] 0.4 Fix the date bomb in `credit-note.service.spec.ts` (A19 case of the tax-engine feature): pin the clock with jest fake timers. Test-only change.
+- [x] 0.5 *(replan 2026-10-25, found at the first gate run)* `libs/platform` jest: `google.service.spec` fails to load (`InputLengthEnum` undefined) because it mocks `@eatfit247-shared-lib` with `ConfigParam` only, while the real `@server_1/core` it loads needs the rest. Spread `jest.requireActual` into the mock. Test-only change; known red since 4.5 (checkout-lockdown plan, compliant-invoice-numbering validation).
+- [x] 0.6 *(replan 2026-10-25)* `npm run lint` errors on every file of both apps with "Definition for rule '@typescript-eslint/no-extra-semi' was not found": the rule left typescript-eslint in v8 (installed 8.51). Remove it from the root `.eslintrc.json` (both overrides). Tooling-only change; warnings stay as they are.
+- [x] 0.7 *(replan 2026-10-25, owner chose the code fix)* With 0.5 the suite loads and 2 of its cases fail: `getGoogleBusinessReviews` makes a stray `await this.getPlaceId('EatFit247')` (`google.service.ts:600`, from `228f4557`) whose result is discarded, so every reviews fetch makes an extra Places call and fails when that lookup fails. Remove the call; the tests stay as written. Small production change to the public success-stories reviews endpoint.
 - **Gate:** baseline fully green (tax suite 89/89); links resolve.
+
+> **As built (group 0, 2026-10-25):**
+> - Roadmap: 4.14 added (🚧, spec link); notes on 4.10 (G15), 7.4 (export documents, G9) and 8.0 (G7 admin side; website side deferred). "Last updated" moved to 2026-10-25.
+> - Matrix spec: G7 / G9 / G15 point here; row 14 is configurable; decision 8 struck through and superseded by D15 (MEMUM's REFUSE rule), decision 10 by D3 (the electronic condition), not D15 as 0.2 first said; decision 13's GSTIN-clearing note and plan 12.4 / validation's "clear MEMUM's GSTIN" release step removed (production is clean; the local DB is step 1.0). Not edited, since 0.2 covers the matrix spec only: the same stale step in the 4.6 plan (release runbook, franchise data) and validation (owner item 2), and compliant-invoice-numbering's replanning note 5.
+> - 0.3: § Replanning notes below (principle 1, markets table, the `mst_configs` convention, plus the stale "currently at 135" migration count in tech-stack.md).
+> - 0.4: `credit-note.service.spec.ts` pins the clock with `jest.useFakeTimers({ now: 2026-10-12T08:00Z })` (7 days after the default event date, inside the 14-day deadline; microtasks and `setImmediate` stay real) and restores real timers after each test. It failed from 2026-10-20 on (`lateIssue` true).
+> - 0.5 / 0.7: the platform suite now loads and is green (36/36; it was 26 tests with one suite failing to load). 0.7 removed the stray `getPlaceId` call, a production change to `GET` Google reviews (public success stories) that saves one Places API call per fetch.
+> - 0.6: `npm run lint` runs clean (0 errors; the 9 existing warnings stay). Lint still covers only the two app projects, because the root `ignorePatterns` skip `libs/`.
+> - Gate run: tax 89/89; member 322/322; franchise 36/36; reports 20/20; platform 36/36; shared-library build, `npm run lint` and `npm run build` (admin-api + public-api) green; 37 relative links in the touched specs resolve. Review: docs and test-only changes except 0.7, so no subagent review (the plan requires one only for tax, invoice, migration and RBAC groups).
 
 ## Group 1: Database (migration 146)
 
@@ -258,3 +270,25 @@ A later group never starts on a red gate. If a gate can't pass as specified, rep
 - [ ] 15.3 Refresh the [Tax & Invoice Series Matrix](https://claude.ai/artifact/Mg89mVds7Dyjx1hvwd8N8v) diagram and metrics with the as-built values (rules, counters, test counts, scorecard).
 - [ ] 15.4 `requirements.md` status → Shipped; roadmap 4.14 → ✅; the deferred online items stay listed.
 - [ ] 15.5 Constitution changes for replanning (group 0.3).
+
+## Replanning notes (for a `replan/configurable-tax-treatment` branch)
+
+Recorded by group 0 (0.3). The constitution is **not** edited on this feature branch (CLAUDE.md: constitution changes go on a `replan/<topic>` branch); group 15.5 carries these into that branch.
+
+1. **mission.md principle 1 (Tax at payment).** Its last sentence reads "Domestic vs export is decided by comparing the supplier's country with the customer's country, and that decision is stored too." Proposed:
+   > Domestic vs export is decided by the Tax Master treatment rule that matches the sale; the comparison of countries is one of its conditions. The rule, the registration and the decision are stored with the sale.
+2. **mission.md Markets table.** Proposed rows (the Tax column states the configured default; the treatment itself is Tax Master configuration, and the Indian-client refusal stays a code invariant):
+
+   | Market | Franchise | Payments today | Tax (configured default) |
+   |---|---|---|---|
+   | India, diet programs (services) | EatFit247 (EFMUM), currency INR | **Entered by an admin** (website down since 2026-10-25; Razorpay returns with it) | GST 18%: CGST+SGST in Maharashtra, IGST elsewhere; customer State (or the B2B GSTIN's State) on every invoice |
+   | India, debloat powder (goods) | Mahi Enterprise (MEMUM), currency INR | Entered by an admin, courier delivery | Unregistered: no GST, intra-state only (seeded REFUSE rule for other States). Once registered, GST at the configured rate (HSN 3004) |
+   | Non-Indian customers of the Indian franchises | EFMUM / MEMUM | Entered by an admin (foreign remittance or Indian rails) | Export of service or goods under LUT (0%, export invoice series); a foreign client paying INR over Indian rails gets IGST 18% |
+   | UAE and other countries, diet programs | Partner (Dubai, HCUAE), currency AED | Entered by an admin | UAE VAT per the configured rules: UAE clients 0% Z (Art 41, adviser) or 5% S; clients outside the UAE zero-rated exports with evidence, else the rule's fallback |
+   | Indian customers of a partner franchise | — | — | **Refused** (code invariant). Indian clients are always served by the India franchise (avoids OIDAR registration abroad) |
+
+   Add under the table: "Each franchise states its working currency (`mst_franchises.currency_code`); a tax registration abroad carries its own currency." The line "Telr (UAE) and Stripe (international) … not live" stays; add that Razorpay is also paused while the website is down.
+3. **tech-stack.md § Data Conventions, new bullet:**
+   > No feature switch in `mst_configs` or env. A tax behaviour or feature switch lives in the master that owns it (Tax Master, tax registrations, `mst_email_templates`). `DIET_SAC_CODE` is the one exception. A retired config row gets `module = 'Retired'`; rows are never deleted.
+
+   The same bullet's neighbour "`db_changes/` … currently at 135" is stale (the next number is 146); fix it in the same replan.

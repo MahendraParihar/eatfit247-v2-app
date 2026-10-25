@@ -19,6 +19,9 @@ describe('CreditNoteService', () => {
   const user = { adminId: 1, franchiseIds: [] } as never;
 
   beforeEach(() => {
+    // The credit-note date is "today" in the franchise's time zone: pin it 7 days after the default event date
+    // (2026-10-05), inside the 14-day deadline, so the lateIssue assertions don't depend on the real date.
+    jest.useFakeTimers({ now: new Date('2026-10-12T08:00:00Z'), doNotFake: ['nextTick', 'queueMicrotask', 'setImmediate'] });
     transaction = { LOCK: { UPDATE: 'UPDATE' }, commit: jest.fn(), rollback: jest.fn() };
     invoice = {
       memberPaymentId: 77,
@@ -65,7 +68,11 @@ describe('CreditNoteService', () => {
     );
   });
 
-  const credit = (overrides: Record<string, unknown> = {}) =>
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  const credit =(overrides: Record<string, unknown> = {}) =>
     service.create(
       5888,
       { recordType: 'plan', recordId: 77, amount: 525, reason: 'Programme shortened', eventDate: '2026-10-05', ...overrides } as never,
