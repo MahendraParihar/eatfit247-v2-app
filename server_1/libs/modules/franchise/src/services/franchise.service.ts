@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Op, QueryTypes, Sequelize } from 'sequelize';
 import {
   BusinessTypeEnum,
-  ConfigParam,
   IBasicSearch,
   IDropdownItem,
   IFranchise,
@@ -14,7 +13,7 @@ import {
   ITableList,
   TableEnum,
 } from '@eatfit247-shared-lib';
-import { AppConfigService, CommonFunctionsUtil, MstFranchise, SearchUtil, TableListSortUtil } from '@server_1/core';
+import { CommonFunctionsUtil, MstFranchise, SearchUtil, TableListSortUtil } from '@server_1/core';
 import {
   AddressService,
   CountryService,
@@ -36,7 +35,6 @@ interface IFranchiseNumberingFields {
 export class FranchiseService {
   constructor(
     @InjectModel(MstFranchise) private readonly franchiseRepository: typeof MstFranchise,
-    private appConfigService: AppConfigService,
     private addressService: AddressService,
     private countryService: CountryService,
     private readonly taxRegistrationService: TaxRegistrationService,
@@ -265,7 +263,10 @@ export class FranchiseService {
       paymentGatewayConfigId: obj.paymentGatewayConfigId || null,
       brandName: obj.brandName || null,
       lutNumber: obj.lutNumber || null,
-      internationalTaxMode: (obj.internationalTaxMode as 'EXPORT_OF_SERVICE' | 'LOCAL_FOREIGN_TAX' | null) || null,
+      // Deprecated; the form no longer sends it (D15), so an omitted value leaves the stored one unchanged
+      ...(obj.internationalTaxMode !== undefined
+        ? { internationalTaxMode: (obj.internationalTaxMode as 'EXPORT_OF_SERVICE' | 'LOCAL_FOREIGN_TAX' | null) || null }
+        : {}),
       startDate: obj.startDate,
       endDate: obj.endDate || null,
       isPrimary: obj.isPrimary,
@@ -474,9 +475,23 @@ export class FranchiseService {
     return franchisesWithCountry;
   }
 
-  public async getMasterData(): Promise<{ taxApplicable: boolean }> {
-    const taxApplicable = this.appConfigService.getBoolean(ConfigParam.GST_ENABLED, true, false);
-    return { taxApplicable };
+  /**
+   * "Tax applicable" for a franchise (configurable tax treatment, D15; replaces the GST_ENABLED config switch): it
+   * holds an active registration in its own country today, in its time zone, the condition under which the tax
+   * engine charges tax (D6). False for an unknown franchise or one without an address country.
+   */
+  public async taxApplicable(franchiseId: number | null | undefined): Promise<boolean> {
+    if (!franchiseId) {
+      return false;
+    }
+    const franchise = await this.franchiseRepository.findByPk(franchiseId, { attributes: ['franchiseId', 'timeZone'] });
+    const address = franchise ? await this.addressService.findByTableIdAndPk(TableEnum.MST_FRANCHISES, franchiseId) : null;
+    const country = (address?.countryCode ?? '').trim().toUpperCase();
+    if (!country) {
+      return false;
+    }
+    const today = FranchiseDateUtil.localDate(new Date(), franchise?.timeZone);
+    return !!(await this.taxRegistrationService.home(franchiseId, country, today));
   }
 
   /** The franchise public signup assigns to countries without one (`is_default`); null when none is set. */

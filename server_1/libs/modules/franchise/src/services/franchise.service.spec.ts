@@ -1,5 +1,5 @@
 import { IManageFranchise } from '@eatfit247-shared-lib';
-import { AppConfigService, MstFranchise } from '@server_1/core';
+import { MstFranchise } from '@server_1/core';
 import { AddressService, CountryService } from '@server_1/platform';
 import { TaxRegistrationService } from '@server_1/modules/tax-engine';
 import { FranchiseService } from './franchise.service';
@@ -41,7 +41,6 @@ describe('FranchiseService invoice numbering fields (compliant invoice numbering
     };
     service = new FranchiseService(
       franchiseRepository as unknown as typeof MstFranchise,
-      {} as AppConfigService,
       addressService as unknown as AddressService,
       countryService as unknown as CountryService,
       taxRegistrationService as unknown as TaxRegistrationService,
@@ -203,6 +202,62 @@ describe('FranchiseService invoice numbering fields (compliant invoice numbering
       franchiseRepository.findOne.mockResolvedValue({ franchiseId: 1, currencyCode: 'INR', timeZone: 'Asia/Kolkata' });
       (franchiseRepository as unknown as { scope: jest.Mock }).scope = jest.fn().mockReturnValue({ findOne: franchiseRepository.findOne });
       await expect(service.fetchById(1)).resolves.toMatchObject({ gstRegistered: true, currencyCode: 'INR' });
+    });
+  });
+
+  describe('configurable tax treatment 7.1 (D15): config switches retired', () => {
+    let home: jest.Mock;
+    beforeEach(() => {
+      home = jest.fn();
+      (taxRegistrationService as unknown as { home: jest.Mock }).home = home;
+      (franchiseRepository as unknown as { findByPk: jest.Mock }).findByPk = jest
+        .fn()
+        .mockImplementation(async (id: number) => (id === 99 ? null : { franchiseId: id, timeZone: id === 2 ? 'Asia/Dubai' : 'Asia/Kolkata' }));
+      addressService.findByTableIdAndPk.mockImplementation(async (_table: number, id: number) => ({ countryCode: id === 2 ? 'AE ' : id === 4 ? null : 'IN' }));
+    });
+
+    it('A27: tax applicable = an active registration in the franchise\'s own country today (no GST_ENABLED read)', async () => {
+      home.mockImplementation(async (id: number) => (id === 1 || id === 2 ? { taxRegistrationId: id } : null));
+      await expect(service.taxApplicable(1)).resolves.toBe(true);
+      await expect(service.taxApplicable(2)).resolves.toBe(true);
+      await expect(service.taxApplicable(3)).resolves.toBe(false);
+      expect(home).toHaveBeenCalledWith(2, 'AE', expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/));
+    });
+
+    it('A27: no franchise, an unknown one or one without an address country → false, without a registration lookup', async () => {
+      await expect(service.taxApplicable(null)).resolves.toBe(false);
+      await expect(service.taxApplicable(99)).resolves.toBe(false);
+      await expect(service.taxApplicable(4)).resolves.toBe(false);
+      expect(home).not.toHaveBeenCalled();
+    });
+
+    it('"today" is the franchise\'s own day: 21:00 UTC is already tomorrow in Kolkata and Dubai, not in UTC', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-10-25T21:00:00.000Z'));
+      try {
+        home.mockResolvedValue({ taxRegistrationId: 1 });
+        await service.taxApplicable(1);
+        await service.taxApplicable(2);
+        expect(home.mock.calls.map((call) => call[2])).toEqual(['2026-10-26', '2026-10-26']);
+        jest.setSystemTime(new Date('2026-10-25T19:00:00.000Z'));
+        await service.taxApplicable(1);
+        await service.taxApplicable(2);
+        // 00:30 in Kolkata, 23:00 in Dubai
+        expect(home.mock.calls.slice(2).map((call) => call[2])).toEqual(['2026-10-26', '2026-10-25']);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('the franchise form no longer sends the international tax mode: an update leaves the stored value as it is', async () => {
+      franchiseRepository.findOne.mockResolvedValueOnce(stored()).mockResolvedValueOnce(null);
+      await service.update(1, payload(), '127.0.0.1', 1);
+      expect(franchiseRepository.update.mock.calls[0][0]).not.toHaveProperty('internationalTaxMode');
+    });
+
+    it('an older client that sends the international tax mode (or null) still sets it', async () => {
+      franchiseRepository.findOne.mockResolvedValueOnce(stored()).mockResolvedValueOnce(null);
+      await service.update(1, payload({ internationalTaxMode: null } as Partial<IManageFranchise>), '127.0.0.1', 1);
+      expect(franchiseRepository.update.mock.calls[0][0]).toHaveProperty('internationalTaxMode', null);
     });
   });
 });

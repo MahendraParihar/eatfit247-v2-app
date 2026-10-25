@@ -22,7 +22,6 @@ import {
   FileTypeEnum,
   IFranchise,
   InputLengthEnum,
-  InternationalTaxModeEnum
 } from '@eatfit247-shared-lib';
 
 @Component({
@@ -107,7 +106,6 @@ export class ManageFranchise implements OnInit, OnDestroy {
     paymentGatewayConfigId: [null],
     brandName: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
     lutNumber: ['', [Validators.maxLength(InputLengthEnum.CHAR_100)]],
-    internationalTaxMode: [null],
     startDate: [new Date(), [Validators.required]],
     endDate: [null],
     isPrimary: [false, [Validators.required]],
@@ -124,9 +122,7 @@ export class ManageFranchise implements OnInit, OnDestroy {
   pageTitle = 'Create Franchise';
   mediaFor = 'franchise' as any; // Using string literal
   mediaType = FileTypeEnum.IMAGE;
-  internationalTaxModeOptions = InternationalTaxModeEnum;
   businessTypeOptions = BusinessTypeEnum;
-  masterData: { taxApplicable: boolean } | null = null;
   financialYearOptions = FINANCIAL_YEAR_OPTIONS;
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -135,7 +131,6 @@ export class ManageFranchise implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     const id = this.route.snapshot.paramMap.get('id');
-    await this.loadMasterData();
     if (id && id !== 'new') {
       this.isEditMode = true;
       this.pageTitle = 'Edit Franchise';
@@ -144,8 +139,6 @@ export class ManageFranchise implements OnInit, OnDestroy {
       this.pageTitle = 'Create Franchise';
     }
     this.patchFormValues();
-    // Set dropdown based on master data after patching form values
-    this.setInternationalTaxModeFromMasterData();
   }
 
   private patchFormValues(): void {
@@ -172,7 +165,6 @@ export class ManageFranchise implements OnInit, OnDestroy {
         paymentGatewayConfigId: (this.initialData as any).paymentGatewayConfigId || null,
         brandName: (this.initialData as any).brandName || '',
         lutNumber: (this.initialData as any).lutNumber || '',
-        internationalTaxMode: (this.initialData as any).internationalTaxMode || null,
         startDate: startDate,
         endDate: endDate,
         isPrimary: (this.initialData as any).isPrimary !== undefined ? (this.initialData as any).isPrimary : false,
@@ -185,27 +177,6 @@ export class ManageFranchise implements OnInit, OnDestroy {
       });
       
       // Address will be bound by AddressFormComponent when address input is set
-    }
-  }
-
-  async loadMasterData(): Promise<void> {
-    try {
-      this.masterData = await this.apiService.getMasterData();
-    } catch (error) {
-      // Error toast is handled by HttpErrorInterceptor
-    }
-  }
-
-  private setInternationalTaxModeFromMasterData(): void {
-    // Set internationalTaxMode dropdown based on taxApplicable from master data
-    if (this.masterData?.taxApplicable === true) {
-      // Set default value when tax is applicable, only if field is empty
-      const currentValue = this.formGroup.get('internationalTaxMode')?.value;
-      if (!currentValue) {
-        this.formGroup.patchValue({
-          internationalTaxMode: InternationalTaxModeEnum.EXPORT_OF_SERVICE
-        });
-      }
     }
   }
 

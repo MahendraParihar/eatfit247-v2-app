@@ -111,14 +111,17 @@ export class MemberPlanService {
    * @returns Master data including dropdowns, addresses, and tax configuration
    */
   public async loadMasterData(memberId: number): Promise<IMemberPaymentMasterData> {
-    const [paymentModes, programs, paymentStatuses, programPlan, addresses] = await Promise.all([
+    const [paymentModes, programs, paymentStatuses, programPlan, addresses, taxApplicable] = await Promise.all([
       this.paymentModeService.getDropdownList(),
       this.programService.getProgramList(),
       this.paymentStatusService.getDropdownList(),
       this.programPlanService.getProgramPlanList(),
       this.addressService.filterByTableIdAndPk(TableEnum.TXN_MEMBER, memberId),
+      // From the member's franchise registration, not a config switch (D15)
+      this.memberRepository
+        .findOne({ where: { memberId }, attributes: ['memberId', 'franchiseId'] })
+        .then((member) => this.franchiseService.taxApplicable(member?.franchiseId)),
     ]);
-    const taxApplicable = this.appConfigService.getBoolean(ConfigParam.GST_ENABLED, true, false);
     const paymentSource: IDropdownItem[] = Object.values(PaymentSourceEnum).map((source) => ({
       id: source,
       label: source,

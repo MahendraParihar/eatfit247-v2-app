@@ -18,11 +18,6 @@ export class FranchiseApiService extends CrudApiService<IFranchise> {
     super('/franchise');
   }
 
-  async getMasterData(): Promise<{ taxApplicable: boolean }> {
-    const res = await this.httpService.get<{ taxApplicable: boolean }>(`${this.endpoint}/master-data`);
-    return res.data as { taxApplicable: boolean };
-  }
-
   async getFranchiseDropdown(): Promise<IDropdownItem[]> {
     return this.getDropdown();
   }

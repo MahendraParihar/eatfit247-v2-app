@@ -486,14 +486,45 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
 
 ## Group 7: Config retirement (migration 148)
 
-- [ ] 7.1 Code first: remove the readers and `ConfigParam` entries:
+- [x] 7.1 Code first: remove the readers and `ConfigParam` entries:
   - `tax-engine.service.ts:211` (`ALLOW_UNREGISTERED_INTERSTATE_GOODS`)
   - `member-plan.service.ts:121` (`GST_ENABLED` → `taxApplicable` = the member's franchise has an active registration)
   - `franchise.service.ts:429` and the franchise form's international-tax-mode block (`manage-franchise.component.ts:129, 200-206`; `api.service.ts:21`)
   - the `TAX_PERCENTAGE`, `SEND_WELCOME_MAIL` and `SEND_DIET_MAIL` enum entries
   - **`DIET_SAC_CODE` and its reader (`member-plan.service.ts:1885`) stay.**
-- [ ] 7.2 `148_retire_config_switches.sql`: `module = 'Retired'` for the five rows; idempotent; applied with or after the 7.1 deploy.
+- [x] 7.2 `148_retire_config_switches.sql`: `module = 'Retired'` for the five rows; idempotent; applied with or after the 7.1 deploy.
 - **Gate:** A24, A27; the APIs restart and boot without the retired rows; the franchise form loads and saves; baseline green.
+
+> **As built (group 7, 2026-10-25):**
+> - **7.1 code:**
+>   - the five `ConfigParam` entries are gone; `DIET_SAC_CODE` and its reader stay. The `ALLOW_UNREGISTERED_INTERSTATE_GOODS` reader left the engine in group 6
+>   - `GST_ENABLED` → `FranchiseService.taxApplicable(franchiseId)`: an active registration in the franchise's own country today, in its time zone (`TaxRegistrationService.home`, the engine's condition). The admin payment master data uses it for the member's franchise
+>   - `GET franchise/master-data`, `FranchiseService.getMasterData` and its `AppConfigService` dependency are removed, as are the form's hidden international-tax-mode dropdown, its master-data call and the API method. An update that omits the mode keeps the stored value
+> - **7.2 migration:** `148_retire_config_switches.sql` sets `module = 'Retired'` (`IS DISTINCT FROM`, idempotent, nothing deleted). On a clone, exactly the five rows moved and a second run was a no-op. Applied to `eatfit` after the code.
+> - **Live:**
+>   - both APIs boot without the rows
+>   - payment master data: EFMUM 4945 true, HCUAE QA 6396 true, MEMUM QA 6397 false (new QA member `qa.memum@eatfit247.test`)
+>   - `franchise/master-data` 404
+>   - payment 46 (pre-144) PDF prints SAC 999319
+>   - the franchise form loads (no master-data call) and saves in Chrome: only audit columns changed, `international_tax_mode` kept on all three, registrations unchanged
+>   - 2 mutants caught
+> - **Review:** a subagent found no blocking defect: a wrong deploy note, public checkout printing no SAC on old payments (pre-existing), serial lookups and test gaps. Fixed as group 7b.
+
+## Group 7b: Review fixes for config retirement (subagent review, 2026-10-25)
+
+- [x] 7b.1 **The deploy note says what really fails** (finding 1). 148 before the code does not stop the old API booting: the factory loads a snapshot without the retired rows. Instead, after a restart, the old `GET member/:id/payment-history/master-data` answers 500 (`GST_ENABLED` reads as `''`, which `valueToBoolean` refuses), so the admin add-payment dialog loses its dropdowns. Deploy the code with or before 148. Fixed in 148's header and D15.
+- [x] 7b.2 **Public checkout prints the SAC of a payment priced before 144** (finding 5, pre-existing). public-api didn't load config module `Invoice`, which holds only `DIET_SAC_CODE`, so an invoice downloaded from the website for such a payment printed no SAC. public-api now loads `Invoice`.
+- [x] 7b.3 **Smaller fixes:**
+  - the payment master data looks up the member's franchise alongside its other lookups, not after them (finding 2)
+  - tests: the franchise's own time zone decides "today" near midnight UTC; an explicit `internationalTaxMode: null` still clears it (finding 4)
+  - the franchise form's note no longer names the removed field (finding 6)
+- **Recorded, not changed:**
+  - `taxApplicable` has no reader in the admin or website today; it stays in the payment master data for D15
+  - it uses today, not a payment's date, and it is false for a non-Indian sales-tax franchise (US sales tax is the next spec)
+  - `shared-library/src/**/*.js` are stale compiled files tracked in git before this feature (finding 3); a cleanup for the owner to approve
+- **Gate:** group 7's gate again plus a case per finding; public-api boots with `Invoice`.
+
+> **As built (group 7b, 2026-10-25):** 148's header and D15 now say the old code boots but answers 500 on the payment master data after a restart. public-api loads config module `Invoice` (log: `"module" IN ('Common', 'Email', 'Google', 'Invoice', …)`). The member's franchise lookup runs inside the master data's `Promise.all`. Tests added for the franchise's own day near midnight UTC (Kolkata and Dubai) and for an explicit null mode. The form note is fixed. Franchise 47. Live: group 7 6/6 again; 12 calculate-tax cases identical to 6b with the decision fields; g5 33/33, form5b 3/3, A23a 20/20, A23b 12/12.
 
 ## Group 8: Email template switches and the welcome email (migration 149)
 

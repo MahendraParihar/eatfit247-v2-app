@@ -98,12 +98,6 @@ export class FranchiseController {
     return await this.service.getFranchiseList();
   }
 
-  @Get('master-data')
-  @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.Franchise)
-  async getMasterData(): Promise<{ taxApplicable: boolean }> {
-    return await this.service.getMasterData();
-  }
-
   /** Empty franchiseIds = unscoped (Super Admin), as in CaslAbilityFactory */
   private assertFranchiseScope(id: number, currentUser: IAuthUser): void {
     if (currentUser.franchiseIds?.length && !currentUser.franchiseIds.includes(id)) {

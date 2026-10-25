@@ -254,10 +254,11 @@
         </mat-form-field>
 
         <!-- Deprecated (spec 2026-10-10-tax-mapping-matrix, G17): the tax engine reads the LUT register tab and
-             Tax Master rules, not these two fields. Kept in the form model so existing values are preserved. -->
+             Tax Master rules. The LUT number stays in the form model so its value is preserved; the international
+             tax mode left the form (spec 2026-10-25-configurable-tax-treatment, D15) and the server keeps its stored value. -->
         <p class="deprecated-note">
           <mat-icon inline>info</mat-icon>
-          LUTs are managed in the <strong>LUT Register</strong> tab and tax treatment in <strong>Tax Master</strong>. The old "LUT number" and "international tax mode" fields are no longer used.
+          LUTs are managed in the <strong>LUT Register</strong> tab and tax treatment in <strong>Tax Master</strong>. The old "LUT number" field is no longer used.
         </p>
         <div class="row" style="display: none">
           <mat-form-field class="half-width">
@@ -273,16 +274,6 @@
               </mat-hint>
             }
             <shared-ui-input-error [control]="formGroup.get('lutNumber')" controlName="LUT Number"></shared-ui-input-error>
-          </mat-form-field>
-
-          <mat-form-field class="half-width">
-            <mat-label>International Tax Mode</mat-label>
-            <mat-select formControlName="internationalTaxMode">
-              <mat-option [value]="null">Select Tax Mode</mat-option>
-              <mat-option [value]="internationalTaxModeOptions.EXPORT_OF_SERVICE">Export of Service</mat-option>
-              <mat-option [value]="internationalTaxModeOptions.LOCAL_FOREIGN_TAX">Local Foreign Tax</mat-option>
-            </mat-select>
-            <shared-ui-input-error [control]="formGroup.get('internationalTaxMode')" controlName="International Tax Mode"></shared-ui-input-error>
           </mat-form-field>
         </div>
 
