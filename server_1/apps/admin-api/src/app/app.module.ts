@@ -41,6 +41,7 @@ import { DeliveryModule } from '@server_1/modules/delivery';
 import { AppointmentModule } from '@server_1/modules/appointment';
 import { AuthModule } from '@server_1/modules/auth';
 import { GoogleReviewModule } from '@server_1/modules/google-review';
+import { WorkshopInvoiceModule } from '@server_1/modules/workshop-invoice';
 
 @Module({
   imports: [
@@ -86,6 +87,7 @@ import { GoogleReviewModule } from '@server_1/modules/google-review';
     DeliveryModule,
     AppointmentModule,
     GoogleReviewModule,
+    WorkshopInvoiceModule,
     NotificationModule,
     CommonModule.forRoot(
       ['Common', 'Email', 'Google', 'Calendar', 'Payment', 'Invoice', 'Whatsapp'],

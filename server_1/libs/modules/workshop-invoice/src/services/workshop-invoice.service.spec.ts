@@ -9,6 +9,7 @@ import {
   AdminSubjectEnum,
   ConfigParam,
   IAuthUser,
+  IInvoiceDocument,
   IManageWorkshopInvoice,
   PaymentStatusEnum,
   TaxMode,
@@ -21,6 +22,7 @@ import {
   CurrencyService,
   InvoiceSequenceService,
   PaymentModeService,
+  InvoicePdfService,
   PaymentStatusService,
   StateService,
 } from '@server_1/platform';
@@ -204,6 +206,7 @@ const setup = (latestIssuedDate: string | null = null) => {
   };
   const stateService = { fetchById: async (id: number) => states[id] };
   const addressService = {
+    findByTableIdAndPk: async () => ({ postalAddress: 'Franchise street', cityVillage: 'Mumbai', state: 'Maharashtra', country: 'India', pinCode: '400001' }),
     filterByTableIdAndPk: async (_table: number, franchiseId: number) =>
       franchiseId === 1 ? [{ countryId: INDIA, stateId: MAHARASHTRA, pkOfTable: 1 }] : [{ countryId: UAE, stateId: DUBAI }],
   };
@@ -222,8 +225,9 @@ const setup = (latestIssuedDate: string | null = null) => {
     countryService as unknown as CountryService,
     taxMaster as unknown as ConstructorParameters<typeof TaxEngineService>[4],
   );
+  const invoicePdf = { generateInvoicePdf: jest.fn(async (_doc: IInvoiceDocument) => Buffer.from('%PDF-1.4 test')) };
   const franchiseService = {
-    fetchById: async (id: number) => franchises[id],
+    fetchById: async (id: number) => ({ ...franchises[id], companyName: 'EatFit247', gstNumber: '27AAAAA0000A1Z5' }),
     getFranchiseList: async () => [
       { id: 1, label: 'EatFit247' },
       { id: 2, label: 'HCUAE' },
@@ -244,8 +248,9 @@ const setup = (latestIssuedDate: string | null = null) => {
     { getDropdownList: async () => [] } as unknown as PaymentModeService,
     { getDropdownList: async () => [] } as unknown as PaymentStatusService,
     franchiseService as unknown as FranchiseService,
+    invoicePdf as unknown as InvoicePdfService,
   );
-  return { service, store, repository, sequence, sequelize, counter, appConfig, config, listQuery };
+  return { service, store, repository, sequence, sequelize, counter, appConfig, config, listQuery, invoicePdf };
 };
 
 // ---------------------------------------------------------------------------
@@ -443,6 +448,55 @@ describe('WorkshopInvoiceService', () => {
       const { service } = setup();
       await service.create(payload(), financialManager, '127.0.0.1');
       await expect(service.cancel(1, '  ', financialManager, '127.0.0.1')).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('PDF (A3, A10, A14)', () => {
+    it('is refused (400) before a number is issued', async () => {
+      const { service, invoicePdf } = setup();
+      await service.create(payload(), financialManager, '127.0.0.1');
+      await expect(service.generateInvoicePdf(1, financialManager)).rejects.toThrow(BadRequestException);
+      expect(invoicePdf.generateInvoicePdf).not.toHaveBeenCalled();
+    });
+
+    it('renders stored values with the workshop terms and returns base64 without writing a file', async () => {
+      const { service, invoicePdf, config } = setup();
+      await service.create(payload({ paymentStatusId: PaymentStatusEnum.PAID, invoiceDate: '2026-08-11' }), financialManager, '127.0.0.1');
+      config[ConfigParam.DIET_SAC_CODE] = 'changed-later';
+      const file = await service.generateInvoicePdf(1, financialManager);
+      expect(file.fileName).toBe('Invoice-EFMUM-2026-27-S-000492--Organiser-legal-name-.pdf');
+      expect(Buffer.from(file.buffer, 'base64').toString()).toBe('%PDF-1.4 test');
+      expect(file.filePath).toBe('');
+      const doc = invoicePdf.generateInvoicePdf.mock.calls[0][0] as unknown as IInvoiceDocument;
+      expect(doc.header).toMatchObject({
+        invoiceNumber: 'EFMUM/2026-27/S/000492',
+        invoiceDate: '2026-08-11',
+        supplyDate: '2026-08-11',
+        cancelled: false,
+        title: 'TAX INVOICE',
+      });
+      expect(doc.items).toHaveLength(1);
+      expect(doc.items[0]).toMatchObject({ description: 'Gut reset programme workshop', sacCode: SAC, qty: 200, unitPrice: 850, amount: 170000, totalAmount: 200600 });
+      expect(doc.tax.rows.map((r) => r.label)).toEqual(['CGST', 'SGST']);
+      expect(doc.total.amount).toBe(200600);
+      expect(doc.termsAndConditions).toHaveLength(3);
+      expect(doc.termsAndConditions!.join(' ')).not.toMatch(/registered individual|Pause/);
+    });
+
+    it('stamps a cancelled invoice', async () => {
+      const { service, invoicePdf } = setup();
+      await service.create(payload({ paymentStatusId: PaymentStatusEnum.PAID }), financialManager, '127.0.0.1');
+      await service.cancel(1, 'Duplicate', financialManager, '127.0.0.1');
+      await service.generateInvoicePdf(1, financialManager);
+      const doc = invoicePdf.generateInvoicePdf.mock.calls[0][0] as unknown as IInvoiceDocument;
+      expect(doc.header.cancelled).toBe(true);
+      expect(doc.header.invoiceNumber).toBe('EFMUM/2026-27/S/000492');
+    });
+
+    it('is scoped like every read', async () => {
+      const { service } = setup();
+      await service.create(payload({ paymentStatusId: PaymentStatusEnum.PAID }), financialManager, '127.0.0.1');
+      await expect(service.generateInvoicePdf(1, hcuaeOnly)).rejects.toThrow(NotFoundException);
     });
   });
 

@@ -25,6 +25,7 @@ import {
   IWorkshopInvoiceMasterData,
   IWorkshopInvoiceSearch,
   IWorkshopInvoiceTaxRequest,
+  mapWorkshopInvoiceToInvoiceDocument,
   PaymentSourceEnum,
   PaymentStatusEnum,
   TableEnum,
@@ -44,6 +45,8 @@ import {
   AddressService,
   CountryService,
   CurrencyService,
+  IFileModel,
+  InvoicePdfService,
   InvoiceSequenceService,
   PaymentModeService,
   PaymentStatusService,
@@ -96,6 +99,7 @@ export class WorkshopInvoiceService {
     private readonly paymentModeService: PaymentModeService,
     private readonly paymentStatusService: PaymentStatusService,
     private readonly franchiseService: FranchiseService,
+    private readonly invoicePdfService: InvoicePdfService,
   ) {}
 
   /**
@@ -311,6 +315,38 @@ export class WorkshopInvoiceService {
     row.modifiedIp = requestedIp;
     await row.save();
     return this.findById(id, user);
+  }
+
+  /**
+   * The invoice PDF, rendered from stored values on each request and returned as base64.
+   * Nothing is written to disk (decision 11). Only an issued invoice has a PDF (decision 7).
+   */
+  public async generateInvoicePdf(id: number, user: IAuthUser): Promise<IFileModel> {
+    const invoice = await this.findById(id, user);
+    if (!invoice.invoiceId) {
+      throw new BadRequestException('No invoice number yet: the PDF is available once the invoice is marked Paid');
+    }
+    const [franchise, franchiseAddress] = await Promise.all([
+      this.franchiseService.fetchById(invoice.franchiseId),
+      this.addressService.findByTableIdAndPk(TableEnum.MST_FRANCHISES, invoice.franchiseId),
+    ]);
+    if (!franchiseAddress) {
+      throw new BadRequestException('The franchise has no address');
+    }
+    const invoiceDoc = mapWorkshopInvoiceToInvoiceDocument(invoice, franchise, franchiseAddress, [
+      'Diet consulting services are advisory in nature and not medical treatment.',
+      'All payments are non-refundable and non-transferable under any circumstances.',
+      `Payment confirms acceptance of ${franchise.companyName} terms and service validity conditions.`,
+    ]);
+    const pdfBuffer = await this.invoicePdfService.generateInvoicePdf(invoiceDoc);
+    const fileName = `Invoice-${CommonFunctionsUtil.removeSpecialChar(invoice.invoiceId, '-', false)}-${
+      CommonFunctionsUtil.removeSpecialChar(invoice.billToName, '-', false) || 'Workshop'
+    }.pdf`;
+    return {
+      filePath: '',
+      fileName,
+      buffer: pdfBuffer.toString('base64'),
+    };
   }
 
   // ---------------------------------------------------------------------------

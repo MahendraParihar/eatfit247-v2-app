@@ -78,14 +78,15 @@
 
 ## Group 5: Admin API, RBAC and PDF
 
-- [ ] 5.1 Controller in admin-api:
+- [x] 5.1 Controller in admin-api:
   - `GET workshop-invoice` (list/search) and `GET :id`;
   - `POST calculate-tax`, `POST` and `PUT :id`;
   - `PUT :id/cancel` and `GET :id/invoice` (PDF).
   - Each endpoint has `@RequireAbility` (Read/Create/Update/Delete on `WorkshopInvoice`) plus a CASL check with the row's `franchiseId`.
-- [ ] 5.2 PDF through `InvoicePdfService` with the workshop terms (decision 12), returned as `IFileModel` and not written to `media-files/` (decision 11). A row without a number returns 400.
-- [ ] 5.3 Register the module in admin-api only.
+- [x] 5.2 PDF through `InvoicePdfService` with the workshop terms (decision 12), returned as `IFileModel` and not written to `media-files/` (decision 11). A row without a number returns 400.
+- [x] 5.3 Register the module in admin-api only.
 - **Gate:** curl the happy path and one failure per endpoint (validation A1–A12). A role without the permission gets 403.
+- **Status 2026-10-26:** code done, unit tests 67/67 (incl. PDF: 400 before issue, stored values, workshop terms, base64 with nothing written, CANCELLED, scoping). **Live curl gate NOT run yet.** Plan for it: run a second admin-api on :3002 against `eatfit_wi` (`DB_NAME=eatfit_wi ADMIN_API_PORT=3002`, ts-node on `apps/admin-api/src/main.ts`) so the user's :3001 server on `eatfit` stays untouched. **Before starting it**, set `SYSTEM_EMAIL_ENABLE=false` in `eatfit_wi.mst_configs` and deactivate its courier provider accounts: the shipment retry/sync crons call the live NimbusPost API and the appointment reminder cron sends email.
 
 ## Group 6: Admin CMS (`libs/admin/workshop-invoices`)
 
