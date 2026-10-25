@@ -34,12 +34,13 @@
 
 ## Group 3: Invoice numbering by invoice date (money)
 
-- [ ] 3.1 `InvoiceSequenceService.generateInvoiceNumber` gets an optional `invoiceDate`. The FY comes from it when it is given, otherwise from `new Date()`. Every existing caller stays unchanged.
-- [ ] 3.2 Unit tests:
+- [x] 3.1 `InvoiceSequenceService.generateInvoiceNumber` gets an optional `invoiceDate`. The FY comes from it when it is given, otherwise from `new Date()`. Every existing caller stays unchanged.
+- [x] 3.2 Unit tests:
   - FY from the date on both sides of a 1 April boundary, and on a January-FY franchise.
   - The default stays today.
   - Two issues in a row give consecutive numbers on the same counter row.
 - **Gate:** the new spec passes, and member, product and webhook invoice behaviour is unchanged (existing specs and a grep of the callers).
+- **As built:** `invoiceDate` is an optional 6th parameter (YYYY-MM-DD string). It is parsed as a local date, because `new Date('2026-04-01')` is UTC midnight and lands in the previous FY on a negative-offset server. A public `financialYearFor(date, startMonth)` exposes the same FY rule for the workshop date checks. A malformed date throws before the counter is read.
 
 ## Group 4: Backend domain (`libs/modules/workshop-invoice`)
 
