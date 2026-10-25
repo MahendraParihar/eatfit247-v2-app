@@ -137,6 +137,10 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('tax-master').then((m) => m.taxMasterRoutes),
       },
       {
+        path: 'email-templates',
+        loadChildren: () => import('email-templates').then((m) => m.emailTemplatesRoutes),
+      },
+      {
         path: 'setting',
         loadChildren: () => import('admin-user').then((m) => m.settingRoutes),
       },

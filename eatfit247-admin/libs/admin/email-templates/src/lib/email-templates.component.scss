@@ -1,0 +1,36 @@
+.templates-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.templates-table {
+  width: 100%;
+}
+
+.template-name {
+  font-weight: 500;
+}
+
+.template-code,
+.subject,
+.read-only-note {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.template-code {
+  font-size: 12px;
+}
+
+.account-icon {
+  color: var(--md-sys-color-error);
+  vertical-align: middle;
+}
+
+.inactive .template-name {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.read-only-note {
+  margin-top: 12px;
+}

@@ -4,6 +4,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { modelRegistry } from '@server_1/core';
 import { NotificationLogModel } from './models';
 import { NotificationController } from './controllers/admin/notification.controller';
+import { EmailTemplateController } from './controllers/admin/email-template.controller';
 import { WhatsAppWebhookController } from './webhooks/whatsapp-webhook.controller';
 import {
   NotificationService,
@@ -11,6 +12,7 @@ import {
   TemplateService,
   EmailProvider,
   WhatsAppProvider,
+  EmailTemplateService,
 } from './services';
 import { NotificationListener } from './listeners/notification.listener';
 
@@ -26,6 +28,7 @@ modelRegistry.register([NotificationLogModel]);
   ],
   controllers: [
     NotificationController,
+    EmailTemplateController,
     WhatsAppWebhookController,
   ],
   providers: [
@@ -34,6 +37,7 @@ modelRegistry.register([NotificationLogModel]);
     TemplateService,
     EmailProvider,
     WhatsAppProvider,
+    EmailTemplateService,
     NotificationListener,
   ],
   exports: [

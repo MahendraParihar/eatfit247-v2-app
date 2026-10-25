@@ -158,6 +158,7 @@ The website is down and every payment is entered by an admin (owner, 2026-10-25)
 - **After-payment card check:** issuing country or international flag vs billing country; a mismatch flags the record hard, never repriced (Stripe `card.country`, Razorpay international flag, Telr unknown).
 - **Website GSTIN / TRN field** with the admin's validation.
 - **The money route for online INR card payments** (e-FIRA / FIRS question).
+- **The welcome email on the website path** (group 8b): public signup emits `member.created`, and checkout's member capture is unauthenticated, so anyone could have the welcome sent to an address they type. Decide whether the website welcomes on the first paid order instead.
 - **Gateway confirmation with a missing counter:** the money is already taken, so the confirmation can't simply fail. Decide then whether to record it PAID without a number and alert, or hold it (D12).
 
 ## Open Questions

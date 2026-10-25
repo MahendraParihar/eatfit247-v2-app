@@ -1,3 +1,10 @@
+<%
+  /*
+   * member_welcome (sent on member.created while the template is active; it ships inactive, migration 149).
+   * Locals: memberName, franchise { franchiseName, supportEmail, phone }, and loginUrl only when a member website
+   * URL is configured (none while the website is down, so no button is shown).
+   */
+-%>
 <%- await include('../layout/email-head', {
   subject: 'Welcome to ' + franchise.franchiseName,
   preheader: 'Your journey to a healthier you starts here.',

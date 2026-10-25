@@ -66,11 +66,12 @@ export class EmailNotificationService {
   public async sendEmail(params: ISendEmailParams): Promise<void> {
     try {
       // Get email template
+      // The Email Templates screen's switches (configurable tax treatment D18): active and its email switch on
       const template = await this.emailTemplateRepository.findOne({
-        where: { templateName: params.emailTemplate, active: true },
+        where: { templateName: params.emailTemplate, active: true, sendEmailNotification: true },
       });
       if (!template) {
-        throw new NotFoundException('Email template not found or inactive');
+        throw new NotFoundException('Email template not found, inactive or its email switched off');
       }
       // Use provided subject or template default
       let subject = params.subject || template.subject;
@@ -135,8 +136,9 @@ export class EmailNotificationService {
   public async sendEmailByType(emailData: IEmailData): Promise<void> {
     try {
       const { to, subject, type, data, attachments } = emailData;
+      // Active and its email switch on (configurable tax treatment D18)
       const dbTemplate = await this.emailTemplateRepository.findOne({
-        where: { templateName: type, active: true },
+        where: { templateName: type, active: true, sendEmailNotification: true },
       });
       // If no database template found, skip email
       if (!dbTemplate) {

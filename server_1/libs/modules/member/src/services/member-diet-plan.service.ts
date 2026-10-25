@@ -18,7 +18,7 @@ import {
   MediaForEnum,
   PaymentStatusEnum,
 } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, Env, MstAdminUser } from '@server_1/core';
+import { CommonFunctionsUtil, Env, MstAdminUser, MstFranchise } from '@server_1/core';
 import { MstProgram } from '@server_1/modules/program-plan';
 import { RecipeCategoryService, RecipeService } from '@server_1/modules/recipe';
 import { DietTemplateService, TxnDietTemplateDietDetail } from '@server_1/modules/diet';
@@ -1276,6 +1276,8 @@ export class MemberDietPlanService {
     const member = await this.memberRepository.findOne({
       where: { memberId },
       attributes: ['memberId', 'firstName', 'lastName', 'emailId', 'countryCode', 'contactNumber'],
+      // The email's header and footer name the member's franchise
+      include: [{ model: MstFranchise, as: 'franchise', attributes: ['franchiseId', 'companyName', 'emailId', 'timeZone'], required: false }],
     });
     if (!member) {
       throw new NotFoundException(`Member with ID ${memberId} not found`);
@@ -1299,6 +1301,9 @@ export class MemberDietPlanService {
       dayNo,
       dietPdfPath: pdfFile.filePath,
       dietPdfFileName: pdfFile.fileName,
+      franchiseName: member.franchise?.companyName ?? null,
+      supportEmail: member.franchise?.emailId ?? null,
+      timeZone: member.franchise?.timeZone ?? null,
     });
 
     this.logger.log(`diet.plan.generated event emitted for member ${memberId}`);

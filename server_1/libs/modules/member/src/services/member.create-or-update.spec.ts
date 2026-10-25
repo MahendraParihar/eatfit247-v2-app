@@ -17,7 +17,8 @@ describe('MemberService.createOrUpdate franchise resolution', () => {
 
   const serviceWith = (members: { findOne: jest.Mock; create?: jest.Mock }, franchises?: { getFranchiseListWithCountry: jest.Mock }): MemberService => {
     const service = Object.create(MemberService.prototype) as MemberService;
-    Object.assign(service, { memberRepository: members, franchiseService: franchises });
+    // member.created (group 8) is emitted after a new member is created
+    Object.assign(service, { memberRepository: members, franchiseService: franchises, eventEmitter: { emit: jest.fn() }, logger: { error: jest.fn() } });
     return service;
   };
 

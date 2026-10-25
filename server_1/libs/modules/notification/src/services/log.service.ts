@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { NotificationLogModel } from '../models/notification-log.model';
 import { SendNotificationDto } from '../dto/send-notification.dto';
 
@@ -158,6 +159,16 @@ export class LogService {
    * @param idempotencyKey - Idempotency key
    * @returns True if exists
    */
+  /** Every attempt of one message: the key itself and its numbered retries (`<key>-2`, `<key>-3`…), oldest first. */
+  async attempts(baseKey: string): Promise<Array<{ idempotencyKey: string; status: string; updatedAt: Date }>> {
+    const rows = await this.notificationLogRepository.findAll({
+      where: { [Op.or]: [{ idempotencyKey: baseKey }, { idempotencyKey: { [Op.like]: `${baseKey}-%` } }] },
+      attributes: ['id', 'idempotencyKey', 'status', 'updatedAt'],
+      order: [['id', 'ASC']],
+    });
+    return rows.map((row) => ({ idempotencyKey: row.idempotencyKey as string, status: row.status, updatedAt: row.updatedAt }));
+  }
+
   async exists(idempotencyKey: string): Promise<boolean> {
     try {
       const count = await this.notificationLogRepository.count({

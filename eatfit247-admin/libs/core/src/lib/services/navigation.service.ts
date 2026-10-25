@@ -114,6 +114,12 @@ const NAV_CONFIG: NavSection[] = [
         route: '/admin-user',
       },
       {
+        label: 'Email Templates',
+        icon: 'mark_email_read',
+        route: '/email-templates',
+        subject: 'EmailTemplate',
+      },
+      {
         label: 'RBAC',
         icon: 'security',
         children: [
@@ -252,4 +258,16 @@ const NAV_CONFIG: NavSection[] = [
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
   readonly navSections: NavSection[] = NAV_CONFIG;
+
+  /** The menu without the items (and empty groups or sections) whose subject the admin can't read. */
+  visibleSections(canRead: (subject: string) => boolean): NavSection[] {
+    const visible = (items: MenuItem[]): MenuItem[] =>
+      items
+        .filter((item) => !item.subject || canRead(item.subject))
+        .map((item) => (item.children ? { ...item, children: visible(item.children) } : item))
+        .filter((item) => !item.children || item.children.length > 0);
+    return this.navSections
+      .map((section) => ({ ...section, items: visible(section.items) }))
+      .filter((section) => section.items.length > 0);
+  }
 }

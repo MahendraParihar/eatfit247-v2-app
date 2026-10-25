@@ -528,17 +528,66 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
 
 ## Group 8: Email template switches and the welcome email (migration 149)
 
-- [ ] 8.0 Add a jest config and `test` target to `libs/modules/notification` (pattern: `libs/modules/pocket-guide/jest.config.ts`); it has none today.
-- [ ] 8.1 `149_email_template_switches.sql`: `member_welcome.active = false` (idempotent; never deleted).
-- [ ] 8.2 Admin API `email-template` (`EmailTemplate` Read / Update): list templates with `active`, `send_email_notification` and `send_whatsapp_notification`; `PATCH` a switch. No content editing.
-- [ ] 8.3 Emit `member.created` from admin member create (`member.service.ts:157`) and public signup. The notification listener handles it with `getNotificationTemplate('member_welcome')` (active only) and the send flags, idempotent per member.
-- [ ] 8.4 Review and complete `templates/member/welcome.ejs` and `templates/whatsapp/member/welcome.txt` (variables `memberName`, `franchise`; the login link only when a URL is configured).
-- [ ] 8.5 Admin **Email Templates** screen: list with three slide toggles (standalone + `inject()`, Material, tokens), visible with `EmailTemplate` Read.
+- [x] 8.0 Add a jest config and `test` target to `libs/modules/notification` (pattern: `libs/modules/pocket-guide/jest.config.ts`); it has none today.
+- [x] 8.1 `149_email_template_switches.sql`: `member_welcome.active = false` (idempotent; never deleted).
+- [x] 8.2 Admin API `email-template` (`EmailTemplate` Read / Update): list templates with `active`, `send_email_notification` and `send_whatsapp_notification`; `PATCH` a switch. No content editing.
+- [x] 8.3 Emit `member.created` from admin member create (`member.service.ts:157`) and public signup. The notification listener handles it with `getNotificationTemplate('member_welcome')` (active only) and the send flags, idempotent per member.
+- [x] 8.4 Review and complete `templates/member/welcome.ejs` and `templates/whatsapp/member/welcome.txt` (variables `memberName`, `franchise`; the login link only when a URL is configured).
+- [x] 8.5 Admin **Email Templates** screen: list with three slide toggles (standalone + `inject()`, Material, tokens), visible with `EmailTemplate` Read.
 - **Gate:**
   - A26 (diet plan honours its switch)
   - A32 (welcome: inactive → no mail; activated in the admin → one mail on the next member create; a duplicate event sends no second mail)
   - A23e (`EmailTemplate`: only super admin)
   - baseline plus the notification specs green
+
+> **As built (group 8, 2026-10-25):**
+> - **8.0:** `libs/modules/notification` has `jest.config.ts` and `tsconfig.spec.json` (test target inferred by `@nx/jest`).
+> - **8.1:** `149_email_template_switches.sql` switches `member_welcome` off on its first run only. Marker: `[149]` in the comment on `mst_email_templates.active`, so a later run never undoes an admin's activation (clone: run twice, activate, run again).
+> - **8.2:** `EmailTemplateService` and `email-template` (`GET list`, `PATCH :id`; `EmailTemplate` Read / Update) in the notification module. Only the switches sent change; WhatsApp can't be switched on for a template without a message.
+> - **8.3:**
+>   - `MemberService` emits `member.created` after admin create and after a new public signup, with the franchise's name and contacts (the notification module reads no franchises); a failure never fails the member's creation
+>   - `NotificationListener.handleMemberCreated` sends `member_welcome` (`member/welcome.ejs`, subject with the franchise) only while it is active and its channel switch is on, claimed in `notification_logs` first
+> - **8.4:** `welcome.ejs` documents its locals and shows no login button without a member website URL; `welcome.txt` no longer asks the member to log in.
+> - **8.5:** the admin `email-templates` lib (standalone, `inject()`, Material table and slide toggles, `--md-sys-*`) under System > Email Templates. Menu items can carry a `subject` and are hidden without Read (`NavigationService.visibleSections`, base layout).
+> - **Found in the gate:** the diet-plan email never rendered (`member/diet-plan.ejs` needs `franchise`, `planName`, `assignedDate`). The listener now passes them and the emitter adds the franchise (A26 needs it to send). A spec renders both real templates.
+> - **Live:** local `SYSTEM_EMAIL_ENABLE` was set to false for the runs (nodemailer's dummy transport) and restored after.
+>   - A23e 5/5
+>   - A32: inactive → nothing; activated → one email logged sent; inactive again → nothing
+>   - A26: off → no send, on → sent
+>   - a duplicate event → nothing
+>   - the screen in Chrome toggles and saves
+> - **Review:** a subagent found 10 issues. Two matter: a failed welcome could never be sent again, and the free-text welcome WhatsApp is refused by the Cloud API for new contacts. Fixed as group 8b.
+
+## Group 8b: Review fixes for the email switches (subagent review, 2026-10-25)
+
+- [x] 8b.1 **A failed welcome can be sent again; a sent one never twice** (findings 1 and 6). The problem: a failed first send used up the idempotency key for good, so a repeated event or a retry found it "already sent". Now each attempt has its own key (`member-welcome-<channel>-<id>`, then `-2`, `-3`…). A new attempt is made only when no earlier attempt is `sent` or still freshly `pending` (pending more than 15 minutes counts as failed). The unique index still settles a race. Only a unique-key clash counts as "claimed"; any other database error is logged as an error.
+- [x] 8b.2 **The welcome WhatsApp ships off** (finding 2). The problem: the message is free text, which the WhatsApp Cloud API refuses for a contact who hasn't written first (a new member never has). 149's first run also sets `member_welcome.send_whatsapp_notification = false` until an approved WhatsApp template exists; A32 says so.
+- [x] 8b.3 **The Email switch is honoured everywhere** (finding 5). The problem: `EmailNotificationService.sendEmail` / `sendEmailByType` (admin password emails) checked only `active`. They now also check `send_email_notification`. The screen marks the account templates (password reset / changed, admin welcome): switching them off stops those emails.
+- [x] 8b.4 **Smaller fixes:**
+  - 149 writes its first-run marker only when `member_welcome` exists (finding 7)
+  - the diet plan's date is the franchise's day (finding 8)
+  - tests: a failed welcome sent on a repeat event, a stale pending one, a WhatsApp failure, a database error that isn't a clash (finding 9)
+- **Recorded, not changed:**
+  - the public signup path welcomes any address typed at checkout (unauthenticated capture). The website is down, so this is listed under "Deferred until online payments return" (finding 3)
+  - the notification controllers are also mounted in public-api (only an admin token passes, as for `NotificationController`; roadmap 4.4, finding 4)
+  - the email footer's default company address for franchises without one, and `#` unsubscribe links (pre-existing, finding 8)
+  - `POST notification/:id/retry` refuses any idempotent notification (pre-existing)
+- **Gate:** group 8's gate again plus a case per finding; 149 re-run on a fresh clone.
+
+> **As built (group 8b, 2026-10-25):**
+> - **Fixes:**
+>   - **8b.1:** `LogService.attempts(key)` returns the key and its `-n` retries, and the listener's `nextWelcomeKey` uses it: a sent or freshly pending attempt blocks a new one, while a failed or stale (15 min) one makes room for `-n`. Only `SequelizeUniqueConstraintError` counts as claimed
+>   - **8b.2:** 149's first run also turns the welcome WhatsApp off
+>   - **8b.3:** `sendEmail` / `sendEmailByType` also require `send_email_notification`, and the screen marks the five account templates with a warning
+>   - **8b.4:** 149 writes its marker only when the row exists (clone: a missing row leaves no marker, and seeding it later then switches it off). The diet plan's date uses the franchise time zone. Specs added for a failed welcome re-sent as attempt 2, a stale vs fresh pending one, a database error, and a WhatsApp failure re-tried
+> - **Specs:** notification 16; 3 mutants caught (a failed attempt blocks forever, pending never stale, the retry reusing the key).
+> - **Live:**
+>   - group 8 live 12/12 again
+>   - three concurrent `member.created` for one fresh member → one email and one log row (real unique index)
+>   - A26 off / on correct
+>   - 12 calculate-tax identical to 6b; g5 33/33, form5b 3/3, A23a 20/20, A23b 12/12, group 7 6/6
+>   - A3: every earlier document identical
+>   - `eatfit` re-ran the final 149: welcome off, WhatsApp off
 
 ## Group 9: Backend: customer registration (G15)
 

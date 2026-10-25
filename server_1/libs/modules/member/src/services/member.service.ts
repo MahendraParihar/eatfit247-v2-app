@@ -2,8 +2,10 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember } from '../models';
 import { IBasicSearch, IManageMember, IMember, ITableList } from '@eatfit247-shared-lib';
@@ -21,9 +23,12 @@ import { Op, Order } from 'sequelize';
 
 @Injectable()
 export class MemberService {
+  private readonly logger = new Logger(MemberService.name);
+
   constructor(
     @InjectModel(TxnMember) private readonly memberRepository: typeof TxnMember,
     private franchiseService: FranchiseService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   public async findAll(
@@ -193,7 +198,31 @@ export class MemberService {
       createdIp: cIp,
       modifiedIp: cIp,
     };
-    await this.memberRepository.create(createObj);
+    const member = await this.memberRepository.create(createObj);
+    await this.emitMemberCreated(member);
+  }
+
+  /**
+   * `member.created` (configurable tax treatment, decision 18): the notification listener sends the welcome email
+   * while `member_welcome` is active. The franchise's name and contacts travel with the event (the notification
+   * module doesn't read franchises). A failure here never fails the member's creation.
+   */
+  private async emitMemberCreated(member: TxnMember): Promise<void> {
+    try {
+      const franchise = member.franchiseId ? await this.franchiseService.fetchById(member.franchiseId).catch(() => null) : null;
+      const phone = [member.countryCode, member.contactNumber].map((part) => (part ?? '').trim()).filter((part) => part).join(' ');
+      this.eventEmitter.emit('member.created', {
+        memberId: member.memberId,
+        memberName: `${member.firstName ?? ''} ${member.lastName ?? ''}`.trim(),
+        emailId: member.emailId || null,
+        phoneNumber: phone || null,
+        franchiseName: franchise?.companyName || '',
+        supportEmail: franchise?.emailId || null,
+        supportPhone: franchise?.contactNumber || null,
+      });
+    } catch (error: unknown) {
+      this.logger.error(`member.created not emitted for member ${member.memberId}: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   public async update(id: number, obj: IManageMember, cIp: string, adminId: number): Promise<void> {
@@ -392,6 +421,7 @@ export class MemberService {
 
       try {
         const newMember = await this.memberRepository.create(createObj);
+        await this.emitMemberCreated(newMember);
         return {
           memberId: newMember.memberId,
           isNew: true,
