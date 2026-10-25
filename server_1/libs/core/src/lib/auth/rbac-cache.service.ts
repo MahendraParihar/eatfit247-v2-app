@@ -6,7 +6,8 @@ import { ICachedPermissions } from './rbac.interfaces';
 
 @Injectable()
 export class RbacCacheService {
-  private readonly CACHE_KEY_PREFIX = 'rbac:permissions:';
+  /** v2: entries carry `allFranchises` (configurable tax treatment 3b.1); v1 entries are never read */
+  private readonly CACHE_KEY_PREFIX = 'rbac:permissions:v2:';
   private readonly TTL_SECONDS = 3600;
 
   constructor(

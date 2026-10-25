@@ -203,13 +203,47 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
 
 ## Group 3: RBAC (migration 147)
 
-- [ ] 3.1 `147_tax_rbac.sql` (idempotent, following migrations 140–142):
+- [x] 3.1 `147_tax_rbac.sql` (idempotent, following migrations 140–142):
   - `TaxMaster.franchise_scoped = true`
   - `franchise_admin` Create / Update on `TaxMaster`
   - subjects `TaxEvidence` (franchise-scoped) and `EmailTemplate` (global) `ON CONFLICT (subject_code) DO NOTHING`; super admin auto-granted by trigger
   - `financial_manager` Read / Update on `TaxEvidence`, granted explicitly
-- [ ] 3.2 Service-side scoping for Tax Master: controllers pass `IAuthUser`; list and details filter `franchiseId IN user.franchiseIds`; writes to another franchise → 403 (pattern: `lut.service.ts:162`). The engine lookup is unaffected. Add both subjects to `AdminSubjectEnum`.
+- [x] 3.2 Service-side scoping for Tax Master: controllers pass `IAuthUser`; list and details filter `franchiseId IN user.franchiseIds`; writes to another franchise → 403 (pattern: `lut.service.ts:162`). The engine lookup is unaffected. Add both subjects to `AdminSubjectEnum`.
 - **Gate:** A23a with super admin, `qa.franchise.admin` (own only), `qa.nutritionist.f2` and `qa.social`; the Tax Master screen still works for super admin; baseline green.
+
+> **As built (group 3, 2026-10-25):**
+> - **147** sets `TaxMaster.franchise_scoped` and adds `TaxEvidence` (scoped) and `EmailTemplate` (global). The trigger gave super admin all four actions on both. The explicit grants: franchise_admin TaxMaster create / update; financial_manager TaxEvidence read / update. Clone: a re-run changed nothing.
+> - **`TaxMasterService`:** `findAll` / `fetchById` / `create` / `update` / `changeStatus` take the `IAuthUser`. Writes check both the rule's franchise and the one it would move to. `getApplicableTaxRule` (the engine) is unscoped. Controllers pass `@CurrentUser()`.
+> - **A23a live** (QA super admin, `qa.franchise.admin` on 1, `qa.nutritionist.f2` on 2, `qa.social`): 20/20. The writes were no-op saves of the current values, and the rows were unchanged; the saves also confirmed 1b.6 live (rule 1 stays ALL).
+> - **Browser:** the Tax Master list and edit screens load for super admin. The edit form can't show the buyer country or "applies to" of any rule: this is pre-existing and logged as 13.6.
+> - **Review:** a subagent found 3 confirmed issues (super admins mapped to EFMUM were locked to EFMUM; an unmapped franchise admin would be global; a 147 re-run re-grants unticked permissions) plus 2 minor ones. Fixed as group 3b.
+
+
+## Group 3b: Review fixes for RBAC (subagent review, 2026-10-25)
+
+- [x] 3b.1 **Super admins see every franchise whatever their mapping; others fail closed** (findings 1 and 2; owner decision, D14 amended):
+  - the problem: super admins 2, 4 and 5 are mapped to EFMUM, so "no mapping = unscoped" locked them to EFMUM's rules; and a franchise admin who lost their mapping would have become a global editor
+  - `IAuthUser.allFranchises` / `ICachedPermissions.allFranchises` = the admin holds a role with `grant_all_on_new_subject`
+  - Tax Master scopes on it; an unmapped non-super admin gets an empty list and 403 on writes
+  - the RBAC cache key gains a version (`rbac:permissions:v2:`), so entries cached without the flag are never read
+- [x] 3b.2 **147 grants only on its first run** (finding 3): the RBAC screen deletes unticked grants (`savePermissionMatrix` hard-deletes and re-inserts), so `ON CONFLICT DO NOTHING` would re-grant on a re-run. The marker is TaxMaster still not being franchise-scoped. The comment is corrected.
+- Not fixed here (logged):
+  - `franchise_admin` can edit admin users, including their own franchise mapping and roles, without scope (pre-existing; roadmap 4.4)
+  - the franchise dropdown lists every franchise to a scoped admin (pre-existing, compliant-numbering replanning note 3)
+  - today's Tax Master form can't show a rule's buyer country (`'AE '`, char(3)) or reference (`'1'`, bigint string): pre-existing, fixed with the form in group 13 (13.6)
+- **Gate:** group 3's gate again, plus a super admin mapped to a franchise (sees all) and an unmapped non-super admin (sees none) in jest; live: a QA user mapped like admins 2 / 4 / 5 sees all 11 rules.
+
+> **As built (group 3b, 2026-10-25):**
+> - `ICachedPermissions.allFranchises` = `hasGrantAll` in `PermissionResolutionService`. `AdminUserService` sets `IAuthUser.allFranchises` (true only when the cached value is true). The cache prefix is now `rbac:permissions:v2:`.
+> - `TaxMasterService` scopes on `allFranchises`: otherwise `franchiseId IN franchiseIds` (an empty list returns nothing), and writes get a 403.
+> - 147's grants and the `franchise_scoped` update run in one DO block on the first run only. Clone: unticking (deleting) franchise_admin TaxMaster create, then re-running, keeps it off. Re-running on `eatfit` changed nothing.
+> - **Specs:**
+>   - tax master scope: a mapped super admin sees all, an unmapped admin sees none and gets 403s
+>   - permission resolution: `allFranchises` true for a grant-all role mapped to franchise 1, false otherwise
+>   - the cache spec now uses the v2 key
+> - **Live:** `qa.super.admin` was temporarily mapped to EFMUM (like admins 2 / 4 / 5): A23a 20/20, and it sees franchises 1, 2 and 3. The mapping was restored afterwards and admin-api restarted.
+> - **`LutService` and `CreditNoteService` keep "no mapping = unscoped"** (D14 note), for roadmap 4.4.
+
 
 ## Group 4: Backend: tax registrations and franchise currency
 
@@ -345,6 +379,7 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
 - [ ] 13.3 Franchise **Tax registrations** tab (pattern: `lut-register`), with currency; `invoice-numbering.component` gains a registration mode, lists every counter and creates counters (single and "next FY"); the payment and order forms show `INVOICE_COUNTER_MISSING` from the preview.
 - [ ] 13.4 Franchise form: `currency_code`.
 - [ ] 13.5 Standalone + `inject()`, Material, `var(--md-sys-*)`, `.html` / `.scss` per component.
+- [ ] 13.6 *(from the group 3 browser check)* The API returns `countryCode` trimmed and `referenceId` as a number; today `'AE '` (char(3)) and `'1'` (bigint string) leave the form's Buyer Country and Applies to empty, so a legacy rule can't be re-saved from the form (pre-existing).
 - **Gate:**
   - Chrome walk-through: the seeded rules; the preview reproduces mapping-table rows 1–13; the A5 switch from the UI; A7 / A8 messages; registrations CRUD; currency saves; counters listed and created; the missing-counter message on a payment form
   - `qa.franchise.admin` sees and edits only their own

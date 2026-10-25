@@ -26,6 +26,7 @@ function createCachedPermissions(
     },
     franchiseIds: [1],
     subjectMeta: {},
+    allFranchises: false,
     ...overrides,
   };
 }
@@ -77,7 +78,7 @@ describe('RbacCacheService', () => {
       const result = await service.getPermissions(100);
 
       expect(result).toEqual(cached);
-      expect(mockCacheManager.get).toHaveBeenCalledWith('rbac:permissions:100');
+      expect(mockCacheManager.get).toHaveBeenCalledWith('rbac:permissions:v2:100');
       expect(mockPermissionResolver.resolveForAdmin).not.toHaveBeenCalled();
     });
 
@@ -92,7 +93,7 @@ describe('RbacCacheService', () => {
       expect(result).toEqual(resolved);
       expect(mockPermissionResolver.resolveForAdmin).toHaveBeenCalledWith(100);
       expect(mockCacheManager.set).toHaveBeenCalledWith(
-        'rbac:permissions:100',
+        'rbac:permissions:v2:100',
         JSON.stringify(resolved),
         3600,
       );
@@ -158,7 +159,7 @@ describe('RbacCacheService', () => {
       await service.setPermissions(42, data);
 
       expect(mockCacheManager.set).toHaveBeenCalledWith(
-        'rbac:permissions:42',
+        'rbac:permissions:v2:42',
         JSON.stringify(data),
         3600,
       );
@@ -172,9 +173,9 @@ describe('RbacCacheService', () => {
       await service.invalidatePermissions([100, 200, 300]);
 
       expect(mockCacheManager.del).toHaveBeenCalledTimes(3);
-      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:100');
-      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:200');
-      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:300');
+      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:v2:100');
+      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:v2:200');
+      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:v2:300');
     });
 
     it('should handle concurrent cache invalidation events', async () => {
@@ -187,10 +188,10 @@ describe('RbacCacheService', () => {
 
       expect(mockCacheManager.del).toHaveBeenCalledTimes(4);
       const deletedKeys = mockCacheManager.del.mock.calls.map((call: unknown[]) => call[0]);
-      expect(deletedKeys).toContain('rbac:permissions:100');
-      expect(deletedKeys).toContain('rbac:permissions:300');
+      expect(deletedKeys).toContain('rbac:permissions:v2:100');
+      expect(deletedKeys).toContain('rbac:permissions:v2:300');
       expect(
-        deletedKeys.filter((k: string) => k === 'rbac:permissions:200'),
+        deletedKeys.filter((k: string) => k === 'rbac:permissions:v2:200'),
       ).toHaveLength(2);
     });
   });
@@ -213,10 +214,10 @@ describe('RbacCacheService', () => {
 
       const result = await service.rebuildPermissions(100);
 
-      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:100');
+      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:v2:100');
       expect(mockPermissionResolver.resolveForAdmin).toHaveBeenCalledWith(100);
       expect(mockCacheManager.set).toHaveBeenCalledWith(
-        'rbac:permissions:100',
+        'rbac:permissions:v2:100',
         JSON.stringify(freshData),
         3600,
       );
@@ -233,7 +234,7 @@ describe('RbacCacheService', () => {
         'DB connection lost',
       );
 
-      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:100');
+      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:v2:100');
       expect(mockPermissionResolver.resolveForAdmin).toHaveBeenCalledWith(100);
       expect(mockCacheManager.set).not.toHaveBeenCalled();
     });
@@ -279,8 +280,8 @@ describe('RbacCacheService', () => {
       await service.invalidatePermissions(parsed.adminIds);
 
       expect(mockCacheManager.del).toHaveBeenCalledTimes(2);
-      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:100');
-      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:200');
+      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:v2:100');
+      expect(mockCacheManager.del).toHaveBeenCalledWith('rbac:permissions:v2:200');
     });
   });
 });

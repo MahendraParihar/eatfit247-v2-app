@@ -25,14 +25,14 @@ export class TaxMasterController {
 
   @Get('list')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.TaxMaster)
-  async list(@Query() req: BasicSearchDto): Promise<ITableList<ITaxMaster>> {
-    return await this.service.findAll(req);
+  async list(@Query() req: BasicSearchDto, @CurrentUser() currentUser: IAuthUser): Promise<ITableList<ITaxMaster>> {
+    return await this.service.findAll(req, currentUser);
   }
 
   @Get('manage/:id')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.TaxMaster)
-  async getById(@Param('id') id: number): Promise<ITaxMaster> {
-    return await this.service.fetchById(id);
+  async getById(@Param('id') id: number, @CurrentUser() currentUser: IAuthUser): Promise<ITaxMaster> {
+    return await this.service.fetchById(id, currentUser);
   }
 
   @Post('manage')
@@ -42,7 +42,7 @@ export class TaxMasterController {
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.create(body, requestedIp, currentUser.adminId);
+    await this.service.create(body, requestedIp, currentUser);
   }
 
   @Put('manage/:id')
@@ -53,7 +53,7 @@ export class TaxMasterController {
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.update(id, body, requestedIp, currentUser.adminId);
+    await this.service.update(id, body, requestedIp, currentUser);
   }
 
   @Patch('update-status/:id')
@@ -64,7 +64,7 @@ export class TaxMasterController {
     @CurrentUser() currentUser: IAuthUser,
     @RequestedIp() requestedIp: string,
   ): Promise<void> {
-    await this.service.changeStatus(id, body.active, requestedIp, currentUser.adminId);
+    await this.service.changeStatus(id, body.active, requestedIp, currentUser);
   }
 }
 

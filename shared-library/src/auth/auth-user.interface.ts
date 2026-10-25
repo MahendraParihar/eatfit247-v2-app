@@ -26,6 +26,12 @@ export interface IAuthUser {
   permissions?: Record<string, string[]>;
   /** Subject metadata for franchise scoping decisions in CASL. */
   subjectMeta?: Record<string, { franchiseScoped: boolean }>;
+  /**
+   * Sees every franchise whatever `franchiseIds` holds: the admin has a role with
+   * `grant_all_on_new_subject` (Super Admin). Used by services scoped under configurable tax treatment D14;
+   * absent / false = only `franchiseIds` (empty = none there).
+   */
+  allFranchises?: boolean;
 }
 
 export interface IChangePassword {

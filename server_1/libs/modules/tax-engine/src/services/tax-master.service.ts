@@ -1,9 +1,9 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { ITaxRuleLookup } from '../interfaces/tax.interface';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { MstTaxMaster } from '../models';
-import { IBasicSearch, ITableList, ITaxMaster, TaxCategoryEnum, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
+import { IAuthUser, IBasicSearch, ITableList, ITaxMaster, TaxCategoryEnum, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
 import { CommonFunctionsUtil, MstFranchise, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { CreateTaxMasterDto } from '../dto/tax-master.dto';
 
@@ -92,8 +92,12 @@ export class TaxMasterService {
     }
   }
 
-  public async findAll(searchDto: IBasicSearch): Promise<ITableList<ITaxMaster>> {
+  /** The admin's franchises only (decision 14): all of them for a super admin, none for an unmapped admin. */
+  public async findAll(searchDto: IBasicSearch, user: IAuthUser): Promise<ITableList<ITaxMaster>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'taxName');
+    if (!user.allFranchises) {
+      whereCondition.franchiseId = { [Op.in]: user.franchiseIds ?? [] };
+    }
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
     const offset = pageNumber === 0 ? 0 : pageNumber * pageSize;
@@ -162,19 +166,24 @@ export class TaxMasterService {
     };
   }
 
-  public async fetchById(id: number): Promise<ITaxMaster> {
+  public async fetchById(id: number, user: IAuthUser): Promise<ITaxMaster> {
     const find = await this.mstTaxMaster.scope('details').findOne({
       where: { id: id },
       raw: true,
       nest: true,
     });
+    if (find) {
+      this.assertFranchiseAccess(find.franchiseId, user);
+    }
     if (!find) {
       throw new NotFoundException('Tax master not found');
     }
     return this.convertToModel(find);
   }
 
-  public async create(obj: CreateTaxMasterDto, cIp: string, adminId: number): Promise<void> {
+  public async create(obj: CreateTaxMasterDto, cIp: string, user: IAuthUser): Promise<void> {
+    this.assertFranchiseAccess(obj.franchiseId, user);
+    const adminId = user.adminId;
     await this.assertConsistentRule(obj);
     // Set default values if not provided
     const franchiseId = obj.franchiseId
@@ -204,13 +213,19 @@ export class TaxMasterService {
     await this.mstTaxMaster.create(createObj);
   }
 
-  public async update(id: number, obj: CreateTaxMasterDto, cIp: string, adminId: number): Promise<void> {
+  public async update(id: number, obj: CreateTaxMasterDto, cIp: string, user: IAuthUser): Promise<void> {
     const find = await this.mstTaxMaster.findOne({
       where: { id: id },
     });
     if (!find) {
       throw new NotFoundException('Tax master not found');
     }
+    // Both the rule's franchise and the one it would move to
+    this.assertFranchiseAccess(find.franchiseId, user);
+    if (obj.franchiseId !== undefined) {
+      this.assertFranchiseAccess(obj.franchiseId, user);
+    }
+    const adminId = user.adminId;
     // A staged (inactive) VAT rule may be edited before the TRN exists; the TRN is checked on activation
     await this.assertConsistentRule(
       {
@@ -243,13 +258,15 @@ export class TaxMasterService {
     await this.mstTaxMaster.update(updateObj, { where: { id: id } });
   }
 
-  public async changeStatus(id: number, active: boolean, cIp: string, adminId: number): Promise<void> {
+  public async changeStatus(id: number, active: boolean, cIp: string, user: IAuthUser): Promise<void> {
     const find = await this.mstTaxMaster.findOne({
       where: { id: id },
     });
     if (!find) {
       throw new NotFoundException('Tax master not found');
     }
+    this.assertFranchiseAccess(find.franchiseId, user);
+    const adminId = user.adminId;
     if (active && !find.active) {
       // Activating a staged VAT rule needs the franchise TRN behind it
       await this.assertConsistentRule(find.get({ plain: true }) as unknown as CreateTaxMasterDto);
@@ -260,5 +277,15 @@ export class TaxMasterService {
       modifiedIp: cIp,
     };
     await this.mstTaxMaster.update(updateObj, { where: { id: id } });
+  }
+
+  /**
+   * Admins reach only their own franchises' rules (principle 3, decision 14). A super admin (a role with
+   * grant_all_on_new_subject) reaches every franchise whatever their mapping; an unmapped admin reaches none.
+   */
+  private assertFranchiseAccess(franchiseId: number, user: IAuthUser): void {
+    if (!user.allFranchises && !(user.franchiseIds ?? []).includes(Number(franchiseId))) {
+      throw new ForbiddenException('You do not have access to this franchise.');
+    }
   }
 }
