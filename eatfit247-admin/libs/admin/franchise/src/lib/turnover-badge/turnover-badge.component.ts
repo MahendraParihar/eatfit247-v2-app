@@ -45,9 +45,9 @@ export class TurnoverBadgeComponent {
   private readonly permissionService = inject(PermissionService);
   private loadedId: number | null = null;
 
-  /** The warning applies while a threshold is set and there is no GSTIN. */
+  /** The warning applies while a threshold is set and there is no active GST registration (from the API). */
   static isTracked(franchise: IFranchise): boolean {
-    return Number(franchise.registrationThresholdAmount || 0) > 0 && !(franchise.gstNumber || '').trim();
+    return Number(franchise.registrationThresholdAmount || 0) > 0 && !franchise.gstRegistered;
   }
 
   get levelClass(): string {

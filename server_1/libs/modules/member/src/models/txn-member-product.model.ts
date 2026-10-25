@@ -162,10 +162,9 @@ import { MstProduct } from '@server_1/models/product';
         attributes: [
           'franchiseId',
           'companyName',
-          'gstNumber',
           'tanNumber',
-          'vatNumber',
           'lutNumber',
+          'timeZone',
           'brandName',
         ],
       },

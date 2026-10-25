@@ -2,6 +2,7 @@ import { InvoicePdfService } from '@server_1/platform';
 import {
   IAddress,
   IFranchise,
+  IInvoiceRegistration,
   IMemberPayment,
   IMemberProduct,
   mapPaymentToInvoiceDocument,
@@ -235,6 +236,31 @@ describe('invoice mapper: proforma and invoice date', () => {
         [],
       );
       expect(noneDoc.seller.taxId).toBeUndefined();
+    });
+
+    it('configurable tax treatment 4.2: the issuing registration decides the seller number and the QR GSTIN, not the columns', () => {
+      const stale = { companyName: 'EAT FIT 247', gstNumber: 'STALE-COLUMN', vatNumber: null } as unknown as IFranchise;
+      const gst: IInvoiceRegistration = {
+        taxRegistrationId: 1,
+        countryCode: 'IN',
+        taxSystem: TaxTypeEnum.GST,
+        registrationNumber: '27CSEPS5397E1Z8',
+        label: 'GSTIN',
+        stateCode: '27',
+        currencyCode: 'INR',
+      };
+      const doc = mapPaymentToInvoiceDocument(payment(issued), stale, indianBuyer, indianSeller, [], undefined, [], gst);
+      expect(doc.seller).toMatchObject({ taxId: '27CSEPS5397E1Z8', taxIdLabel: 'GSTIN' });
+      expect(doc.qrCode?.value).toContain('27CSEPS5397E1Z8');
+      expect(doc.qrCode?.value).not.toContain('STALE-COLUMN');
+      // null = unregistered on the invoice date: no number, no QR GSTIN, whatever the column holds
+      const unregistered = mapPaymentToInvoiceDocument(payment(issued), stale, indianBuyer, indianSeller, [], undefined, [], null);
+      expect(unregistered.seller.taxId).toBeUndefined();
+      expect(unregistered.qrCode?.value || '').not.toContain('STALE-COLUMN');
+      // A TRN prints as TRN on a product order too
+      const trn: IInvoiceRegistration = { ...gst, countryCode: 'AE', taxSystem: TaxTypeEnum.VAT, registrationNumber: '100123456700003', label: 'TRN', stateCode: null, currencyCode: 'AED' };
+      const order = mapProductOrderToInvoiceDocument(product({ invoiceId: 'HCUAE/2026/P/000001' }), stale, usBuyer, indianSeller, undefined, [], trn);
+      expect(order.seller).toMatchObject({ taxId: '100123456700003', taxIdLabel: 'TRN' });
     });
   });
 

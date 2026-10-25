@@ -31,6 +31,7 @@ describe('TaxEngineService decision matrix', () => {
 
   let rules: Record<number, Rule | null>;
   let franchises: Record<number, { gstNumber: string | null; vatNumber: string | null }>;
+  let findActive: jest.Mock;
   let lut: { arn: string } | null;
   let getApplicableTaxRule: jest.Mock;
   let findValid: jest.Mock;
@@ -50,6 +51,10 @@ describe('TaxEngineService decision matrix', () => {
     lut = { arn: 'AD270326000123X' };
     getApplicableTaxRule = jest.fn().mockImplementation(async (lookup: { franchiseId: number }) => rules[lookup.franchiseId]);
     findValid = jest.fn().mockImplementation(async () => lut);
+    findActive = jest.fn().mockImplementation(async (id: number) => [
+      ...(franchises[id]?.gstNumber?.trim() ? [{ taxSystem: TaxTypeEnum.GST, countryCode: 'IN' }] : []),
+      ...(franchises[id]?.vatNumber?.trim() ? [{ taxSystem: TaxTypeEnum.VAT, countryCode: id === HCUAE ? 'AE' : 'IN' }] : []),
+    ]);
     engine = new TaxEngineService(
       new IndiaGstService(),
       new VatService(),
@@ -70,6 +75,8 @@ describe('TaxEngineService decision matrix', () => {
         findByPk: jest.fn().mockImplementation(async (id: number) => franchises[id] ?? null),
       } as unknown as typeof MstFranchise,
       { getBoolean: jest.fn().mockReturnValue(false) } as never,
+      // Registrations (configurable tax treatment, plan 4.2) derived from the same franchise fixture
+      { findActive } as never,
     );
   });
 
@@ -86,6 +93,25 @@ describe('TaxEngineService decision matrix', () => {
     transactionType: TransactionType.SERVICE,
     supplyDate: '2026-10-12',
     ...overrides,
+  });
+
+  describe('registrations on the supply date (configurable tax treatment 4.2 / 4b.5)', () => {
+    it('asks for the registrations effective on the supply date', async () => {
+      await engine.calculate(service({ supplyDate: '2017-05-02' }));
+      expect(findActive).toHaveBeenCalledWith(EFMUM, '2017-05-02');
+    });
+
+    it('a sale dated before the GST registration starts prices as unregistered (no GST)', async () => {
+      findActive.mockResolvedValueOnce([]);
+      const r = await engine.calculate(service({}));
+      expect(r).toMatchObject({ taxType: TaxTypeEnum.NONE, taxMode: TaxMode.NO_TAX, taxAmount: 0 });
+    });
+
+    it('a VAT rule with no VAT registration effective on the supply date → 400', async () => {
+      getApplicableTaxRule.mockResolvedValue(VAT0_Z);
+      findActive.mockResolvedValueOnce([]);
+      await expect(engine.calculate(service({ franchiseId: HCUAE, supplierCountryCode: 'AE', customerCountryCode: 'AE', currency: 'AED' }))).rejects.toThrow('no TRN');
+    });
   });
 
   describe('EFMUM (India, services)', () => {

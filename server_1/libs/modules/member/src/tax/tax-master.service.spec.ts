@@ -1,7 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Op } from 'sequelize';
-import { MstFranchise } from '@server_1/core';
-import { MstTaxMaster, TaxMasterService } from '@server_1/modules/tax-engine';
+import { MstTaxMaster, TaxMasterService, TaxRegistrationService } from '@server_1/modules/tax-engine';
 import { IAuthUser, TaxCategoryEnum, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
 
 /** A role with grant_all_on_new_subject: every franchise (configurable tax treatment 3b.1) */
@@ -34,7 +33,8 @@ describe('TaxMasterService rule consistency', () => {
     franchise = { gstNumber: null, vatNumber: '100000000000003' };
     service = new TaxMasterService(
       { create } as unknown as typeof MstTaxMaster,
-      { findByPk: jest.fn().mockImplementation(async () => franchise) } as unknown as typeof MstFranchise,
+      // An active VAT registration exists when the fixture franchise has a TRN (configurable tax treatment, plan 4.2)
+      { hasActive: jest.fn().mockImplementation(async () => !!franchise?.vatNumber?.trim()) } as unknown as TaxRegistrationService,
     );
   });
 
@@ -118,7 +118,7 @@ describe('TaxMasterService franchise scope', () => {
     const findOne = jest.fn().mockImplementation(async ({ where }: { where: { id: number } }) => (where.id === 2 ? hcuaeRule : efmumRule));
     service = new TaxMasterService(
       { create, update, findOne, scope: () => ({ findAndCountAll, findOne }) } as unknown as typeof MstTaxMaster,
-      { findByPk: jest.fn().mockResolvedValue({ gstNumber: '27CSEPS5397E1Z8', vatNumber: null }) } as unknown as typeof MstFranchise,
+      { hasActive: jest.fn().mockResolvedValue(false) } as unknown as TaxRegistrationService,
     );
   });
 

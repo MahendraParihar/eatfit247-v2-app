@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { DocumentNatureEnum, IAuthUser } from '@eatfit247-shared-lib';
 import { MstFranchise } from '@server_1/core';
 import { TxnMember } from '@server_1/modules/member';
+import { TaxRegistrationService } from '@server_1/modules/tax-engine';
 import { DocumentsIssuedService, IIssuedDocument, MAX_MISSING_LISTED } from './documents-issued.service';
 import { FinancialYearService } from './financial-year.service';
 import { DocumentSeriesUtil } from '../utils/document-series.util';
@@ -14,6 +15,7 @@ const range = (prefix: string, fromSeq: number, toSeq: number, width: number): I
   Array.from({ length: toSeq - fromSeq + 1 }, (_, i) => doc(DocumentSeriesUtil.join(prefix, fromSeq + i, width)));
 
 describe('DocumentSeriesUtil.split (decision 13)', () => {
+  let registeredBetween: jest.Mock;
   it.each([
     ['EFMUM/2026-27/S/000491', 'EFMUM/2026-27/S/', 491, 6, true],
     ['EFMUM/EXP/2026-27/S/000007', 'EFMUM/EXP/2026-27/S/', 7, 6, true],
@@ -144,9 +146,12 @@ describe('DocumentsIssuedService.report', () => {
       gstNumber: '27AAAAA0000A1Z5',
       timeZone: 'Asia/Kolkata',
     });
+    registeredBetween = jest.fn().mockImplementation(async (franchiseId: number) => franchiseId !== 3);
     service = new DocumentsIssuedService(
       new FinancialYearService({ findOne: franchiseFindOne } as unknown as typeof MstFranchise, {} as typeof TxnMember),
       { query } as unknown as Sequelize,
+      // MEMUM (3) has no GST registration in the period (configurable tax treatment, plan 4.2)
+      { registeredBetween } as unknown as TaxRegistrationService,
     );
   });
 
@@ -184,8 +189,9 @@ describe('DocumentsIssuedService.report', () => {
     expect(query).not.toHaveBeenCalled();
   });
 
-  it('a franchise without a GSTIN is marked not reportable', async () => {
+  it('a franchise without a GST registration in the period is marked not reportable', async () => {
     franchiseFindOne.mockResolvedValue({ franchiseId: 3, franchiseCode: 'MEMUM', companyName: 'Mahi Enterprise', gstNumber: null, timeZone: 'Asia/Kolkata' });
     expect((await service.report(superAdmin, 3, '2026-10-01', '2026-10-31')).reportable).toBe(false);
+    expect(registeredBetween).toHaveBeenLastCalledWith(3, 'GST', 'IN', '2026-10-01', '2026-10-31');
   });
 });

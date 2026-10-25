@@ -99,9 +99,8 @@ describe('FranchiseTurnoverCron (turnover warning, decision 12)', () => {
     expect(franchises[0]).toMatchObject({ turnoverAlertFy: '2026-27', turnoverAlertLevel: TurnoverAlertLevel.NONE });
   });
 
-  it('skips a franchise with a GSTIN', async () => {
-    franchises = [franchise({ gstNumber: '27AAAAA0000A1Z5' })];
-    at(TurnoverAlertLevel.RED);
+  it('no alert for a GST-registered franchise: the turnover service gives it level NONE (plan 4.2)', async () => {
+    at(TurnoverAlertLevel.NONE);
     expect(await cron.run()).toBe(0);
     expect(sendEmailFromTemplate).not.toHaveBeenCalled();
   });

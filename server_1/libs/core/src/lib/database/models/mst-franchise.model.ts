@@ -113,6 +113,13 @@ export class MstFranchise extends Model<MstFranchise> {
     type: DataType.STRING(100),
   })
   declare vatNumber: string;
+  /** Working (functional) currency, ISO 4217 (configurable tax treatment, decision 17; migration 146) */
+  @Column({
+    allowNull: true,
+    field: 'currency_code',
+    type: DataType.STRING(3),
+  })
+  declare currencyCode: string | null;
   @Column({
     allowNull: true,
     field: 'lut_number',

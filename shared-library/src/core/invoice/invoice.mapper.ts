@@ -3,6 +3,7 @@ import { TaxMode, TaxTypeEnum, TransactionType } from '../../enum';
 import { IFranchise } from '../franchise.interface';
 import { IAddress } from '../location.interface';
 import {IMemberPayment, IMemberProduct} from "../member";
+import { IInvoiceRegistration } from '../tax/tax-rule.interface';
 
 /**
  * Optional member information for buyer details
@@ -38,6 +39,7 @@ export function mapPaymentToInvoiceDocument(
   items: IInvoiceItem[],
   memberInfo?: IMemberInfo,
   conditions: string[] = [],
+  registration?: IInvoiceRegistration | null,
 ): IInvoiceDocument {
   // Determine tax type and mode
   const taxType = payment.taxType as TaxTypeEnum;
@@ -56,10 +58,11 @@ export function mapPaymentToInvoiceDocument(
   // Build QR code value if enabled
   let qrCodeValue = '';
   const invoiceDate = invoiceDateOf(payment.invoiceDate, payment.paymentDate);
-  if (qrCodeEnabled && franchise.gstNumber) {
+  const sellerGstin = supplierGstin(franchise, registration);
+  if (qrCodeEnabled && sellerGstin) {
     const taxableAmount = payment.orderAmount;
     qrCodeValue = buildQrCodeValue(
-      franchise.gstNumber,
+      sellerGstin,
       payment.invoiceId || '',
       invoiceDate,
       payment.totalAmount,
@@ -71,7 +74,7 @@ export function mapPaymentToInvoiceDocument(
     );
   }
   // Build seller (franchise) information
-  const seller = buildSellerInfo(franchise, taxType, franchiseAddress);
+  const seller = buildSellerInfo(franchise, taxType, franchiseAddress, registration);
   // Build buyer (member) information
   const buyer = buildBuyerInfo(
     memberAddress,
@@ -267,6 +270,14 @@ function buildQrCodeValue(
   return JSON.stringify(qrData);
 }
 
+/** The seller's GSTIN for the e-invoice QR: the issuing registration's when given, else the legacy column. */
+function supplierGstin(franchise: IFranchise, registration?: IInvoiceRegistration | null): string | null {
+  if (registration !== undefined) {
+    return registration?.taxSystem === TaxTypeEnum.GST ? registration.registrationNumber : null;
+  }
+  return franchise.gstNumber?.trim() || null;
+}
+
 /**
  * Builds seller (franchise) information
  */
@@ -274,15 +285,20 @@ function buildSellerInfo(
   franchise: IFranchise,
   taxType: TaxTypeEnum,
   franchiseAddress: IAddress,
+  registration?: IInvoiceRegistration | null,
 ): IInvoiceDocument['seller'] {
-  // The supplier's own registration, printed whenever it is registered (roadmap 4.6, decision 18):
-  // an Indian franchise shows its GSTIN, any other its VAT number (UAE: TRN). An unregistered
-  // franchise has neither and shows none.
+  // The supplier's own registration, printed whenever it is registered (roadmap 4.6, decision 18). The
+  // caller passes the registration the invoice is issued under (configurable tax treatment, decision 12;
+  // null = unregistered, none printed). Without it, the legacy columns: an Indian franchise shows its
+  // GSTIN, any other its VAT number (UAE: TRN).
   const supplierCountry = (franchiseAddress.countryCode || '').trim().toUpperCase();
   const isIndian = supplierCountry ? supplierCountry === 'IN' : taxType === TaxTypeEnum.GST;
   let taxId: string | undefined;
   let taxIdLabel: string | undefined;
-  if (isIndian && franchise.gstNumber?.trim()) {
+  if (registration !== undefined) {
+    taxId = registration?.registrationNumber ?? undefined;
+    taxIdLabel = registration?.label ?? undefined;
+  } else if (isIndian && franchise.gstNumber?.trim()) {
     taxId = franchise.gstNumber.trim();
     taxIdLabel = 'GSTIN';
   } else if (!isIndian && franchise.vatNumber?.trim()) {
@@ -512,6 +528,7 @@ export function mapProductOrderToInvoiceDocument(
   franchiseAddress: IAddress,
   memberInfo?: IMemberInfo,
   conditions: string[] = [],
+  registration?: IInvoiceRegistration | null,
 ): IInvoiceDocument {
   const items = buildInvoiceOrderItem(productOrder);
 
@@ -525,12 +542,13 @@ export function mapProductOrderToInvoiceDocument(
   // Build QR code value if enabled
   let qrCodeValue = '';
   const invoiceDate = invoiceDateOf(productOrder.invoiceDate, productOrder.paymentDate);
-  if (qrCodeEnabled && franchise.gstNumber) {
+  const sellerGstin = supplierGstin(franchise, registration);
+  if (qrCodeEnabled && sellerGstin) {
     const taxableAmount = productOrder.subTotalAmount;
     // Aggregate tax breakdown from first order item (same tax regime for all items in an order)
     const firstItemTaxObj = productOrder.orderItems[0].taxObj;
     qrCodeValue = buildQrCodeValue(
-      franchise.gstNumber,
+      sellerGstin,
       productOrder.invoiceId || '',
       invoiceDate,
       productOrder.totalAmount,
@@ -542,7 +560,7 @@ export function mapProductOrderToInvoiceDocument(
     );
   }
   // Build seller (franchise) information
-  const seller = buildSellerInfo(franchise, productOrder.orderItems[0].taxType, franchiseAddress);
+  const seller = buildSellerInfo(franchise, productOrder.orderItems[0].taxType, franchiseAddress, registration);
   // Build buyer (member) information
   const buyer = buildBuyerInfo(
     memberAddress,

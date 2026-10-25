@@ -102,6 +102,13 @@ describe('Tax mapping matrix (franchise × customer × goods/services)', () => {
       { findValid } as unknown as LutService,
       { findByPk: jest.fn().mockImplementation(async (id: number) => franchises[id] ?? null) } as unknown as typeof MstFranchise,
       { getBoolean: jest.fn().mockImplementation(() => allowUnregisteredInterstate) } as never,
+      // Registrations (configurable tax treatment, plan 4.2) derived from the same franchise fixture
+      {
+        findActive: jest.fn().mockImplementation(async (id: number) => [
+          ...(franchises[id]?.gstNumber?.trim() ? [{ taxSystem: TaxTypeEnum.GST, countryCode: 'IN' }] : []),
+          ...(franchises[id]?.vatNumber?.trim() ? [{ taxSystem: TaxTypeEnum.VAT, countryCode: id === HCUAE ? 'AE' : 'IN' }] : []),
+        ]),
+      } as never,
     );
   });
 

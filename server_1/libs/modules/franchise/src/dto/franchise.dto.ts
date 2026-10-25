@@ -8,13 +8,14 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
   Max,
   MaxLength,
   Min,
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   BusinessTypeEnum,
   IManageFranchise,
@@ -162,5 +163,10 @@ export class CreateFranchiseDto implements IManageFranchise {
   @Min(0)
   @Max(999999999999.99)
   registrationThresholdAmount?: number | null;
+  /** Working currency, ISO 4217 (configurable tax treatment, decision 17); defaults to the address country's */
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toUpperCase() || null : value))
+  @Matches(/^[A-Z]{3}$/, { message: 'Currency must be an ISO 4217 code' })
+  currencyCode?: string | null;
 }
 

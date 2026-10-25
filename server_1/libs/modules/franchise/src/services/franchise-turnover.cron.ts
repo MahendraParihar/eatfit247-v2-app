@@ -56,9 +56,7 @@ export class FranchiseTurnoverCron {
     });
     let sent = 0;
     for (const franchise of franchises) {
-      if ((franchise.gstNumber || '').trim()) {
-        continue;
-      }
+      // A GST-registered franchise has level NONE (the turnover service reads its registrations), so no alert
       try {
         const turnover = await this.turnoverService.forFranchise(franchise, asOf);
         const sameFy = franchise.turnoverAlertFy === turnover.financialYear;

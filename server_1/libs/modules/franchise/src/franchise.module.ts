@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { modelRegistry, MstFranchise } from '@server_1/core';
+import { TaxEngineModule } from '@server_1/modules/tax-engine';
 import { FranchiseController } from './controllers';
 import { FranchisePaymentGatewayService, FranchiseService, FranchiseTurnoverCron, FranchiseTurnoverService } from './services';
 import { MstFranchisePaymentGateway } from './models';
@@ -9,7 +10,7 @@ import { MstFranchisePaymentGateway } from './models';
 modelRegistry.register([MstFranchisePaymentGateway]);
 
 @Module({
-  imports: [SequelizeModule.forFeature([MstFranchise, MstFranchisePaymentGateway])],
+  imports: [SequelizeModule.forFeature([MstFranchise, MstFranchisePaymentGateway]), TaxEngineModule],
   controllers: [FranchiseController],
   providers: [FranchiseService, FranchisePaymentGatewayService, FranchiseTurnoverService, FranchiseTurnoverCron],
   exports: [FranchiseService, FranchisePaymentGatewayService, FranchiseTurnoverService, SequelizeModule],

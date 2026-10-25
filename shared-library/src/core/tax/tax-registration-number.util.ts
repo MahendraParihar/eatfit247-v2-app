@@ -40,9 +40,9 @@ export interface ITaxRegistrationNumberCheck {
  * and the server.
  */
 export class TaxRegistrationNumberUtil {
-  /** Upper case, spaces and the punctuation people type (`-`, `.`, `/`) removed. */
+  /** Upper case, letters and digits only (as migration 146 normalised the franchise numbers). */
   static normalize(value: string | null | undefined): string {
-    return (value ?? '').toUpperCase().replace(/[\s\-./]/g, '');
+    return (value ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   }
 
   /** The GSTIN check character for its first 14 characters (GSTN's mod-36 algorithm). */

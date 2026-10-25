@@ -23,6 +23,7 @@ import {
   InvoiceSequenceModel,
   InvoiceSeriesUtil,
 } from '@server_1/platform';
+import { TaxRegistrationService } from '@server_1/modules/tax-engine';
 
 /** The franchise columns that hold the invoice number format and the turnover threshold. */
 interface IFranchiseNumberingFields {
@@ -38,6 +39,7 @@ export class FranchiseService {
     private appConfigService: AppConfigService,
     private addressService: AddressService,
     private countryService: CountryService,
+    private readonly taxRegistrationService: TaxRegistrationService,
   ) {}
 
   public async findAll(searchDto: IBasicSearch): Promise<ITableList<IFranchise>> {
@@ -66,19 +68,28 @@ export class FranchiseService {
       raw: true,
       nest: true,
     });
-    const resList: IFranchise[] = await Promise.all(rows.map((item: any) => this.convertToModel(item)));
+    const gstRegistered = await this.taxRegistrationService.gstRegisteredFranchiseIds(
+      rows.map((item: any) => item.franchiseId),
+      FranchiseDateUtil.localDate(new Date(), FranchiseDateUtil.DEFAULT_TIME_ZONE),
+    );
+    const resList: IFranchise[] = await Promise.all(rows.map((item: any) => this.convertToModel(item, gstRegistered)));
     return {
       tableData: resList,
       count: count,
     };
   }
 
-  private async convertToModel(item: any): Promise<IFranchise> {
+  /** `gstRegisteredIds`: the list's one-query answer; details look the franchise up itself. */
+  private async convertToModel(item: any, gstRegisteredIds?: Set<number>): Promise<IFranchise> {
     // Fetch address for this franchise
     const address = await this.addressService.findByTableIdAndPk(
       TableEnum.MST_FRANCHISES,
       item.franchiseId,
     );
+    const gstRegistered = (
+      gstRegisteredIds ??
+      (await this.taxRegistrationService.gstRegisteredFranchiseIds([item.franchiseId], FranchiseDateUtil.localDate(new Date(), item.timeZone)))
+    ).has(item.franchiseId);
     
     return <IFranchise>{
       franchiseId: item.franchiseId,
@@ -99,6 +110,8 @@ export class FranchiseService {
       tanNumber: item.tanNumber,
       gstNumber: item.gstNumber,
       vatNumber: item.vatNumber,
+      gstRegistered,
+      currencyCode: item.currencyCode ?? null,
       bankAccountId: item.bankAccountId,
       paymentGatewayConfigId: item.paymentGatewayConfigId,
       brandName: item.brandName,
@@ -145,8 +158,10 @@ export class FranchiseService {
 
   public async create(obj: IManageFranchise, cIp: string, adminId: number): Promise<void> {
     const numbering = await this.numberingFields(null, obj, null);
+    await this.taxRegistrationService.assertFranchiseFormNumbers(null, await this.franchiseCountryCode(null, obj), obj, {});
     const createObj = {
       ...numbering,
+      currencyCode: FranchiseService.currencyOf(obj),
       franchiseCode: obj.franchiseCode,
       financialYear: obj.financialYear,
       companyName: obj.companyName,
@@ -187,6 +202,31 @@ export class FranchiseService {
       };
       await this.addressService.createOrUpdate(addressData, cIp, adminId);
     }
+    if (!createObj.currencyCode) {
+      // Decision 17: the working currency defaults to the address country's
+      const currency = await this.countryCurrency(await this.franchiseCountryCode(franchise.franchiseId, obj));
+      if (currency) {
+        await this.franchiseRepository.update({ currencyCode: currency }, { where: { franchiseId: franchise.franchiseId } });
+      }
+    }
+    await this.taxRegistrationService.syncFromFranchiseForm(franchise.franchiseId, obj, {}, adminId, cIp);
+  }
+
+  /** `currencyCode` from the payload, upper case; undefined when not sent (an update then keeps the stored one). */
+  private static currencyOf(obj: IManageFranchise): string | null | undefined {
+    if (obj.currencyCode === undefined) {
+      return undefined;
+    }
+    return (obj.currencyCode ?? '').trim().toUpperCase() || null;
+  }
+
+  private async countryCurrency(countryCode: string | null): Promise<string | null> {
+    if (!countryCode) {
+      return null;
+    }
+    const countries = await this.countryService.findAll({ page: 0, limit: 1000 });
+    const country = countries.tableData.find((c) => (c.countryCode ?? '').trim().toUpperCase() === countryCode);
+    return (country?.currencyCode ?? '').trim().toUpperCase() || null;
   }
 
   public async update(id: number, obj: IManageFranchise, cIp: string, adminId: number): Promise<void> {
@@ -197,8 +237,15 @@ export class FranchiseService {
       throw new NotFoundException('Franchise not found');
     }
     const numbering = await this.numberingFields(id, obj, find);
+    const countryCode = await this.franchiseCountryCode(id, obj);
+    await this.taxRegistrationService.assertFranchiseFormNumbers(id, countryCode, obj, find);
+    const stored = { gstNumber: find.gstNumber, vatNumber: find.vatNumber };
+    // An empty currency falls back to the country's (decision 17: a franchise always states one)
+    const sent = FranchiseService.currencyOf(obj);
+    const currencyCode = sent === null ? await this.countryCurrency(countryCode) : sent;
     const updateObj = {
       ...numbering,
+      ...(currencyCode !== undefined ? { currencyCode } : {}),
       franchiseCode: obj.franchiseCode,
       financialYear: obj.financialYear,
       companyName: obj.companyName,
@@ -211,8 +258,9 @@ export class FranchiseService {
       alternateContactNumber: obj.alternateContactNumber,
       panNumber: obj.panNumber || null,
       tanNumber: obj.tanNumber || null,
-      gstNumber: obj.gstNumber || null,
-      vatNumber: obj.vatNumber || null,
+      // Omitted = unchanged (an older client); the home registration follows in syncFromFranchiseForm (group 4b)
+      ...(obj.gstNumber !== undefined ? { gstNumber: obj.gstNumber || null } : {}),
+      ...(obj.vatNumber !== undefined ? { vatNumber: obj.vatNumber || null } : {}),
       bankAccountId: obj.bankAccountId || null,
       paymentGatewayConfigId: obj.paymentGatewayConfigId || null,
       brandName: obj.brandName || null,
@@ -238,6 +286,7 @@ export class FranchiseService {
       };
       await this.addressService.createOrUpdate(addressData, cIp, adminId);
     }
+    await this.taxRegistrationService.syncFromFranchiseForm(id, obj, stored, adminId, cIp);
   }
 
   /**

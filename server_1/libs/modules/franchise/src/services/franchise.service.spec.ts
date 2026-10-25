@@ -1,12 +1,14 @@
 import { IManageFranchise } from '@eatfit247-shared-lib';
 import { AppConfigService, MstFranchise } from '@server_1/core';
 import { AddressService, CountryService } from '@server_1/platform';
+import { TaxRegistrationService } from '@server_1/modules/tax-engine';
 import { FranchiseService } from './franchise.service';
 
 describe('FranchiseService invoice numbering fields (compliant invoice numbering 3.4)', () => {
   let franchiseRepository: { findOne: jest.Mock; create: jest.Mock; update: jest.Mock; sequelize: { query: jest.Mock } };
   let addressService: { findByTableIdAndPk: jest.Mock; createOrUpdate: jest.Mock };
-  let countryService: { fetchById: jest.Mock };
+  let countryService: { fetchById: jest.Mock; findAll: jest.Mock };
+  let taxRegistrationService: { assertFranchiseFormNumbers: jest.Mock; syncFromFranchiseForm: jest.Mock; gstRegisteredFranchiseIds: jest.Mock };
   let service: FranchiseService;
 
   const stored = (overrides: Partial<MstFranchise> = {}): MstFranchise =>
@@ -28,12 +30,21 @@ describe('FranchiseService invoice numbering fields (compliant invoice numbering
       findByTableIdAndPk: jest.fn().mockResolvedValue({ countryId: 101 }),
       createOrUpdate: jest.fn(),
     };
-    countryService = { fetchById: jest.fn().mockImplementation(async (id: number) => ({ countryCode: id === 101 ? 'IN' : 'AE' })) };
+    countryService = {
+      fetchById: jest.fn().mockImplementation(async (id: number) => ({ countryCode: id === 101 ? 'IN' : 'AE' })),
+      findAll: jest.fn().mockResolvedValue({ tableData: [{ countryCode: 'IN', currencyCode: 'INR' }, { countryCode: 'AE', currencyCode: 'AED' }], count: 2 }),
+    };
+    taxRegistrationService = {
+      assertFranchiseFormNumbers: jest.fn().mockResolvedValue(undefined),
+      syncFromFranchiseForm: jest.fn(),
+      gstRegisteredFranchiseIds: jest.fn().mockResolvedValue(new Set([1])),
+    };
     service = new FranchiseService(
       franchiseRepository as unknown as typeof MstFranchise,
       {} as AppConfigService,
       addressService as unknown as AddressService,
       countryService as unknown as CountryService,
+      taxRegistrationService as unknown as TaxRegistrationService,
     );
   });
 
@@ -143,5 +154,55 @@ describe('FranchiseService invoice numbering fields (compliant invoice numbering
     await expect(service.create(payload({ invoicePrefix: 'NEW', invoiceNumberFormat: '{PREFIX} {TYPE}{SEQ5}' }), '::1', 1)).rejects.toThrow(
       'Only / and - may separate the tokens (found space).',
     );
+  });
+
+  describe('configurable tax treatment 4.1 / 4.3: registrations and working currency', () => {
+    it('checks the GSTIN before writing, then syncs the home registration after the address', async () => {
+      franchiseRepository.findOne.mockResolvedValueOnce(stored({ gstNumber: '27CSEPS5397E1Z8' })).mockResolvedValue(null);
+      await service.update(1, payload({ gstNumber: '27AAPFU0939F1ZV' }), '::1', 1);
+      expect(taxRegistrationService.assertFranchiseFormNumbers).toHaveBeenCalledWith(1, 'IN', expect.objectContaining({ gstNumber: '27AAPFU0939F1ZV' }), expect.objectContaining({ gstNumber: '27CSEPS5397E1Z8' }));
+      // The sync compares with the column as stored before this save (group 4b)
+      expect(taxRegistrationService.syncFromFranchiseForm).toHaveBeenCalledWith(1, expect.objectContaining({ gstNumber: '27AAPFU0939F1ZV' }), { gstNumber: '27CSEPS5397E1Z8', vatNumber: undefined }, 1, '::1');
+      expect(taxRegistrationService.assertFranchiseFormNumbers.mock.invocationCallOrder[0]).toBeLessThan(franchiseRepository.update.mock.invocationCallOrder[0]);
+    });
+
+    it('an invalid GSTIN is refused before anything is written', async () => {
+      franchiseRepository.findOne.mockResolvedValueOnce(stored()).mockResolvedValue(null);
+      taxRegistrationService.assertFranchiseFormNumbers.mockRejectedValue(new Error('A GSTIN has 15 characters'));
+      await expect(service.update(1, payload({ gstNumber: '456789' }), '::1', 1)).rejects.toThrow('15 characters');
+      expect(franchiseRepository.update).not.toHaveBeenCalled();
+      expect(taxRegistrationService.syncFromFranchiseForm).not.toHaveBeenCalled();
+    });
+
+    it('currency: saved upper-cased when sent, kept when not sent', async () => {
+      franchiseRepository.findOne.mockResolvedValue(null).mockResolvedValueOnce(stored());
+      await service.update(1, payload({ currencyCode: 'aed' }), '::1', 1);
+      expect(franchiseRepository.update.mock.calls[0][0]).toMatchObject({ currencyCode: 'AED' });
+      franchiseRepository.findOne.mockResolvedValueOnce(stored());
+      await service.update(1, payload(), '::1', 1);
+      expect(franchiseRepository.update.mock.calls[1][0]).not.toHaveProperty('currencyCode');
+    });
+
+    it('an omitted GSTIN / VAT field leaves the columns alone; an empty currency falls back to the country', async () => {
+      franchiseRepository.findOne.mockResolvedValueOnce(stored({ gstNumber: '27CSEPS5397E1Z8' })).mockResolvedValue(null);
+      await service.update(1, payload({ currencyCode: null }), '::1', 1);
+      const written = franchiseRepository.update.mock.calls[0][0];
+      expect(written).not.toHaveProperty('gstNumber');
+      expect(written).not.toHaveProperty('vatNumber');
+      expect(written).toMatchObject({ currencyCode: 'INR' });
+    });
+
+    it('a new franchise without a currency takes its address country\'s', async () => {
+      franchiseRepository.findOne.mockResolvedValue(null);
+      await service.create(payload({ franchiseCode: 'NEWIN', invoicePrefix: 'NIN', invoiceNumberFormat: '{PREFIX}/{FY}/{TYPE}/{SEQ5}' }), '::1', 1);
+      expect(franchiseRepository.update).toHaveBeenCalledWith({ currencyCode: 'INR' }, { where: { franchiseId: 9 } });
+      expect(taxRegistrationService.syncFromFranchiseForm).toHaveBeenCalledWith(9, expect.anything(), {}, 1, '::1');
+    });
+
+    it('details carry the registration-based GST flag and the currency', async () => {
+      franchiseRepository.findOne.mockResolvedValue({ franchiseId: 1, currencyCode: 'INR', timeZone: 'Asia/Kolkata' });
+      (franchiseRepository as unknown as { scope: jest.Mock }).scope = jest.fn().mockReturnValue({ findOne: franchiseRepository.findOne });
+      await expect(service.fetchById(1)).resolves.toMatchObject({ gstRegistered: true, currencyCode: 'INR' });
+    });
   });
 });

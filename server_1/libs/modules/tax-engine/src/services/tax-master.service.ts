@@ -1,11 +1,13 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ITaxRuleLookup } from '../interfaces/tax.interface';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { MstTaxMaster } from '../models';
 import { IAuthUser, IBasicSearch, ITableList, ITaxMaster, TaxCategoryEnum, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
-import { CommonFunctionsUtil, MstFranchise, SearchUtil, TableListSortUtil } from '@server_1/core';
+import { CommonFunctionsUtil, SearchUtil, TableListSortUtil } from '@server_1/core';
 import { CreateTaxMasterDto } from '../dto/tax-master.dto';
+import { TaxRegistrationService } from './tax-registration.service';
+import { TaxFranchiseScope } from './tax-franchise-scope';
 
 /** `reference_id` of a franchise's default SERVICE rule (every plan without its own rule; a plan with id 1 shares it) */
 export const SERVICE_DEFAULT_REFERENCE = 1;
@@ -35,7 +37,7 @@ export function legacyAppliesTo(transactionType: TransactionType, referenceId: n
 export class TaxMasterService {
   constructor(
     @InjectModel(MstTaxMaster) private readonly mstTaxMaster: typeof MstTaxMaster,
-    @InjectModel(MstFranchise) private readonly franchiseRepository: typeof MstFranchise,
+    private readonly taxRegistrationService: TaxRegistrationService,
   ) {}
 
   /**
@@ -68,7 +70,8 @@ export class TaxMasterService {
   }
 
   /**
-   * A VAT rule needs its franchise's TRN (4.6 decision 18); a 0% VAT rule must be zero-rated or exempt
+   * A VAT rule needs an active VAT registration in its country (4.6 decision 18; configurable tax treatment,
+   * decision 8); a 0% VAT rule must be zero-rated or exempt
    * (decision 7). A GST rule may exist without a GSTIN: it prices as unregistered until the GSTIN is
    * added (matrix decision 13).
    */
@@ -84,10 +87,7 @@ export class TaxMasterService {
     if (!checkRegistration || obj.taxSystem !== TaxTypeEnum.VAT) {
       return;
     }
-    const franchise = await this.franchiseRepository.findByPk(obj.franchiseId, {
-      attributes: ['franchiseId', 'vatNumber'],
-    });
-    if (!franchise?.vatNumber?.trim()) {
+    if (!(await this.taxRegistrationService.hasActive(obj.franchiseId, TaxTypeEnum.VAT, (obj.countryCode ?? '').trim()))) {
       throw new BadRequestException('Add the franchise TRN before creating a VAT rule (or use tax system NONE if it is not registered).');
     }
   }
@@ -95,8 +95,9 @@ export class TaxMasterService {
   /** The admin's franchises only (decision 14): all of them for a super admin, none for an unmapped admin. */
   public async findAll(searchDto: IBasicSearch, user: IAuthUser): Promise<ITableList<ITaxMaster>> {
     const whereCondition: any = SearchUtil.filterBasicSearch(searchDto, 'taxName');
-    if (!user.allFranchises) {
-      whereCondition.franchiseId = { [Op.in]: user.franchiseIds ?? [] };
+    const scope = TaxFranchiseScope.franchiseIds(user);
+    if (scope) {
+      whereCondition.franchiseId = { [Op.in]: scope };
     }
     const pageNumber = searchDto.page || 0;
     const pageSize = searchDto.limit || 15;
@@ -279,13 +280,8 @@ export class TaxMasterService {
     await this.mstTaxMaster.update(updateObj, { where: { id: id } });
   }
 
-  /**
-   * Admins reach only their own franchises' rules (principle 3, decision 14). A super admin (a role with
-   * grant_all_on_new_subject) reaches every franchise whatever their mapping; an unmapped admin reaches none.
-   */
+  /** Admins reach only their own franchises' rules (principle 3, decision 14; see `TaxFranchiseScope`). */
   private assertFranchiseAccess(franchiseId: number, user: IAuthUser): void {
-    if (!user.allFranchises && !(user.franchiseIds ?? []).includes(Number(franchiseId))) {
-      throw new ForbiddenException('You do not have access to this franchise.');
-    }
+    TaxFranchiseScope.assertAccess(franchiseId, user);
   }
 }

@@ -247,12 +247,12 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
 
 ## Group 4: Backend: tax registrations and franchise currency
 
-- [ ] 4.1 `TaxRegistrationService`:
+- [x] 4.1 `TaxRegistrationService`:
   - `findActive`, `home`
   - CRUD under `TaxMaster`, scoped as in 3.2
   - overlapping dates refused per country and tax system
   - old columns synced
-- [ ] 4.2 Move every reader to the service:
+- [x] 4.2 Move every reader to the service:
   - engine checks
   - `tax-master.service.ts:61-69`
   - franchise service and details
@@ -262,7 +262,17 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
   - mapper callers `member-plan.service.ts:1344` and `member-product.service.ts:658`, which pass `IInvoiceRegistration`
   - admin `invoice-numbering.component.ts:126` and `turnover-badge.component.ts:50`
   - Leave `mst_referrers.gst_number` and the shipment include alone.
-- [ ] 4.3 `applyFx` takes the functional currency from `franchise.currency_code` (D17); the franchise DTOs accept it.
+- [x] 4.3 `applyFx` takes the functional currency from `franchise.currency_code` (D17); the franchise DTOs accept it.
+- *(design, 2026-10-25, before coding)*:
+  - **Placement:** `MstFranchiseTaxRegistration` and `TaxRegistrationService` live in `tax-engine` (tagged platform). Franchise, member and reports import it; `tax-engine` imports no feature module.
+  - **Scope:** the same rule as 3b (`allFranchises`); one helper is shared with `TaxMasterService`.
+  - **Sync in both directions for this release:**
+    - a registration save mirrors the active home registration into `mst_franchises.gst_number` / `vat_number`
+    - the franchise form's GST / VAT fields (still on the form until group 13) upsert or deactivate the home registration, validated only when the value changes (GSTIN check, UAE TRN)
+  - **CRUD DTO:** no prefix / format / FY start yet (validated with them in group 11).
+  - **Invoices:** the mapper takes an optional `IInvoiceRegistration`. Callers pass the home registration active on the invoice date; group 6 passes the sale's stored `tax_registration_id` instead.
+  - **Admin:** franchise list / details return `gstRegistered` (registration-based) for the turnover badge. The invoice-numbering form keeps reading the live GSTIN field while it is on the form.
+  - **Functional currency:** no `currency_code` → no FX and a warning, as today for a country without a currency.
 - **Gate:**
   - unit tests
   - curl CRUD
@@ -271,6 +281,76 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
   - an EFMUM invoice still records INR
   - A30 (issue)
   - baseline green
+
+> **As built (group 4, 2026-10-25):**
+> - **`tax-engine`:** `MstFranchiseTaxRegistration`, `TaxRegistrationService` and `TaxFranchiseScope` (shared with Tax Master), plus `franchise-tax-registrations/:franchiseId` (GET / POST / PUT `/:id` / PATCH `/:id/status`, TaxMaster rights, scoped).
+>   - Numbers are checked with `TaxRegistrationNumberUtil`; the GST State comes from the GSTIN.
+>   - The currency defaults to the country's. Overlap is checked per country and system, and an active number belongs to one registration.
+>   - Prefix / format / FY start are refused until group 11.
+> - **Readers moved to registrations:**
+>   - the engine (GST in India, VAT in the supplier country, on the supply date), and the Tax Master VAT-rule check (`hasActive`)
+>   - turnover service and cron (Indian GST on the local date), documents issued (`registeredBetween` the period)
+>   - franchise list / details: `gstRegistered`, `currencyCode`
+>   - the invoice scopes lose `gstNumber` / `vatNumber`; the two PDF builders pass `InvoiceIssueService.invoiceRegistration(...)` to the mapper's new `registration` argument (seller number, label and QR GSTIN)
+>   - the admin turnover badge reads `gstRegistered`
+> - **Wiring:** `FranchiseModule` and `ReportsModule` import `TaxEngineModule`.
+> - **4.3:** `InvoiceIssueService.franchiseContext` takes the functional currency from `franchise.currency_code`. The franchise DTO accepts `currencyCode`, and a new franchise takes its country's.
+> - **Live:**
+>   - CRUD and A23b: 19/19, with a test UAE registration on EFMUM, deactivated afterwards
+>   - the 4 PDFs' text identical (EFMUM GSTIN ×2, HCUAE TRN, MEMUM none)
+>   - EFMUM / HCUAE / MEMUM functional currency INR / AED / INR
+>   - 12 `calculate-tax` cases identical, A3 identical
+> - **Review:** a subagent found 6 issues (the form half-writes on a refused number; form changes rewrite registration history; no overlap check from the form; 164 old EFMUM invoices losing their GSTIN; fallback time zone; tests that didn't bite) plus plausible ones. Fixed as group 4b.
+
+
+## Group 4b: Review fixes for registrations (subagent review, 2026-10-25)
+
+- [x] 4b.1 **The franchise form never half-writes** (finding 1).
+  - Before any write, the form's home-system number goes through every check the sync will make: format, a number already held by another franchise, and overlap.
+  - The sync acts only when the number differs from the **stored column**. So a legacy value that 146 skipped, or one whose registration was ended, is left alone, as D10 wants.
+  - A client that omits the field leaves both the column and the registration untouched (before, the column was cleared).
+- [x] 4b.2 **Form changes keep history** (findings 2 and 3).
+  - A changed number ends the current home registration yesterday and opens a new one from today. A cleared number ends it yesterday.
+  - A row that hadn't started yet is deactivated instead.
+  - The new row is overlap-checked like any other.
+- [x] 4b.3 **Issued PDFs keep their GSTIN** (finding 4).
+  - The problem: EFMUM has 164 invoices dated 2017-04-28 to 2017-10-04, before its franchise start date.
+  - Migration 146 now starts a back-filled registration at the earliest of the franchise start date and its issued documents. It also lowers `effective_from` on rows it back-filled before (marked `created_ip = ':0'`), never raising it.
+  - Principle 10 wins over the exact GST start date: a re-downloaded PDF must not change.
+- [x] 4b.4 **Smaller fixes:**
+  - The invoice-date fallback uses the franchise's time zone (finding 5).
+  - Registration PUT keeps the stored currency when none is sent. A franchise save with an empty currency falls back to the country's.
+  - `TaxRegistrationNumberUtil.normalize` strips every non-alphanumeric, as 146 does.
+  - The franchise list reads GST status in one query.
+- [x] 4b.5 **Tests that bite** (finding 6):
+  - pure helpers for "effective on a date" and "periods overlap", tested directly, including the open-ended cases
+  - the registration spec asserts the real column mirror
+  - the engine spec asserts the supply date passed to `findActive`, and an unregistered result for a supply before the registration
+- Logged, not fixed: the tax admin controllers are mounted in public-api through `MemberModule` → `TaxEngineModule` (pre-existing for Tax Master / LUT / exchange rates; roadmap 4.4).
+- **Gate:** group 4's gate again, plus every issued EFMUM / HCUAE / MEMUM invoice prints the tax number it printed before 146. That is checked by SQL over all issued documents (seller-number rule old vs new), plus the 4 PDFs.
+
+> **As built (group 4b, 2026-10-25):**
+> - **One planner** (`planFranchiseForm`) serves both the pre-write check (`assertFranchiseFormNumbers`, now async and run before any franchise write) and the sync, so they can't disagree.
+>   - It acts only when the number differs from the stored column, and only when the field was sent.
+>   - A change ends the current registration yesterday (deactivates it if it starts today) and opens a new one today, overlap-checked.
+>   - The franchise update writes `gst_number` / `vat_number` only when sent.
+> - **Date logic:** `isEffectiveOn` / `periodsOverlap` / `dayBefore` are the date logic. Queries fetch the franchise's rows and the helpers filter them.
+> - **146:** back-fills from `least(start_date, first issued payment / order / credit note)` and lowers untouched back-filled rows. `eatfit`: EFMUM's registration now starts 2017-04-28. A clone re-run is identical, with 30 constraint cases.
+> - **Smaller fixes:**
+>   - `documentDate` takes the franchise time zone (the invoice scopes include `timeZone`)
+>   - a registration PUT keeps the stored currency; a franchise update with an empty currency takes the country's
+>   - `normalize` keeps letters and digits only
+>   - the franchise list makes one GST-status query
+> - **Specs:**
+>   - an in-memory registrations fake: 25 cases. Mutants caught: `effective_to` exclusive (3 failures), the form change deactivating instead of ending (2 failures)
+>   - engine: the supply date passed to `findActive`; unregistered before the registration starts; VAT with no registration → 400
+> - **Live:**
+>   - CRUD and A23b 19/19
+>   - the 4 PDFs identical; over **all 5,342 issued documents** the seller number now equals the one printed before (0 mismatches: EFMUM 5,238 from 2017-04-28, HCUAE 11, MEMUM 93 none)
+>   - franchise form on MEMUM: an invalid GSTIN and EFMUM's GSTIN both refused with nothing written (a brand change in the same request did not land); valid → registration from today; omitted → kept; cleared → deactivated (it had started today); the MEMUM row is back to its starting values
+>   - 12 `calculate-tax` cases identical, A3 identical
+> - **Test data left in `eatfit`** (inactive, soft-deleted): EFMUM test UAE registrations 3 and 5, MEMUM sample-GSTIN registrations 4 and 6.
+
 
 ## Group 5: Backend: rule resolver, guardrails, preview (tax)
 

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Transaction } from 'sequelize';
-import { BusinessTypeEnum, IFranchise, InvoiceSeriesEnum, TableEnum } from '@eatfit247-shared-lib';
+import { BusinessTypeEnum, IFranchise, IInvoiceRegistration, InvoiceSeriesEnum, TableEnum } from '@eatfit247-shared-lib';
 import {
   AddressService,
   CountryService,
@@ -12,7 +12,7 @@ import {
   ICreditNoteNumberRequest,
 } from '@server_1/platform';
 import { FranchiseService } from '@server_1/modules/franchise';
-import { ExchangeRateService, IResolvedRate } from '@server_1/modules/tax-engine';
+import { ExchangeRateService, IResolvedRate, TaxRegistrationService } from '@server_1/modules/tax-engine';
 import { Op } from 'sequelize';
 import { TxnMemberPayment } from '../models/txn-member-payment.model';
 import { TxnMemberProduct } from '../models/txn-member-product.model';
@@ -24,7 +24,7 @@ export type InvoiceRecordType = 'plan' | 'product';
 export interface IInvoiceFranchiseContext {
   franchise: IFranchise;
   countryCode: string | null;
-  /** The franchise country's currency (mst_countries.currency_code): INR, AED, … */
+  /** The franchise's working currency (`mst_franchises.currency_code`, configurable tax treatment D17): INR, AED, … */
   functionalCurrency: string | null;
   timeZone: string;
 }
@@ -44,6 +44,7 @@ export class InvoiceIssueService {
     private readonly addressService: AddressService,
     private readonly countryService: CountryService,
     private readonly exchangeRateService: ExchangeRateService,
+    private readonly taxRegistrationService: TaxRegistrationService,
   ) {}
 
   /** Franchise, its country (from its address) and timezone. */
@@ -56,16 +57,49 @@ export class InvoiceIssueService {
     if (!countryCode) {
       // Without the franchise's country every invoice falls back to the domestic series
       this.logger.warn(`Country unknown for franchise ${franchiseId}; invoices use the domestic series`);
-    } else if (!country?.currencyCode) {
-      // mst_countries.currency_code (migration 144) is the functional currency; without it no FX is saved or back-filled
-      this.logger.warn(`Country ${countryCode} has no currency_code; invoices of franchise ${franchiseId} get no FX until it is set`);
+    }
+    // Decision 17: the franchise states its working currency; a later change affects only invoices issued after it
+    const functionalCurrency = (franchise.currencyCode ?? '').trim().toUpperCase() || null;
+    if (!functionalCurrency) {
+      this.logger.warn(`Franchise ${franchiseId} has no currency_code; its invoices get no FX until it is set on the franchise form`);
     }
     return {
       franchise,
       countryCode,
-      functionalCurrency: country?.currencyCode ?? null,
+      functionalCurrency,
       timeZone: franchise.timeZone || FranchiseDateUtil.DEFAULT_TIME_ZONE,
     };
+  }
+
+  /**
+   * The date an invoice (or proforma) is dated: its issue date, else the payment date, as `YYYY-MM-DD` in the
+   * franchise's time zone.
+   */
+  static documentDate(
+    invoiceDate: string | null | undefined,
+    paymentDate: Date | string | null | undefined,
+    timeZone?: string | null,
+  ): string {
+    if (invoiceDate) {
+      return String(invoiceDate).slice(0, 10);
+    }
+    if (paymentDate instanceof Date) {
+      return FranchiseDateUtil.localDate(paymentDate, timeZone);
+    }
+    return paymentDate ? String(paymentDate).slice(0, 10) : FranchiseDateUtil.localDate(new Date(), timeZone);
+  }
+
+  /**
+   * The registration an invoice is printed under (configurable tax treatment, decision 12): the sale's stored
+   * registration when it has one, else the franchise's home registration effective on the invoice date.
+   */
+  public async invoiceRegistration(
+    franchiseId: number,
+    supplierCountryCode: string | null | undefined,
+    invoiceDate: string,
+    taxRegistrationId?: number | null,
+  ): Promise<IInvoiceRegistration | null> {
+    return this.taxRegistrationService.invoiceRegistration(franchiseId, supplierCountryCode, invoiceDate, taxRegistrationId);
   }
 
   /**

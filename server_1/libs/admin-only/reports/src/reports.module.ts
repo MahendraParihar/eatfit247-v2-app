@@ -10,6 +10,7 @@ import {
   TxnMemberProduct,
 } from '@server_1/modules/member';
 import { DeliveryModule, TxnShipment } from '@server_1/modules/delivery';
+import { TaxEngineModule } from '@server_1/modules/tax-engine';
 import {
   AnnualDashboardController,
   DashboardController,
@@ -30,6 +31,7 @@ import {
   imports: [
     MemberModule,
     DeliveryModule,
+    TaxEngineModule,
     SequelizeModule.forFeature([
       MstFranchise,
       TxnMember,

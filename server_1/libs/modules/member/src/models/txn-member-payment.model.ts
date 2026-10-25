@@ -228,10 +228,9 @@ import {
         attributes: [
           'franchiseId',
           'companyName',
-          'gstNumber',
           'tanNumber',
-          'vatNumber',
           'lutNumber',
+          'timeZone',
           'brandName',
         ],
       },

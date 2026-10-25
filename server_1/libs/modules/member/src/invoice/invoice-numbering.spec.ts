@@ -1,4 +1,4 @@
-import { ExchangeRateService } from '@server_1/modules/tax-engine';
+import { ExchangeRateService, TaxRegistrationService } from '@server_1/modules/tax-engine';
 import { Transaction } from 'sequelize';
 import {
   AddressService,
@@ -362,6 +362,7 @@ describe('InvoiceIssueService', () => {
       { filterByTableIdAndPk: jest.fn().mockResolvedValue([{ countryId: 101 }]) } as unknown as AddressService,
       { fetchById: countryFetchById, findAll: countryFindAll } as unknown as CountryService,
       { findRate: jest.fn().mockResolvedValue(null) } as unknown as ExchangeRateService,
+      {} as TaxRegistrationService,
     );
   });
 
@@ -400,6 +401,7 @@ describe('InvoiceIssueService', () => {
       { filterByTableIdAndPk: jest.fn().mockResolvedValue([{ countryId: 101 }]) } as unknown as AddressService,
       { fetchById: countryFetchById, findAll: countryFindAll } as unknown as CountryService,
       { findRate: jest.fn().mockResolvedValue(null) } as unknown as ExchangeRateService,
+      {} as TaxRegistrationService,
     );
     await withFormat.issue(record({ memberAddress: null }), 'plan', 1, trx);
     expect(generateInvoiceNumber.mock.calls[0][0]).toMatchObject({
@@ -442,5 +444,38 @@ describe('InvoiceIssueService', () => {
       InvoiceSeriesEnum.DOMESTIC,
     ]);
     expect(generateInvoiceNumber.mock.calls[1][0].invoiceType).toBe(BusinessTypeEnum.PRODUCT);
+  });
+});
+
+describe('InvoiceIssueService functional currency (configurable tax treatment 4.3, A30 issue)', () => {
+  const trx = {} as Transaction;
+  const build = (franchiseCurrency: string | null) =>
+    new InvoiceIssueService(
+      {
+        generateInvoiceNumber: jest.fn().mockResolvedValue({ invoiceId: 'EFM/2627/S/00496', invoiceSeries: InvoiceSeriesEnum.DOMESTIC, invoiceDate: '2026-10-25' }),
+      } as unknown as InvoiceSequenceService,
+      {
+        fetchById: jest.fn().mockResolvedValue({ financialYear: 4, franchiseCode: 'EFMUM', timeZone: 'Asia/Kolkata', currencyCode: franchiseCurrency }),
+      } as unknown as FranchiseService,
+      { filterByTableIdAndPk: jest.fn().mockResolvedValue([{ countryId: 101 }]) } as unknown as AddressService,
+      // The country says INR: the franchise's own currency must win
+      { fetchById: jest.fn().mockResolvedValue({ countryCode: 'IN', currencyCode: 'INR' }), findAll: jest.fn() } as unknown as CountryService,
+      { findRate: jest.fn().mockResolvedValue(null) } as unknown as ExchangeRateService,
+      {} as TaxRegistrationService,
+    );
+
+  it("comes from the franchise's currency_code, not its country's", async () => {
+    await expect(build('AED').franchiseContext(1)).resolves.toMatchObject({ countryCode: 'IN', functionalCurrency: 'AED' });
+    await expect(build(' inr ').franchiseContext(1)).resolves.toMatchObject({ functionalCurrency: 'INR' });
+  });
+
+  it('a franchise without a currency gets no functional currency (no FX), as a country without one did', async () => {
+    await expect(build(null).franchiseContext(1)).resolves.toMatchObject({ functionalCurrency: null });
+  });
+
+  it('an invoice issued in USD records the franchise currency it is to be converted into', async () => {
+    const payment = { invoiceId: null, taxAmount: 0, memberAddress: null, currency: 'USD', totalAmount: 250 } as unknown as TxnMemberPayment;
+    await build('INR').issue(payment, 'plan', 1, trx, new Date('2026-10-25T06:00:00Z'));
+    expect(payment).toMatchObject({ invoiceId: 'EFM/2627/S/00496', functionalCurrency: 'INR' });
   });
 });

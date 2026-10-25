@@ -1,6 +1,6 @@
 import { AddressService, CountryService, InvoiceSequenceService } from '@server_1/platform';
 import { FranchiseService } from '@server_1/modules/franchise';
-import { ExchangeRateService, MstExchangeRate } from '@server_1/modules/tax-engine';
+import { ExchangeRateService, MstExchangeRate, TaxRegistrationService } from '@server_1/modules/tax-engine';
 import { InvoiceIssueService } from '../services/invoice-issue.service';
 import { TxnMemberPayment } from '../models/txn-member-payment.model';
 
@@ -20,6 +20,7 @@ describe('exchange rates', () => {
         {} as AddressService,
         {} as CountryService,
         { findRate } as unknown as ExchangeRateService,
+        {} as TaxRegistrationService,
       );
     });
 

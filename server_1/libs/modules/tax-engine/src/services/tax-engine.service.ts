@@ -6,6 +6,7 @@ import { VatService } from './vat.service';
 import { UsSalesTaxService } from './us-sales-tax.service';
 import { LutService } from './lut.service';
 import { TaxMasterService } from './tax-master.service';
+import { TaxRegistrationService } from './tax-registration.service';
 import {
   PaymentRouteEnum,
   TaxCategoryEnum,
@@ -61,6 +62,7 @@ export class TaxEngineService {
     private readonly lutService: LutService,
     @InjectModel(MstFranchise) private readonly franchiseRepository: typeof MstFranchise,
     private readonly appConfigService: AppConfigService,
+    private readonly taxRegistrationService: TaxRegistrationService,
   ) {}
 
   async calculate(input: TaxInput): Promise<TaxResult> {
@@ -79,7 +81,7 @@ export class TaxEngineService {
     }
 
     const franchise = await this.franchiseRepository.findByPk(input.franchiseId, {
-      attributes: ['franchiseId', 'gstNumber', 'vatNumber', 'timeZone'],
+      attributes: ['franchiseId', 'timeZone'],
     });
     // The supply date is the franchise's local calendar day (LUT validity, rule dates)
     const supplyDate = this.toLocalDate(input.supplyDate, franchise?.timeZone);
@@ -96,9 +98,13 @@ export class TaxEngineService {
           `${input.transactionType} (reference ${input.referenceId}). Add it in Tax Master.`,
       );
     }
-    this.assertRegistration(franchise, rule);
+    // Registered = an active registration effective on the supply date (configurable tax treatment, decision 8)
+    const registrations = await this.taxRegistrationService.findActive(input.franchiseId, supplyDate);
+    const gstRegistered = registrations.some((r) => r.taxSystem === TaxTypeEnum.GST && r.countryCode === INDIA_COUNTRY_CODE);
+    const vatRegistered = registrations.some((r) => r.taxSystem === TaxTypeEnum.VAT && r.countryCode === supplier);
+    this.assertRegistration(vatRegistered, rule);
     // Decision 13: no GSTIN → no GST until one is added; an inclusive price is then charged in full
-    const unregistered = rule.taxSystem === TaxTypeEnum.GST && !franchise?.gstNumber?.trim();
+    const unregistered = rule.taxSystem === TaxTypeEnum.GST && !gstRegistered;
 
     const rate = unregistered ? 0 : Number(rule.taxPercent || 0);
     const taxable = rule.isTaxInclusive
@@ -338,11 +344,8 @@ export class TaxEngineService {
    * A VAT rule needs the franchise's TRN (4.6 decision 18). A GST rule without a GSTIN is not an
    * error: it prices as unregistered (requirements decision 13).
    */
-  private assertRegistration(
-    franchise: Pick<MstFranchise, 'gstNumber' | 'vatNumber'> | null,
-    rule: MstTaxMaster,
-  ): void {
-    if (rule.taxSystem === TaxTypeEnum.VAT && !franchise?.vatNumber?.trim()) {
+  private assertRegistration(vatRegistered: boolean, rule: MstTaxMaster): void {
+    if (rule.taxSystem === TaxTypeEnum.VAT && !vatRegistered) {
       throw new BadRequestException(
         'This franchise has a VAT tax rule but no TRN. Add the TRN, or set its rule to "no tax" if it is not registered.',
       );

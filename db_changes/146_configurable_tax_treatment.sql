@@ -17,7 +17,9 @@
 --      table_id 4), numbers stripped of spaces and punctuation: gst_number → GST
 --      only when the address country is IN (State = the GSTIN's first two
 --      digits); vat_number → VAT in the address country. An inactive franchise
---      gets an inactive registration. Skipped with a NOTICE: a GSTIN on a
+--      gets an inactive registration. Each starts at the earlier of the franchise
+--      start date and its first issued document, so issued PDFs keep their
+--      number (principle 10). Skipped with a NOTICE: a GSTIN on a
 --      non-Indian franchise, a malformed GSTIN on an inactive one.
 --      ABORTS, before any change, when:
 --        - two active franchises hold the same number (e.g. a copied GSTIN)
@@ -86,7 +88,16 @@ SELECT f.franchise_id,
        upper(regexp_replace(coalesce(f.gst_number, ''), '[^A-Za-z0-9]', '', 'g')) AS gstin,
        upper(regexp_replace(coalesce(f.vat_number, ''), '[^A-Za-z0-9]', '', 'g')) AS vat,
        upper(trim(c.country_code))                                           AS address_country,
-       upper(trim(c.currency_code))                                          AS address_currency
+       upper(trim(c.currency_code))                                          AS address_currency,
+       -- A back-filled registration covers every document already issued (principle 10: a re-downloaded PDF
+       -- prints the number it printed before 146), so it starts no later than the first of them
+       least(f.start_date,
+             (SELECT min(coalesce(p.invoice_date, p.payment_date)) FROM public.txn_member_payments p
+              WHERE p.franchise_id = f.franchise_id AND p.invoice_id IS NOT NULL),
+             (SELECT min(coalesce(o.invoice_date, o.payment_date::date)) FROM public.txn_member_products o
+              WHERE o.franchise_id = f.franchise_id AND o.invoice_id IS NOT NULL),
+             (SELECT min(n.credit_note_date) FROM public.txn_credit_notes n
+              WHERE n.franchise_id = f.franchise_id))                       AS backfill_from
 FROM public.mst_franchises f
          LEFT JOIN LATERAL (SELECT a.country_id
                             FROM public.txn_addresses a
@@ -251,7 +262,7 @@ INSERT INTO public.mst_franchise_tax_registrations (franchise_id, country_code, 
                                                     currency_code, effective_from, active,
                                                     created_by, modified_by, created_ip, modified_ip)
 SELECT v.franchise_id, 'IN', 'GST'::public.tax_type, v.gstin, ltrim(left(v.gstin, 2), '0'),
-       coalesce(v.address_currency, 'INR'), v.start_date, v.active,
+       coalesce(v.address_currency, 'INR'), v.backfill_from, v.active,
        1, 1, ':0', ':0'
 FROM tmp146_franchise v
 WHERE v.address_country = 'IN'
@@ -261,7 +272,7 @@ WHERE v.address_country = 'IN'
                   WHERE r.franchise_id = v.franchise_id AND r.country_code = 'IN' AND r.tax_system = 'GST')
 UNION ALL
 SELECT v.franchise_id, v.address_country, 'VAT'::public.tax_type, v.vat, NULL,
-       v.address_currency, v.start_date, v.active,
+       v.address_currency, v.backfill_from, v.active,
        1, 1, ':0', ':0'
 FROM tmp146_franchise v
 WHERE v.vat <> ''
@@ -270,6 +281,17 @@ WHERE v.vat <> ''
   AND NOT EXISTS (SELECT 1
                   FROM public.mst_franchise_tax_registrations r
                   WHERE r.franchise_id = v.franchise_id AND r.country_code = v.address_country AND r.tax_system = 'VAT');
+
+-- A database that ran an earlier draft back-filled from the franchise start date: move those rows back to the
+-- first issued document (only ever earlier; rows entered by an admin are never touched)
+UPDATE public.mst_franchise_tax_registrations r
+SET effective_from = v.backfill_from
+FROM tmp146_franchise v
+WHERE v.franchise_id = r.franchise_id
+  AND r.created_ip = ':0'
+  AND r.created_by = 1
+  AND r.effective_from = v.start_date
+  AND v.backfill_from < r.effective_from;
 
 -- ------------------------------------------------- 4. treatment rules
 -- Columns and the mapping of today's rows run once (the mapping is not repeated on a re-run,

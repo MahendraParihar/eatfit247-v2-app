@@ -49,6 +49,8 @@ export interface IManageFranchise extends IBaseFranchise {
 export interface IFranchise extends IBaseFranchise, IAdminInfo {
   franchiseId: number;
   active: boolean;
+  /** Has an active Indian GST registration today (configurable tax treatment, decision 8) */
+  gstRegistered?: boolean;
 }
 
 

@@ -654,6 +654,12 @@ export class MemberProductService {
       contactNumber: productOrder.member.contactNumber,
       businessRegNumber: productOrder.gstNumber,
     };
+    // The supplier's tax number comes from the registration effective on the invoice date (decision 12)
+    const registration = await this.invoiceIssueService.invoiceRegistration(
+      productOrder.franchiseId,
+      franchiseAddress?.countryCode,
+      InvoiceIssueService.documentDate(productOrder.invoiceDate, productOrder.paymentDate, productOrder.franchise?.timeZone),
+    );
     // Generate an invoice document using the new product order mapper
     const invoiceDoc = mapProductOrderToInvoiceDocument(
       productModel,
@@ -665,6 +671,7 @@ export class MemberProductService {
         'All payments for each item listed in this invoice are non-refundable and non-transferable under any circumstances.',
         `Payment confirms acceptance of ${productOrder.franchise.companyName} terms and service validity conditions.`,
       ],
+      registration,
     );
     return { invoiceDoc, productModel };
   }

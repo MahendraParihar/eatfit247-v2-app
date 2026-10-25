@@ -6,8 +6,10 @@ import {
   IAuthUser,
   IDocumentsIssuedReport,
   IDocumentsIssuedRow,
+  TaxTypeEnum,
 } from '@eatfit247-shared-lib';
-import { FranchiseDateUtil } from '@server_1/platform';
+import { FranchiseDateUtil, INDIA_COUNTRY_CODE } from '@server_1/platform';
+import { TaxRegistrationService } from '@server_1/modules/tax-engine';
 import { FinancialYearService } from './financial-year.service';
 import { DocumentSeriesUtil } from '../utils/document-series.util';
 
@@ -37,6 +39,7 @@ export class DocumentsIssuedService {
   constructor(
     private readonly financialYearService: FinancialYearService,
     private readonly sequelize: Sequelize,
+    private readonly taxRegistrationService: TaxRegistrationService,
   ) {}
 
   async report(user: IAuthUser, franchiseId: number, from: string, to: string): Promise<IDocumentsIssuedReport> {
@@ -55,7 +58,8 @@ export class DocumentsIssuedService {
       companyName: franchise.companyName,
       from,
       to,
-      reportable: !!(franchise.gstNumber || '').trim(),
+      // Table 13 is a GSTR-1 table: reportable when GST-registered at any time in the period (decision 8)
+      reportable: await this.taxRegistrationService.registeredBetween(franchise.franchiseId, TaxTypeEnum.GST, INDIA_COUNTRY_CODE, from, to),
       rows: DocumentsIssuedService.buildRows(documents),
     };
   }

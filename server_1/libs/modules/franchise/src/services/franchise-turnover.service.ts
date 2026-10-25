@@ -2,9 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { QueryTypes } from 'sequelize';
-import { IFranchiseTurnover, TableEnum, TurnoverAlertLevel } from '@eatfit247-shared-lib';
+import { IFranchiseTurnover, TableEnum, TaxTypeEnum, TurnoverAlertLevel } from '@eatfit247-shared-lib';
 import { MstFranchise } from '@server_1/core';
-import { FranchiseDateUtil } from '@server_1/platform';
+import { FranchiseDateUtil, INDIA_COUNTRY_CODE } from '@server_1/platform';
+import { TaxRegistrationService } from '@server_1/modules/tax-engine';
 
 /** Share of the threshold at which the warning turns amber, and red (decision 12). */
 export const TURNOVER_AMBER_PERCENT = 80;
@@ -13,7 +14,7 @@ export const TURNOVER_RED_PERCENT = 100;
 /** The franchise columns the turnover check reads. */
 export type ITurnoverFranchise = Pick<
   MstFranchise,
-  'franchiseId' | 'financialYear' | 'timeZone' | 'gstNumber' | 'registrationThresholdAmount'
+  'franchiseId' | 'financialYear' | 'timeZone' | 'registrationThresholdAmount'
 >;
 
 /** A financial year as a label and a half-open date range `[from, to)`. */
@@ -33,11 +34,12 @@ export class FranchiseTurnoverService {
   constructor(
     @InjectModel(MstFranchise) private readonly franchiseRepository: typeof MstFranchise,
     private readonly sequelize: Sequelize,
+    private readonly taxRegistrationService: TaxRegistrationService,
   ) {}
 
   public async forFranchiseId(franchiseId: number, asOf: Date = new Date()): Promise<IFranchiseTurnover> {
     const franchise = await this.franchiseRepository.findOne({
-      attributes: ['franchiseId', 'financialYear', 'timeZone', 'gstNumber', 'registrationThresholdAmount'],
+      attributes: ['franchiseId', 'financialYear', 'timeZone', 'registrationThresholdAmount'],
       where: { franchiseId },
       raw: true,
     });
@@ -57,7 +59,13 @@ export class FranchiseTurnoverService {
     const threshold = FranchiseTurnoverService.positiveOrNull(franchise.registrationThresholdAmount);
     // The level uses the exact share; only the shown percent is rounded (99.9999% must not read as red)
     const exactPercent = threshold ? (turnover / threshold) * 100 : null;
-    const hasGstin = !!(franchise.gstNumber || '').trim();
+    // A GST registration effective today ends the warning (configurable tax treatment, decision 8)
+    const hasGstin = await this.taxRegistrationService.isRegistered(
+      franchise.franchiseId,
+      TaxTypeEnum.GST,
+      INDIA_COUNTRY_CODE,
+      FranchiseDateUtil.localDate(asOf, timeZone),
+    );
     return {
       financialYear: range.financialYear,
       turnover,

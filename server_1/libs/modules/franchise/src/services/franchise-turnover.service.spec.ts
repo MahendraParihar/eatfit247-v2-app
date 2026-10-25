@@ -1,18 +1,20 @@
 import { Sequelize } from 'sequelize-typescript';
 import { TableEnum, TurnoverAlertLevel } from '@eatfit247-shared-lib';
 import { MstFranchise } from '@server_1/core';
+import { TaxRegistrationService } from '@server_1/modules/tax-engine';
 import { FranchiseTurnoverService, ITurnoverFranchise } from './franchise-turnover.service';
 
 describe('FranchiseTurnoverService (turnover warning, decision 12)', () => {
   let query: jest.Mock;
   let service: FranchiseTurnoverService;
+  let registered: boolean;
+  let isRegistered: jest.Mock;
 
   const memum = (overrides: Partial<ITurnoverFranchise> = {}): ITurnoverFranchise =>
     ({
       franchiseId: 3,
       financialYear: 4,
       timeZone: 'Asia/Kolkata',
-      gstNumber: null,
       registrationThresholdAmount: '4000000.00',
       ...overrides,
     }) as unknown as ITurnoverFranchise;
@@ -21,7 +23,11 @@ describe('FranchiseTurnoverService (turnover warning, decision 12)', () => {
 
   beforeEach(() => {
     query = jest.fn().mockResolvedValue([{ total: '0' }]);
-    service = new FranchiseTurnoverService({} as typeof MstFranchise, { query } as unknown as Sequelize);
+    registered = false;
+    isRegistered = jest.fn().mockImplementation(async () => registered);
+    service = new FranchiseTurnoverService({} as typeof MstFranchise, { query } as unknown as Sequelize, {
+      isRegistered,
+    } as unknown as TaxRegistrationService);
   });
 
   describe('financialYearRange', () => {
@@ -71,11 +77,14 @@ describe('FranchiseTurnoverService (turnover warning, decision 12)', () => {
     });
   });
 
-  it('a franchise with a GSTIN shows no warning, whatever its turnover', async () => {
+  it('a franchise with a GST registration effective today shows no warning, whatever its turnover', async () => {
     withTurnover('4800000');
-    const result = await service.forFranchise(memum({ gstNumber: '27AAAAA0000A1Z5' }));
+    registered = true;
+    const result = await service.forFranchise(memum(), new Date('2026-10-25T06:00:00Z'));
     expect(result.level).toBe(TurnoverAlertLevel.NONE);
     expect(result.percent).toBe(120);
+    // Indian GST, on the franchise's local date (configurable tax treatment, plan 4.2)
+    expect(isRegistered).toHaveBeenCalledWith(3, 'GST', 'IN', '2026-10-25');
   });
 
   it('no threshold: no percent and no warning', async () => {

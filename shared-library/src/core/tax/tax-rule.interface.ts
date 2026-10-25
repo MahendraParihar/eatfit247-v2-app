@@ -187,19 +187,19 @@ export interface ITaxRegistration {
   active: boolean;
 }
 
+/**
+ * `POST / PUT franchise-tax-registrations/:franchiseId`. The GST State comes from the GSTIN; the currency
+ * defaults to the country's. A registration abroad's invoice series (prefix, format, FY start) is set with
+ * group 11.
+ */
 export interface IManageTaxRegistration {
-  franchiseId: number;
   countryCode: string;
-  taxSystem: TaxTypeEnum;
+  taxSystem: TaxTypeEnum | string;
   registrationNumber: string;
-  stateCode?: string | null;
   iecNumber?: string | null;
-  currencyCode: string;
+  currencyCode?: string | null;
   effectiveFrom: string;
   effectiveTo?: string | null;
-  invoicePrefix?: string | null;
-  invoiceNumberFormat?: string | null;
-  fyStartMonth?: number | null;
   active?: boolean;
 }
 

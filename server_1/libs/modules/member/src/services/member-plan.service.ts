@@ -1340,6 +1340,12 @@ export class MemberPlanService {
       contactNumber: payment.member.contactNumber,
       businessRegNumber: payment.gstNumber,
     };
+    // The supplier's tax number comes from the registration effective on the invoice date (decision 12)
+    const registration = await this.invoiceIssueService.invoiceRegistration(
+      payment.franchiseId,
+      franchiseAddress?.countryCode,
+      InvoiceIssueService.documentDate(payment.invoiceDate, payment.paymentDate, payment.franchise?.timeZone),
+    );
     // Map payment to InvoiceDocument using the universal invoice system
     const invoiceDoc = mapPaymentToInvoiceDocument(
       paymentModel,
@@ -1355,6 +1361,7 @@ export class MemberPlanService {
         'Pause up to 20 days may be approved in genuine case.',
         `Payment confirms acceptance of ${payment.franchise.companyName} terms and service validity conditions.`,
       ],
+      registration,
     );
     return { invoiceDoc, paymentModel };
   }
