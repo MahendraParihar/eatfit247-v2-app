@@ -61,6 +61,7 @@
 | Date | Gate | Result | Notes |
 |------|------|--------|-------|
 | 2026-10-26 | G1 migration | ✅ | `eatfit_wi`: 151 applied twice (second run only NOTICEs); table, checks, FKs and indexes as specified; WorkshopInvoice (subject 48, franchise-scoped) has read/create/update/delete for roles 1 and 7. A fresh-DB run isn't possible locally (no seeded empty schema); covered by the production-copy run. |
+| 2026-10-26 | G2 shared library | ✅ | `npm run build` clean. Member invoice HTML rendered through `MemberPlanService.generateInvoicePDF` (stopped before Puppeteer) is byte-identical with the old and new `invoice.hbs` for payment 5277 (DOMESTIC_GST, EFMUM/2026-27/S/000491) and 5276 (NO_TAX foreign customer, S/000490). The first run differed only by a new CSS rule; moved inline and re-ran. G1 re-run: no schema change since. |
 
 ## Release Notes (production)
 

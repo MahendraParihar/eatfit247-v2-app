@@ -63,4 +63,7 @@ export enum AdminSubjectEnum {
 
     // Reviews domain
     GoogleReview     = 'GoogleReview',
+
+    // Finance domain
+    WorkshopInvoice  = 'WorkshopInvoice',
 }

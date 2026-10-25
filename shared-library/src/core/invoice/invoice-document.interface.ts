@@ -18,6 +18,7 @@ export interface IInvoiceDocument {
   footer: IInvoiceFooter;
   termsAndConditions?: string[];
   currencyCode: string;
+  notes?: string; // Printed in the Notes column; the template's default notes show when absent
 }
 
 export interface IInvoiceHeader {
@@ -27,6 +28,9 @@ export interface IInvoiceHeader {
   invoiceDate: string; // ISO date string
   dueDate?: string; // ISO date string (optional)
   currency: string; // ISO currency code (INR, USD, AED, etc.)
+  supplyDate?: string; // ISO date string; printed as "Date of Supply" when set (workshop invoices)
+  placeOfSupply?: string; // e.g. "Maharashtra (27)"; printed when set (workshop invoices)
+  cancelled?: boolean; // Prints a CANCELLED stamp
 }
 
 export interface IInvoiceParty {
@@ -45,6 +49,7 @@ export interface IInvoiceParty {
   taxIdLabel?: string; // "GSTIN", "VAT No.", etc.
   phone?: string;
   email?: string;
+  contactPerson?: string; // Printed under the buyer when set (workshop invoices)
   logo?: string; // Logo URL for display in invoice header
 }
 

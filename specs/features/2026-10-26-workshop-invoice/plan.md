@@ -22,14 +22,15 @@
 
 ## Group 2: Shared Library
 
-- [ ] 2.1 `IWorkshopInvoice`, the create/update/search/cancel/preview interfaces, and `AdminSubjectEnum.WorkshopInvoice`.
-- [ ] 2.2 `mapWorkshopInvoiceToInvoiceDocument` in `core/invoice/invoice.mapper.ts`:
+- [x] 2.1 `IWorkshopInvoice`, the create/update/search/cancel/preview interfaces, and `AdminSubjectEnum.WorkshopInvoice`.
+- [x] 2.2 `mapWorkshopInvoiceToInvoiceDocument` in `core/invoice/invoice.mapper.ts`:
   - one line (description, SAC, qty, unit rate and stored tax rows);
   - invoice date, plus the date of supply in the document's notes/particulars;
   - bill-to name, address and GSTIN;
   - a cancelled flag.
-- [ ] 2.3 Extend `invoice.hbs` only where needed: a date-of-supply line and a CANCELLED stamp. Member invoices must render unchanged.
+- [x] 2.3 Extend `invoice.hbs` only where needed: a date-of-supply line and a CANCELLED stamp. Member invoices must render unchanged.
 - **Gate:** `cd shared-library && npm run build`, and existing invoice PDFs render the same for one domestic and one export member payment.
+- **As built:** `workshop-invoice.interface.ts` holds `IWorkshopInvoice`, `IManageWorkshopInvoice`, `IWorkshopInvoiceTaxRequest`, `IWorkshopInvoiceSearch`, `ICancelWorkshopInvoice`, `IWorkshopInvoiceMasterData`, the bill-to snapshot `IWorkshopInvoiceAddress` and `WORKSHOP_INVOICE_LOCKED_FIELDS` (decision 8). `IInvoiceHeader` gains optional `supplyDate`, `placeOfSupply` and `cancelled`; `IInvoiceParty` gains optional `contactPerson`; `IInvoiceDocument` gains optional `notes` (the template already read `invoice.notes`). The template's dead `playOfSupply` block (never set, and wrongly date-formatted) became the Date of Supply and Place of Supply lines. The CANCELLED stamp is styled inline inside its `{{#if}}` so member HTML stays byte-identical. `buildBuyerInfo` now takes the address fields it prints (`IAddress` still fits).
 
 ## Group 3: Invoice numbering by invoice date (money)
 
