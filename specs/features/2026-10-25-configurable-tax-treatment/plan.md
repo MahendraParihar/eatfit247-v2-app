@@ -409,8 +409,8 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
 
 ## Group 6: Backend: engine refactor (tax core)
 
-- [ ] 6.1 `calculate`: the D6 invariants first (today's order), then facts on the place of supply (billing / delivery), resolve, execute; no country literals in the decision flow.
-- [ ] 6.2 Executors:
+- [x] 6.1 `calculate`: the D6 invariants first (today's order), then facts on the place of supply (billing / delivery), resolve, execute; no country literals in the decision flow.
+- [x] 6.2 Executors:
   - `CHARGE`
   - `ZERO_RATED_EXPORT`
   - `EXPORT_LUT_OR_TAX`: refused without a GST registration, with today's message
@@ -418,14 +418,71 @@ The group 1 review ran migration 146 on disposable clones and found these. Each 
   - `REFUSE`
   - `FOREIGN_REGISTRATION`: refused until group 11
   - same `TaxMode` values; inclusive back-out at the rule rate; return the rule ID and registration ID
-- [ ] 6.3 Default goods rule (`applies_to = ALL`).
-- [ ] 6.4 Store the D13 fields in the admin and public flows (public evidence = `NOT_COLLECTED`).
-- [ ] 6.5 The preview returns the computed tax.
-- [ ] 6.6 Rewire the matrix harness to the seeded rules; row 4 becomes rule-based; row 12 unchanged; **expected tax outputs unchanged**.
+- [x] 6.3 Default goods rule (`applies_to = ALL`).
+- [x] 6.4 Store the D13 fields in the admin and public flows (public evidence = `NOT_COLLECTED`).
+- [x] 6.5 The preview returns the computed tax.
+- [x] 6.6 Rewire the matrix harness to the seeded rules; row 4 becomes rule-based; row 12 unchanged; **expected tax outputs unchanged**.
 - **Gate:**
   - **A4**, A5, A6, A9, A10, A11, A12b, A22 (tax), A25
   - live through the admin: a domestic EFMUM payment, an EFMUM export with the test LUT, a HCUAE UAE payment, and the A5 switch via the preview plus a payment
   - baseline green
+
+> **As built (group 6, 2026-10-25):**
+> - **`TaxEngineService.calculate`:**
+>   - the D6 invariants first: franchise and billing countries, the Indian-client refusal, the goods delivery country and State. The goods checks now run before the rule lookup, because the place of supply is a fact (6b finding 4)
+>   - the facts: `TaxRuleMatchUtil.placeOfSupply`, the home registration on the supply date, the plan's electronic flag, and the money from `TaxMasterService.paymentRoute` with the franchise currency (no INR literal)
+>   - then `resolveOrThrow` and one executor per treatment. `FOREIGN_REGISTRATION` is refused with a clear message (A12b)
+>   - the `ALLOW_UNREGISTERED_INTERSTATE_GOODS` read and `AppConfigService` are gone: s.24(i) is seeded rule 7 (A9). Group 7 still removes the `ConfigParam` entry
+> - **Removed:** `TaxMasterService.getApplicableTaxRule` / `LEGACY_RULE_SHAPE` and their spec, now dead. Their reference-fallback cases are covered by A15 and A11 on the resolver.
+> - **Stored per sale (6.4):**
+>   - payments store `tax_master_id`, `tax_registration_id` and `customer_type` (create, edit re-price, locked edits keep what was stored, public checkout)
+>   - order lines store their own rule and registration; the order header stores the registration
+>   - public checkout stores `tax_evidence` = `NOT_COLLECTED` only when the rule requires evidence (admin evidence: group 10)
+>   - `calculate-tax` (plans and products) returns the four decision fields
+> - **Preview (6.5):** `POST tax-master/preview` goes through `TaxEngineService.preview`. Given an amount, it returns the computed tax; a refusal comes back as a `NOT_PRICED` warning.
+> - **Harness (6.6):** `seeded-tax-rules.fixture.ts` holds rows 1–11 of the local DB, matched by the real resolver over an in-memory store. Matrix 27 and 4.6 matrix 32 run with their **expected outputs unedited** (diffed). Row 4 is rule-based, including an unknown State and the owner's change to CHARGE. New `tax-engine.rules.spec.ts` covers A5, A6, A9–A12b, A25, the executors, the preview and the evidence.
+> - **Deliberate differences from the old engine (all D6 / seed):**
+>   - an unregistered Indian franchise's client abroad paying INR over Indian payment methods: no tax (rule 6, CHARGE without GSTIN), where the old engine refused it as an export
+>   - a HCUAE goods export takes HSN from rule 11 (NULL)
+>   - MEMUM's other-State product without a rule gets the s.24(i) refusal, not "no rule"
+> - **Live:**
+>   - 12 `calculate-tax` cases identical to 5b
+>   - PAID payments for EFMUM domestic (rule 1 / registration 1), EFMUM export under the test LUT (rule 5) and HCUAE UAE (rule 2 / registration 2, QA member 6396)
+>   - A5: rule 10 switched to CHARGE 5% S by the super admin; the preview and a payment gave 5% S; rule 10 restored field for field
+>   - A25: the payment and its PDF text unchanged after the restore
+>   - A12b: preview `NOT_PRICED` on a staged-then-activated QA rule, deactivated again
+>   - a PENDING MEMUM order stored rule 3, registration NULL
+>   - 8 mutants caught
+> - **Review:** a subagent found 7 issues. Serious: a GST export kept the rate frozen in 146's copies (activating MEMUM's 5% would still export at 12% inclusive), and the matrix hid it behind a test-only export rule. Fixed as group 6b.
+
+## Group 6b: Review fixes for the engine (subagent review, 2026-10-25)
+
+- [x] 6b.1 **A GST export or IGST on a sale abroad is priced at the supply's own rate** (finding 1, owner decision 2026-10-25: "supply's own rate"). The problem: the foreign rules carry the rate of the rule they were copied from in 146, so activating MEMUM's staged 5% (row 4) would still price its exports at row 8's 12% inclusive, and a plan rate added later never reached its sales abroad. Before 4.14 the export rate was the own-country rule's, and by law IGST is charged at the supply's rate. Now `EXPORT_LUT_OR_TAX` and a GST `CHARGE` with a place of supply abroad take **rate, inclusive flag and HSN/SAC** from the plan or product's own same-country GST `CHARGE` rule on the supply date (resolved with the same facts at home, D4 precedence). The foreign rule decides the treatment only; its rate fields are not used (group 13's form hides them). No same-country rule → today's "No active tax rule" 400. VAT treatments keep the rule's own rate (A5). The matrix drops its test-only export rule: rows 3/4/7 run on the seeded rows alone.
+- [x] 6b.2 **The preview prices what it shows** (finding 2): a `FACTS_DIFFER` warning when the priced rule isn't the shown winner (a customer GSTIN until group 9); the preview's supply date is read as the franchise's local day, as the engine reads it.
+- [x] 6b.3 **`customer_type` is stored only once it is assessed** (finding 2): NULL until group 9 feeds the customer GSTIN / TRN (the facts still match as B2C), so no B2B sale entered meanwhile is recorded as B2C.
+- [x] 6b.4 **No working currency, no price** (finding 3): a franchise without `currency_code` is a 400 (the money route can't be decided), never a chosen route trusted as is.
+- [x] 6b.5 **Smaller fixes:**
+  - `OUT_OF_SCOPE` on GST without a GST registration is refused, like the export treatments (finding 5)
+  - the product order route uses the franchise's currency, not an INR literal (finding 6)
+  - stale comments; the A9 test states what it proves (finding 7)
+  - recorded, not changed: the goods delivery checks run before the rule lookup, since the place of supply is a fact (finding 4)
+- **Gate:** group 6's gate again; a case per finding; mutation: export at the foreign rule's rate.
+
+> **As built (group 6b, 2026-10-25):**
+> - **Fixes:**
+>   - **6b.1:** `TaxMasterService.supplyRateRule` resolves the same-country GST CHARGE rule for the sale at home (D4). The engine's `priceRule` uses it for `EXPORT_LUT_OR_TAX` and GST CHARGE abroad (rate, inclusive flag, HSN/SAC); `taxMasterId` stays the matched rule. Without a same-country rule: today's 400. The matrix drops its test-only export rule: rows 3/4/7 pass on the seeded rows (row 7: row 8 matched, row 4's 5% charged)
+>   - **6b.2:** `FACTS_DIFFER` on the preview; the preview's supply date is the franchise's local day
+>   - **6b.3:** `customer_type` NULL until group 9 (the facts still match as B2C)
+>   - **6b.4:** no franchise currency → 400 before any rule lookup
+>   - **6b.5:** GST `OUT_OF_SCOPE` refused without a GST registration; the product order route uses the franchise currency (`TaxMasterService.paymentRoute`); comments fixed
+> - **Recorded, not changed:** the goods delivery checks run before the rule lookup (finding 4). The reviewer agreed with the three deliberate differences above.
+> - **Specs:** tax 166. Mutants caught: export at the foreign rule's rate (4 failures, real-seed matrix rows among them), no `FACTS_DIFFER`, raw preview date, guessed B2C, no currency guard, no OUT_OF_SCOPE gate (1 each).
+> - **Live:**
+>   - 12 `calculate-tax` cases identical to 5b
+>   - group 6 live 18/18 again (payments 5291–5294 store customer type NULL; order 98)
+>   - g5 33/33, form5b 3/3, A23a 20/20, A23b 12/12
+>   - rules 1–11 identical to before group 5 (audit columns aside)
+>   - A3: every earlier document identical, the counter key set unchanged, counters advanced only by the 9 test payments
 
 ## Group 7: Config retirement (migration 148)
 

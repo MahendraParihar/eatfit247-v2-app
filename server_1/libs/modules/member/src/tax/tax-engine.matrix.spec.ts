@@ -1,16 +1,11 @@
-import { CountryService, InvoiceSeriesUtil } from '@server_1/platform';
-import { MstFranchise } from '@server_1/core';
+import { InvoiceSeriesUtil } from '@server_1/platform';
 import {
   EXPORT_UNDER_LUT_NOTE,
   EXPORT_WITH_IGST_NOTE,
-  IndiaGstService,
-  LutService,
   TaxEngineService,
   TaxInput,
   UAE_ZERO_RATED_EXPORT_NOTE,
   UAE_ZERO_RATED_GOODS_EXPORT_NOTE,
-  UsSalesTaxService,
-  VatService,
 } from '@server_1/modules/tax-engine';
 import {
   InvoiceSeriesEnum,
@@ -20,97 +15,47 @@ import {
   TaxTypeEnum,
   TransactionType,
 } from '@eatfit247-shared-lib';
+import { EFMUM, EngineHarness, HCUAE, MEMUM, SeedRule, engineHarness, rule, ruleById } from './seeded-tax-rules.fixture';
 
 /**
  * Spec 2026-10-10-tax-mapping-matrix, group 3: one case per row of the legal mapping table
- * (requirements.md § "The mapping table") and its variants. The rules are the migration-144 seeds,
- * so this file also documents the seed. Row numbers in the names match the table.
+ * (requirements.md § "The mapping table") and its variants. Since configurable tax treatment group 6 the
+ * engine resolves the migration-146 rules (rows 1–11 of the local DB, `seeded-tax-rules.fixture.ts`) through
+ * the real resolver; the expected tax outputs are unchanged (A4). Row numbers in the names match the table.
  */
 describe('Tax mapping matrix (franchise × customer × goods/services)', () => {
-  type Rule = {
-    taxSystem: TaxTypeEnum;
-    taxPercent: number;
-    isTaxInclusive: boolean;
-    taxCategory: TaxCategoryEnum;
-    hsnSacCode: string | null;
-  };
-  // 144 seeds
-  const EFMUM_GST_18: Rule = { taxSystem: TaxTypeEnum.GST, taxPercent: 18, isTaxInclusive: false, taxCategory: TaxCategoryEnum.STANDARD, hsnSacCode: '999319' };
-  const HCUAE_VAT_0_Z: Rule = { taxSystem: TaxTypeEnum.VAT, taxPercent: 0, isTaxInclusive: false, taxCategory: TaxCategoryEnum.ZERO_RATED, hsnSacCode: '999319' };
-  const MEMUM_NONE: Rule = { taxSystem: TaxTypeEnum.NONE, taxPercent: 0, isTaxInclusive: false, taxCategory: TaxCategoryEnum.STANDARD, hsnSacCode: '3004' };
-  // staged (inactive until the CA confirms Mahi's registration)
-  const MEMUM_GST_5: Rule = { taxSystem: TaxTypeEnum.GST, taxPercent: 5, isTaxInclusive: false, taxCategory: TaxCategoryEnum.STANDARD, hsnSacCode: '3004' };
-  // configuration alternatives
-  const HCUAE_VAT_5_S: Rule = { ...HCUAE_VAT_0_Z, taxPercent: 5, taxCategory: TaxCategoryEnum.STANDARD };
-  const PLAN_RULE_5: Rule = { ...EFMUM_GST_18, taxPercent: 5, hsnSacCode: '999723' };
-
-  const EFMUM = 1;
-  const HCUAE = 2;
-  const MEMUM = 3;
   const LUT = 'AD270326000001T';
 
-  let rules: Record<string, Rule | null>;
-  let franchises: Record<number, { gstNumber: string | null; vatNumber: string | null; timeZone: string | null }>;
   let lutValidity: { from: string; to: string } | null;
-  let allowUnregisteredInterstate: boolean;
-  let getApplicableTaxRule: jest.Mock;
-  let findValid: jest.Mock;
+  let harness: EngineHarness;
   let engine: TaxEngineService;
-
-  const ruleKey = (franchiseId: number, type: TransactionType, referenceId: number): string => `${franchiseId}/${type}/${referenceId}`;
+  let rules: SeedRule[];
 
   beforeEach(() => {
-    rules = {
-      [ruleKey(EFMUM, TransactionType.SERVICE, 1)]: EFMUM_GST_18,
-      [ruleKey(HCUAE, TransactionType.SERVICE, 1)]: HCUAE_VAT_0_Z,
-      [ruleKey(MEMUM, TransactionType.PRODUCT, 1)]: MEMUM_NONE,
-    };
-    franchises = {
-      [EFMUM]: { gstNumber: '27CSEPS5397E1Z8', vatNumber: null, timeZone: 'Asia/Kolkata' },
-      [HCUAE]: { gstNumber: null, vatNumber: '100000000000003', timeZone: 'Asia/Dubai' },
-      [MEMUM]: { gstNumber: null, vatNumber: null, timeZone: 'Asia/Kolkata' },
-    };
     lutValidity = { from: '2026-04-01', to: '2027-03-31' };
-    allowUnregisteredInterstate = false;
-    // Same fallback as TaxMasterService: a SERVICE lookup without its own row uses reference 1
-    getApplicableTaxRule = jest.fn().mockImplementation(async (l: { franchiseId: number; transactionType: TransactionType; referenceId: number }) => {
-      const own = rules[ruleKey(l.franchiseId, l.transactionType, l.referenceId)];
-      if (own !== undefined || l.transactionType !== TransactionType.SERVICE) {
-        return own ?? null;
-      }
-      return rules[ruleKey(l.franchiseId, l.transactionType, 1)] ?? null;
+    harness = engineHarness({
+      lut: (franchiseId, date) => (franchiseId === EFMUM && lutValidity && date >= lutValidity.from && date <= lutValidity.to ? { arn: LUT } : null),
     });
-    findValid = jest.fn().mockImplementation(async (franchiseId: number, date: string) =>
-      franchiseId === EFMUM && lutValidity && date >= lutValidity.from && date <= lutValidity.to ? { arn: LUT } : null,
-    );
-    engine = new TaxEngineService(
-      new IndiaGstService(),
-      new VatService(),
-      { calculate: jest.fn() } as unknown as UsSalesTaxService,
-      {
-        findAll: jest.fn().mockResolvedValue({
-          tableData: [
-            { countryCode: 'IN', country: 'India' },
-            { countryCode: 'US', country: 'United States' },
-            { countryCode: 'AE', country: 'United Arab Emirates' },
-            { countryCode: 'SA', country: 'Saudi Arabia' },
-          ],
-          count: 4,
-        }),
-      } as unknown as CountryService,
-      { getApplicableTaxRule } as never,
-      { findValid } as unknown as LutService,
-      { findByPk: jest.fn().mockImplementation(async (id: number) => franchises[id] ?? null) } as unknown as typeof MstFranchise,
-      { getBoolean: jest.fn().mockImplementation(() => allowUnregisteredInterstate) } as never,
-      // Registrations (configurable tax treatment, plan 4.2) derived from the same franchise fixture
-      {
-        findActive: jest.fn().mockImplementation(async (id: number) => [
-          ...(franchises[id]?.gstNumber?.trim() ? [{ taxSystem: TaxTypeEnum.GST, countryCode: 'IN' }] : []),
-          ...(franchises[id]?.vatNumber?.trim() ? [{ taxSystem: TaxTypeEnum.VAT, countryCode: id === HCUAE ? 'AE' : 'IN' }] : []),
-        ]),
-      } as never,
-    );
+    engine = harness.engine;
+    rules = harness.rules;
   });
+
+  /** HCUAE's rate switched to 5% STANDARD (configuration, the Art 41 adviser item) */
+  const hcuaeStandardRate = (): void => {
+    Object.assign(ruleById(rules, 2), { taxPercent: 5, taxCategory: TaxCategoryEnum.STANDARD });
+  };
+  /** A HCUAE goods rule for product 7 in the UAE, VAT 5% STANDARD (configuration) */
+  const hcuaeProductRule = (): void => {
+    rules.push(rule({ id: 107, franchiseId: HCUAE, countryCode: 'AE', transactionType: 'PRODUCT', referenceId: 7, appliesTo: 'SPECIFIC', taxSystem: TaxTypeEnum.VAT, taxPercent: 5, taxCategory: 'STANDARD', effectiveFrom: '2025-12-31' }));
+  };
+  /**
+   * Mahi registered: its GSTIN and the staged 5% rule (row 4) activated, nothing else. Its exports still match the
+   * seeded row 8 and are priced at the supply's own rate, now row 4's 5% (requirements D3, group 6b).
+   */
+  const memumRegisteredAt5 = (): void => {
+    harness.registrations[MEMUM] = [{ taxRegistrationId: 3, taxSystem: TaxTypeEnum.GST, countryCode: 'IN' }];
+    ruleById(rules, 4).active = true;
+  };
 
   const svc = (o: Partial<TaxInput>): TaxInput => ({
     baseAmount: 1005,
@@ -157,7 +102,7 @@ describe('Tax mapping matrix (franchise × customer × goods/services)', () => {
     });
 
     it('A15: a plan-specific rule wins; without one the default service rule (reference 1) applies', async () => {
-      rules[ruleKey(EFMUM, TransactionType.SERVICE, 42)] = PLAN_RULE_5;
+      rules.push(rule({ id: 142, franchiseId: EFMUM, countryCode: 'IN', transactionType: 'SERVICE', referenceId: 42, appliesTo: 'SPECIFIC', taxSystem: TaxTypeEnum.GST, taxPercent: 5, hsnSacCode: '999723' }));
       const own = await engine.calculate(svc({ referenceId: 42 }));
       expect(own).toMatchObject({ taxPercentage: 5, hsnSacCode: '999723' });
       const fallback = await engine.calculate(svc({ referenceId: 43 }));
@@ -203,7 +148,8 @@ describe('Tax mapping matrix (franchise × customer × goods/services)', () => {
       }
     });
 
-    it('row 14: the electronic-service flag changes nothing in the engine (adviser decision pending)', async () => {
+    it('row 14: the electronic-service flag changes nothing on the seeded rules (adviser decision pending; they match any)', async () => {
+      harness.electronicPlans.add(1);
       const r = await engine.calculate(svc({ customerCountryCode: 'AE', customerStateCode: '1', currency: 'USD' }));
       expect(r).toMatchObject({ taxMode: TaxMode.EXPORT_OF_SERVICE, taxAmount: 0 });
     });
@@ -211,8 +157,7 @@ describe('Tax mapping matrix (franchise × customer × goods/services)', () => {
 
   describe('India franchise, goods (MEMUM)', () => {
     it('rows 3/4 with the staged GST 5% rule active: same State → CGST 2.5 + SGST 2.5; other State → IGST 5; HSN 3004', async () => {
-      rules[ruleKey(MEMUM, TransactionType.PRODUCT, 1)] = MEMUM_GST_5;
-      franchises[MEMUM].gstNumber = '27AAAAA0000A1Z5';
+      memumRegisteredAt5();
       const same = await engine.calculate(goods({}));
       expect(same.taxObj).toEqual({ CGST: { amount: 25.13, taxPercentage: 2.5 }, SGST: { amount: 25.12, taxPercentage: 2.5 } });
       expect(same).toMatchObject({ taxAmount: 50.25, placeOfSupplyStateCode: '27', hsnSacCode: '3004' });
@@ -222,38 +167,35 @@ describe('Tax mapping matrix (franchise × customer × goods/services)', () => {
     });
 
     it('goods delivered in India without a delivery State → 400 (the billing State is never a substitute, IGST s.10)', async () => {
-      rules[ruleKey(MEMUM, TransactionType.PRODUCT, 1)] = MEMUM_GST_5;
-      franchises[MEMUM].gstNumber = '27AAAAA0000A1Z5';
       await expect(engine.calculate(goods({ deliveryStateCode: null, customerStateCode: '27' }))).rejects.toThrow('shipping address with a state');
-      rules[ruleKey(MEMUM, TransactionType.PRODUCT, 1)] = MEMUM_NONE;
-      franchises[MEMUM].gstNumber = null;
+      memumRegisteredAt5();
       await expect(engine.calculate(goods({ deliveryStateCode: null, customerStateCode: '27' }))).rejects.toThrow('shipping address with a state');
     });
 
-    it('row 3 unregistered (seeded NONE): same-State delivery → no tax, plain invoice', async () => {
+    it('row 3 unregistered (seeded GST rule, no GSTIN): same-State delivery → no tax, plain invoice', async () => {
       const r = await engine.calculate(goods({}));
       expect(r).toMatchObject({ taxType: TaxTypeEnum.NONE, taxMode: TaxMode.NO_TAX, taxAmount: 0, placeOfSupplyStateCode: '27', hsnSacCode: '3004' });
     });
 
-    it('row 4 unregistered: other-State delivery → refused under CGST s.24(i) unless the CA override is on', async () => {
+    it('row 4 unregistered: other-State (or unknown-State) delivery → refused by the seeded s.24(i) rule; changed to CHARGE by the owner → no tax', async () => {
       await expect(engine.calculate(goods({ deliveryStateCode: '29' }))).rejects.toThrow('CGST s.24(i)');
-      allowUnregisteredInterstate = true;
+      await expect(engine.calculate(goods({ supplierStateCode: null }))).rejects.toThrow('CGST s.24(i)');
+      await expect(harness.resolveOrThrow.mock.results[0].value).resolves.toMatchObject({ id: 7 });
+      Object.assign(ruleById(rules, 7), { treatment: 'CHARGE', refusalMessage: null });
       const r = await engine.calculate(goods({ deliveryStateCode: '29' }));
       expect(r.taxMode).toBe(TaxMode.NO_TAX);
     });
 
     it('row 7 registered, LUT valid: delivery abroad → export of goods 0% under LUT, whatever the currency; export series', async () => {
-      rules[ruleKey(MEMUM, TransactionType.PRODUCT, 1)] = MEMUM_GST_5;
-      franchises[MEMUM].gstNumber = '27AAAAA0000A1Z5';
-      findValid.mockResolvedValue({ arn: LUT });
+      memumRegisteredAt5();
+      harness.findValid.mockResolvedValue({ arn: LUT });
       const r = await engine.calculate(goods({ customerCountryCode: 'AE', customerStateCode: '1', deliveryCountryCode: 'AE', deliveryStateCode: '1', currency: 'INR' }));
       expect(r).toMatchObject({ taxMode: TaxMode.EXPORT_OF_GOODS, taxAmount: 0, isLutApplied: true, placeOfSupplyCountryCode: 'AE', placeOfSupplyStateCode: null });
       expect(series(r.taxMode, 'IN', 'AE', r.taxAmount)).toBe(InvoiceSeriesEnum.EXPORT);
     });
 
     it('row 7 registered, no LUT → export of goods with IGST 5 paid', async () => {
-      rules[ruleKey(MEMUM, TransactionType.PRODUCT, 1)] = MEMUM_GST_5;
-      franchises[MEMUM].gstNumber = '27AAAAA0000A1Z5';
+      memumRegisteredAt5();
       const r = await engine.calculate(goods({ customerCountryCode: 'AE', customerStateCode: '1', deliveryCountryCode: 'AE', deliveryStateCode: '1' }));
       expect(r).toMatchObject({ taxMode: TaxMode.EXPORT_OF_GOODS, taxAmount: 50.25, invoiceNote: EXPORT_WITH_IGST_NOTE });
     });
@@ -273,19 +215,19 @@ describe('Tax mapping matrix (franchise × customer × goods/services)', () => {
     });
 
     it('row 8 alternative: rule switched to 5% STANDARD (configuration) → VAT 5 S', async () => {
-      rules[ruleKey(HCUAE, TransactionType.SERVICE, 1)] = HCUAE_VAT_5_S;
+      hcuaeStandardRate();
       const r = await engine.calculate(uae({}));
       expect(r).toMatchObject({ taxPercentage: 5, taxAmount: 50.25, totalAmount: 1055.25, taxCategory: TaxCategoryEnum.STANDARD });
     });
 
     it('row 9: UAE goods rule 5% S → VAT 5 on the delivery country', async () => {
-      rules[ruleKey(HCUAE, TransactionType.PRODUCT, 7)] = HCUAE_VAT_5_S;
+      hcuaeProductRule();
       const r = await engine.calculate(uae({ transactionType: TransactionType.PRODUCT, referenceId: 7, deliveryCountryCode: 'AE', deliveryStateCode: '1' }));
       expect(r).toMatchObject({ taxMode: TaxMode.VAT, taxPercentage: 5, taxCategory: TaxCategoryEnum.STANDARD, placeOfSupplyCountryCode: 'AE' });
     });
 
     it.each(['US', 'SA'])('row 10: client in %s (rest of world / GCC) → zero-rated export of services with the Art 31 note', async (country) => {
-      rules[ruleKey(HCUAE, TransactionType.SERVICE, 1)] = HCUAE_VAT_5_S;
+      hcuaeStandardRate();
       const r = await engine.calculate(uae({ customerCountryCode: country, currency: 'USD' }));
       expect(r).toMatchObject({ taxMode: TaxMode.VAT, taxAmount: 0, taxCategory: TaxCategoryEnum.ZERO_RATED, invoiceNote: UAE_ZERO_RATED_EXPORT_NOTE, placeOfSupplyCountryCode: country, placeOfSupplyStateCode: null });
       expect(r.taxDecisionReason).toContain('billing address');
@@ -293,7 +235,7 @@ describe('Tax mapping matrix (franchise × customer × goods/services)', () => {
     });
 
     it('rows 11/13: goods delivered outside the UAE → zero-rated export of goods with the Art 30 note and the delivery reason', async () => {
-      rules[ruleKey(HCUAE, TransactionType.PRODUCT, 7)] = HCUAE_VAT_5_S;
+      hcuaeProductRule();
       for (const country of ['US', 'IN']) {
         const r = await engine.calculate(
           uae({ transactionType: TransactionType.PRODUCT, referenceId: 7, customerCountryCode: 'US', deliveryCountryCode: country, deliveryStateCode: '1', currency: 'USD' }),
@@ -305,16 +247,16 @@ describe('Tax mapping matrix (franchise × customer × goods/services)', () => {
 
     it('row 12: Indian client under the UAE franchise → refused before any rule lookup', async () => {
       await expect(engine.calculate(uae({ customerCountryCode: 'IN', customerStateCode: '27' }))).rejects.toThrow('Indian clients must be registered under the India franchise.');
-      expect(getApplicableTaxRule).not.toHaveBeenCalled();
+      expect(harness.resolveOrThrow).not.toHaveBeenCalled();
     });
 
     it('A16: the supply date is the franchise local day (Asia/Dubai), not IST', async () => {
       // 2026-10-11 21:30 UTC = 2026-10-12 01:30 Dubai, 03:00 IST → both 10-12; 19:30 UTC = 23:30 Dubai (10-11) vs 01:00 IST (10-12)
       await engine.calculate(uae({ supplyDate: '2026-10-11T19:30:00.000Z' }));
-      expect(getApplicableTaxRule.mock.calls[0][0].onDate).toBe('2026-10-11');
-      getApplicableTaxRule.mockClear();
+      expect(harness.resolveOrThrow.mock.calls[0][0].supplyDate).toBe('2026-10-11');
+      harness.resolveOrThrow.mockClear();
       await engine.calculate(svc({ supplyDate: '2026-10-11T19:30:00.000Z' }));
-      expect(getApplicableTaxRule.mock.calls[0][0].onDate).toBe('2026-10-12');
+      expect(harness.resolveOrThrow.mock.calls[0][0].supplyDate).toBe('2026-10-12');
     });
   });
 

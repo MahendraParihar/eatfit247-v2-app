@@ -9,6 +9,7 @@ import {
   UpdateActiveDto,
 } from '@server_1/core';
 import { TaxMasterService } from '../../services/tax-master.service';
+import { TaxEngineService } from '../../services/tax-engine.service';
 import { CreateTaxMasterDto, TaxRulePreviewDto } from '../../dto/tax-master.dto';
 import {
   AdminActionEnum,
@@ -23,7 +24,10 @@ import {
 @Controller('tax-master')
 @UseGuards(JwtAuthGuard, AbilitiesGuard)
 export class TaxMasterController {
-  constructor(private readonly service: TaxMasterService) {}
+  constructor(
+    private readonly service: TaxMasterService,
+    private readonly taxEngineService: TaxEngineService,
+  ) {}
 
   @Get('list')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.TaxMaster)
@@ -37,11 +41,14 @@ export class TaxMasterController {
     return await this.service.fetchById(id, currentUser);
   }
 
-  /** Which rule would price a sale (decision 7): winner, runners-up, warnings. Saves nothing; franchise-scoped. */
+  /**
+   * Which rule would price a sale (decision 7): winner, runners-up, warnings and, given an amount, the computed
+   * tax. Saves nothing; franchise-scoped.
+   */
   @Post('preview')
   @RequireAbility(AdminActionEnum.Read, AdminSubjectEnum.TaxMaster)
   async preview(@Body() body: TaxRulePreviewDto, @CurrentUser() currentUser: IAuthUser): Promise<ITaxRulePreviewResponse> {
-    return await this.service.preview(body, currentUser);
+    return await this.taxEngineService.preview(body, currentUser);
   }
 
   @Post('manage')

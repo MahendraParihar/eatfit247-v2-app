@@ -379,6 +379,10 @@ export class MemberPlanService {
         placeOfSupplyCountryCode: paymentObj.placeOfSupplyCountryCode ?? null,
         placeOfSupplyStateCode: paymentObj.placeOfSupplyStateCode ?? null,
         hsnSacCode: paymentObj.hsnSacCode ?? null,
+        // The decision as priced (decision 13); the admin evidence check comes with plan group 10
+        taxMasterId: paymentObj.taxMasterId ?? null,
+        taxRegistrationId: paymentObj.taxRegistrationId ?? null,
+        customerType: paymentObj.customerType ?? null,
         remittanceReference:
           obj.paymentSource === PaymentSourceEnum.MANUAL ? obj.remittanceReference?.trim() || null : null,
         noOfCycle: noOfCycle,
@@ -750,6 +754,9 @@ export class MemberPlanService {
       placeOfSupplyCountryCode: payment.placeOfSupplyCountryCode ?? null,
       placeOfSupplyStateCode: payment.placeOfSupplyStateCode ?? null,
       hsnSacCode: payment.hsnSacCode ?? null,
+      taxMasterId: payment.taxMasterId ?? null,
+      taxRegistrationId: payment.taxRegistrationId ?? null,
+      customerType: payment.customerType ?? null,
     };
   }
 
@@ -818,6 +825,9 @@ export class MemberPlanService {
     payment.placeOfSupplyCountryCode = draft.paymentObj.placeOfSupplyCountryCode ?? null;
     payment.placeOfSupplyStateCode = draft.paymentObj.placeOfSupplyStateCode ?? null;
     payment.hsnSacCode = draft.paymentObj.hsnSacCode ?? null;
+    payment.taxMasterId = draft.paymentObj.taxMasterId ?? null;
+    payment.taxRegistrationId = draft.paymentObj.taxRegistrationId ?? null;
+    payment.customerType = draft.paymentObj.customerType ?? null;
     payment.remittanceReference = obj.remittanceReference?.trim() || null;
     payment.noOfCycle = draft.noOfCycle;
     payment.daysInCycle = draft.noOfDaysInCycle;
@@ -1153,6 +1163,10 @@ export class MemberPlanService {
       placeOfSupplyCountryCode: taxResult.placeOfSupplyCountryCode ?? null,
       placeOfSupplyStateCode: taxResult.placeOfSupplyStateCode ?? null,
       hsnSacCode: taxResult.hsnSacCode ?? null,
+      taxMasterId: taxResult.taxMasterId ?? null,
+      taxRegistrationId: taxResult.taxRegistrationId ?? null,
+      customerType: taxResult.customerType ?? null,
+      requiresEvidence: !!taxResult.requiresEvidence,
     };
   }
 
@@ -1170,7 +1184,7 @@ export class MemberPlanService {
     const manual = paymentSource === PaymentSourceEnum.MANUAL;
     return {
       franchiseId: franchiseId ?? null,
-      // The engine treats any non-INR payment as foreign money, whatever route is chosen
+      // The engine treats money in another currency than the franchise's as foreign, whatever route is chosen
       paymentRoute: manual ? paymentRoute || PaymentRouteEnum.DOMESTIC : null,
       supplyDate: manual ? paymentDate ?? null : null,
     };
@@ -1744,6 +1758,11 @@ export class MemberPlanService {
           placeOfSupplyCountryCode: paymentObj.placeOfSupplyCountryCode ?? null,
           placeOfSupplyStateCode: paymentObj.placeOfSupplyStateCode ?? null,
           hsnSacCode: paymentObj.hsnSacCode ?? null,
+          taxMasterId: paymentObj.taxMasterId ?? null,
+          taxRegistrationId: paymentObj.taxRegistrationId ?? null,
+          customerType: paymentObj.customerType ?? null,
+          // The website collects no evidence yet (decision 9, online payments deferred)
+          taxEvidence: TaxEngineService.notCollectedEvidence(paymentObj),
           noOfCycle: programPlan.noOfCycle,
           daysInCycle: programPlan.noOfDaysInCycle,
           active: true,

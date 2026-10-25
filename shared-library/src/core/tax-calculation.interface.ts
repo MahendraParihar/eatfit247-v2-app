@@ -1,4 +1,4 @@
-import { PaymentRouteEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum } from '../enum';
+import { CustomerTypeEnum, PaymentRouteEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum } from '../enum';
 import { ITaxEvidence } from './tax/tax-rule.interface';
 
 export interface ICalculateTaxRequest {
@@ -45,6 +45,10 @@ export interface ICalculateTaxResponse {
   taxRegistrationId?: number | null;
   /** Zero-rating evidence when the rule requires it (decision 9) */
   taxEvidence?: ITaxEvidence | null;
+  /** The rule that priced it has an evidence policy (decision 9): the admin form asks for the declaration */
+  requiresEvidence?: boolean;
+  /** B2B when a valid customer GSTIN / TRN was given, else B2C (decision 10) */
+  customerType?: CustomerTypeEnum | null;
 }
 
 export interface ICalculatePlanTaxRequest {

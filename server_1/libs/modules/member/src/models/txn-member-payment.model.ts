@@ -26,7 +26,9 @@ import { MstProgram, MstProgramPlan } from '@server_1/modules/program-plan';
 import { TxnMember } from './txn-member.model';
 import { TxnMemberDietPlan } from './txn-member-diet-plan.model';
 import {
+  CustomerTypeEnum,
   IMemberAddress,
+  ITaxEvidence,
   InputLengthEnum,
   InvoiceSeriesEnum,
   PaymentRouteEnum,
@@ -548,6 +550,34 @@ export class TxnMemberPayment extends Model<TxnMemberPayment> {
     type: DataType.STRING(8),
   })
   declare hsnSacCode: string | null;
+  /** The Tax Master rule that priced the sale (configurable tax treatment, decision 13) */
+  @Column({
+    allowNull: true,
+    field: 'tax_master_id',
+    type: DataType.INTEGER,
+  })
+  declare taxMasterId: number | null;
+  /** The franchise registration the sale is invoiced under; null = unregistered */
+  @Column({
+    allowNull: true,
+    field: 'tax_registration_id',
+    type: DataType.INTEGER,
+  })
+  declare taxRegistrationId: number | null;
+  /** Zero-rating evidence and any finance decision (decision 9) */
+  @Column({
+    allowNull: true,
+    field: 'tax_evidence',
+    type: DataType.JSONB,
+  })
+  declare taxEvidence: ITaxEvidence | null;
+  /** B2B with a valid customer GSTIN / TRN, else B2C (decision 10) */
+  @Column({
+    allowNull: true,
+    field: 'customer_type',
+    type: DataType.STRING(3),
+  })
+  declare customerType: CustomerTypeEnum | null;
   @Column({
     allowNull: true,
     field: 'payment_route',

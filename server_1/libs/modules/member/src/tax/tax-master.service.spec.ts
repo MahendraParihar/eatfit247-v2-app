@@ -383,6 +383,13 @@ describe('TaxMasterService', () => {
       await expect(preview({ franchiseId: 2, billingCountryCode: 'US' }, mappedSuperAdmin)).resolves.toMatchObject({ winner: { id: 10 } });
       await expect(preview({ billingCountryCode: 'US' }, unmappedAdmin)).rejects.toThrow(ForbiddenException);
     });
+
+    it('6b.2: a timestamp supply date is the franchise\'s local day, as the engine reads it', async () => {
+      // 2026-10-24 19:30 UTC = 2026-10-25 01:00 IST; plain dates are kept
+      await expect(preview({ billingCountryCode: 'US', supplyDate: '2026-10-24T19:30:00.000Z' })).resolves.toMatchObject({ facts: { supplyDate: '2026-10-25' } });
+      await expect(preview({ franchiseId: 2, billingCountryCode: 'US', supplyDate: '2026-10-24T19:30:00.000Z' })).resolves.toMatchObject({ facts: { supplyDate: '2026-10-24' } });
+      await expect(preview({ billingCountryCode: 'US', supplyDate: '2026-10-24' })).resolves.toMatchObject({ facts: { supplyDate: '2026-10-24' } });
+    });
   });
 
   describe('franchise scope (plan 3.2 / 3b)', () => {

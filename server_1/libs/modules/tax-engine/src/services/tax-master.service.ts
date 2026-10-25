@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { ITaxRuleLookup } from '../interfaces/tax.interface';
 import { InjectModel } from '@nestjs/sequelize';
 import { ForeignKeyConstraintError, Op, QueryTypes, UniqueConstraintError } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
@@ -44,22 +43,6 @@ import { TaxFranchiseScope } from './tax-franchise-scope';
 /** `reference_id` of a franchise's default SERVICE rule (every plan without its own rule; a plan with id 1 shares it) */
 export const SERVICE_DEFAULT_REFERENCE = 1;
 
-/**
- * Today's rule shape: the franchise's own-country rate row. Migration 146 seeds treatment rules (exports, refusals,
- * fallbacks) next to these rows with the same franchise, reference and supplier country, so the lookup below reads
- * only this shape until the rule resolver replaces it (spec 2026-10-25-configurable-tax-treatment, plan 1.7 / 6.1).
- */
-export const LEGACY_RULE_SHAPE = {
-  customerScope: 'SAME_COUNTRY',
-  stateRelation: 'ANY',
-  registrationCondition: 'ANY',
-  customerTypeCondition: 'ANY',
-  electronicCondition: 'ANY',
-  moneyCondition: 'ANY',
-  treatment: 'CHARGE',
-  fallbackOnly: false,
-} as const;
-
 /** What today's form means by a reference: reference 1 on a SERVICE rule is the franchise default (all plans). */
 export function legacyAppliesTo(transactionType: TransactionType, referenceId: number): 'ALL' | 'SPECIFIC' {
   return transactionType === TransactionType.SERVICE && Number(referenceId) === SERVICE_DEFAULT_REFERENCE ? 'ALL' : 'SPECIFIC';
@@ -74,35 +57,6 @@ export class TaxMasterService {
     private readonly addressService: AddressService,
     private readonly sequelize: Sequelize,
   ) {}
-
-  /**
-   * The active rule for (franchise, reference, transaction type, country) effective on the date,
-   * newest first. Null when none is configured (the engine turns that into an error).
-   */
-  async getApplicableTaxRule(input: ITaxRuleLookup): Promise<MstTaxMaster | null> {
-    const rule = await this.findRule(input, input.referenceId);
-    if (rule || input.transactionType !== TransactionType.SERVICE || input.referenceId === SERVICE_DEFAULT_REFERENCE) {
-      return rule;
-    }
-    // Services: a plan-specific rule wins; otherwise the franchise's default service rule (reference 1)
-    return this.findRule(input, SERVICE_DEFAULT_REFERENCE);
-  }
-
-  private findRule(input: ITaxRuleLookup, referenceId: number): Promise<MstTaxMaster | null> {
-    return this.mstTaxMaster.findOne({
-      where: {
-        franchiseId: input.franchiseId,
-        referenceId,
-        transactionType: input.transactionType,
-        countryCode: input.countryCode,
-        ...LEGACY_RULE_SHAPE,
-        active: true,
-        effectiveFrom: { [Op.lte]: input.onDate },
-        [Op.or]: [{ effectiveTo: null }, { effectiveTo: { [Op.gte]: input.onDate } }],
-      },
-      order: [['effectiveFrom', 'DESC']],
-    });
-  }
 
   // ------------------------------------------------------------------ the rule resolver (decisions 3, 4)
 
@@ -123,6 +77,25 @@ export class TaxMasterService {
       throw new BadRequestException(TaxMasterService.noRuleMessage(facts));
     }
     return winner;
+  }
+
+  /**
+   * The supply's own GST rate rule (requirements D3, group 6b): the same-country GST CHARGE rule that would price
+   * this plan or product at home on the supply date. A GST export or IGST on a sale abroad is charged at its rate,
+   * inclusive flag and HSN/SAC; the foreign rule only decides the treatment.
+   */
+  public async supplyRateRule(facts: ITaxRuleFacts): Promise<MstTaxMaster | null> {
+    const rateRules = (await this.franchiseRules(facts.franchiseId, facts.transactionType)).filter(
+      (rule) =>
+        rule.customerScope === CustomerScopeEnum.SAME_COUNTRY &&
+        rule.treatment === TaxTreatmentEnum.CHARGE &&
+        rule.taxSystem === TaxTypeEnum.GST,
+    );
+    return TaxRuleMatchUtil.winner(rateRules, {
+      ...facts,
+      placeOfSupplyCountryCode: facts.supplierCountryCode,
+      placeOfSupplyStateCode: facts.supplierStateCode,
+    });
   }
 
   static noRuleMessage(facts: Pick<ITaxRuleFacts, 'franchiseId' | 'supplierCountryCode' | 'transactionType' | 'referenceId'>): string {
@@ -175,7 +148,11 @@ export class TaxMasterService {
     if (!supplier) {
       throw new BadRequestException('The franchise address has no country. Add the franchise address first.');
     }
-    const supplyDate = request.supplyDate || FranchiseDateUtil.localDate(new Date(), franchise.timeZone);
+    // The franchise's calendar day, as the engine reads it: a timestamp is converted, a plain date kept
+    const requested = (request.supplyDate ?? '').trim();
+    const supplyDate = /^\d{4}-\d{2}-\d{2}$/.test(requested)
+      ? requested
+      : FranchiseDateUtil.localDate(requested && !Number.isNaN(new Date(requested).getTime()) ? new Date(requested) : new Date(), franchise.timeZone);
     const number = (request.customerRegistrationNumber ?? '').trim();
     const customerNumber = number ? TaxRegistrationNumberUtil.checkForCountry(request.billingCountryCode, number) : null;
     if (customerNumber && !customerNumber.valid) {
@@ -233,7 +210,7 @@ export class TaxMasterService {
   }
 
   /** `mst_program_plans.is_electronic_service` (UAE ER Art 23); read by name, as the plan module is a sibling. */
-  private async isElectronicPlan(programPlanId: number): Promise<boolean> {
+  public async isElectronicPlan(programPlanId: number): Promise<boolean> {
     const rows = await this.sequelize.query<{ electronic: boolean }>(
       'SELECT is_electronic_service AS electronic FROM public.mst_program_plans WHERE program_plan_id = :programPlanId',
       { replacements: { programPlanId }, type: QueryTypes.SELECT },

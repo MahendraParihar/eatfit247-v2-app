@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { TxnMember, TxnMemberProduct, TxnMemberProductOrderItem } from '../models';
 import {
   BusinessTypeEnum,
+  CustomerTypeEnum,
   ConfigParam,
   CurrencyUtil,
   IAddress,
@@ -57,7 +58,7 @@ import {
   StateService,
 } from '@server_1/platform';
 import { ProductService } from '@server_1/modules/product';
-import { TaxEngineService, TaxInput } from '@server_1/modules/tax-engine';
+import { TaxEngineService, TaxInput, TaxMasterService } from '@server_1/modules/tax-engine';
 import { FranchisePaymentGatewayService, FranchiseService } from '@server_1/modules/franchise';
 import {
   PaymentGatewayCredentialService,
@@ -344,6 +345,10 @@ export class MemberProductService {
       placeOfSupplyCountryCode?: string | null;
       placeOfSupplyStateCode?: string | null;
       hsnSacCode?: string | null;
+      taxMasterId?: number | null;
+      taxRegistrationId?: number | null;
+      customerType?: CustomerTypeEnum | null;
+      requiresEvidence?: boolean;
     }>
   > {
     const orderItemObjs = await Promise.all(
@@ -388,6 +393,10 @@ export class MemberProductService {
           placeOfSupplyCountryCode: taxCalculationResult.placeOfSupplyCountryCode ?? null,
           placeOfSupplyStateCode: taxCalculationResult.placeOfSupplyStateCode ?? null,
           hsnSacCode: taxCalculationResult.hsnSacCode ?? null,
+          taxMasterId: taxCalculationResult.taxMasterId ?? null,
+          taxRegistrationId: taxCalculationResult.taxRegistrationId ?? null,
+          customerType: taxCalculationResult.customerType ?? null,
+          requiresEvidence: !!taxCalculationResult.requiresEvidence,
         };
       }),
     );
@@ -744,6 +753,10 @@ export class MemberProductService {
         placeOfSupplyCountryCode: item.placeOfSupplyCountryCode ?? null,
         placeOfSupplyStateCode: item.placeOfSupplyStateCode ?? null,
         hsnSacCode: item.hsnSacCode ?? null,
+        taxMasterId: item.taxMasterId ?? null,
+        taxRegistrationId: item.taxRegistrationId ?? null,
+        customerType: item.customerType ?? null,
+        requiresEvidence: !!item.requiresEvidence,
       });
     }
     return <ICalculateProductVariantTaxResponse>{
@@ -833,18 +846,26 @@ export class MemberProductService {
       placeOfSupplyCountryCode: taxResult.placeOfSupplyCountryCode ?? null,
       placeOfSupplyStateCode: taxResult.placeOfSupplyStateCode ?? null,
       hsnSacCode: taxResult.hsnSacCode ?? null,
+      taxMasterId: taxResult.taxMasterId ?? null,
+      taxRegistrationId: taxResult.taxRegistrationId ?? null,
+      customerType: taxResult.customerType ?? null,
+      requiresEvidence: !!taxResult.requiresEvidence,
     };
   }
 
-  /** Manual orders: the admin's route (default DOMESTIC); gateway orders: by currency (decision 11). */
-  private orderRoute(paymentSource: PaymentSourceEnum, currency: string, chosen?: PaymentRouteEnum | null): PaymentRouteEnum {
-    const foreignCurrency = (currency || '').toUpperCase() !== 'INR';
-    if (paymentSource === PaymentSourceEnum.MANUAL) {
-      const route = chosen || PaymentRouteEnum.DOMESTIC;
-      // Money received in a foreign currency is foreign money whatever route was picked
-      return foreignCurrency && route === PaymentRouteEnum.DOMESTIC ? PaymentRouteEnum.FOREIGN_REMITTANCE : route;
-    }
-    return foreignCurrency ? PaymentRouteEnum.INTERNATIONAL_CARD_GATEWAY : PaymentRouteEnum.DOMESTIC;
+  /**
+   * Manual orders: the admin's route (default DOMESTIC); gateway orders: by currency (decision 11). Money in a
+   * currency other than the franchise's own is foreign money whatever route was picked (decision 17).
+   */
+  private async orderRoute(
+    franchiseId: number,
+    paymentSource: PaymentSourceEnum,
+    currency: string,
+    chosen?: PaymentRouteEnum | null,
+  ): Promise<PaymentRouteEnum> {
+    const { currencyCode } = await this.franchiseService.fetchById(franchiseId);
+    const route = paymentSource === PaymentSourceEnum.MANUAL ? chosen || PaymentRouteEnum.DOMESTIC : null;
+    return TaxMasterService.paymentRoute(currency, route, currencyCode) ?? PaymentRouteEnum.DOMESTIC;
   }
 
   private async findAddresses(
@@ -962,6 +983,13 @@ export class MemberProductService {
     });
   }
 
+  /** An order header's registration and customer type: every line of an order is priced for the same franchise and customer. */
+  private orderDecision(
+    items: Array<{ taxRegistrationId?: number | null; customerType?: CustomerTypeEnum | null }>,
+  ): { taxRegistrationId: number | null; customerType: CustomerTypeEnum | null } {
+    return { taxRegistrationId: items[0]?.taxRegistrationId ?? null, customerType: items[0]?.customerType ?? null };
+  }
+
   /**
    * Round each line to the currency and derive its total from the rounded parts, so the lines
    * add up exactly to the order total that is charged (public preview and order).
@@ -1057,7 +1085,7 @@ export class MemberProductService {
       // Offline orders: the payment mode decides the route (decision 11)
       const modeRoute =
         obj.paymentSource === PaymentSourceEnum.MANUAL ? await this.paymentModeService.routeOf(obj.paymentModeId) : null;
-      const route = this.orderRoute(obj.paymentSource, obj.orderItems[0]?.currency, modeRoute);
+      const route = await this.orderRoute(franchise[0].id as number, obj.paymentSource, obj.orderItems[0]?.currency, modeRoute);
       const orderItemObjs = await this.calculateOrderItemsTax(
         tempOrderItemsWithCurrency,
         franchise[0],
@@ -1101,6 +1129,8 @@ export class MemberProductService {
         discountAmount: totalDiscount,
         taxAmount: totalTaxAmount,
         totalAmount: totalAmount,
+        // The decision as priced (decision 13); each line keeps its own rule
+        ...this.orderDecision(orderItemObjs),
         active: true,
         createdIp: requestedIp,
         modifiedIp: requestedIp,
@@ -1446,7 +1476,7 @@ export class MemberProductService {
     const subtotal = sumBy(tempOrderItems, 'baseAmount');
     const promo = await this.checkoutGatewayService.applyPromoCode(obj.promoCode, subtotal, currency);
     this.allocateDiscount(tempOrderItems, promo.discountAmount);
-    const route = this.orderRoute(PaymentSourceEnum.PAYMENT_GATEWAY, currency);
+    const route = await this.orderRoute(franchise[0].id as number, PaymentSourceEnum.PAYMENT_GATEWAY, currency);
     const pricedItems = await this.calculateOrderItemsTax(
       tempOrderItems.map((item) => ({ ...item, currencyCode: currency })),
       franchise[0],
@@ -1486,6 +1516,12 @@ export class MemberProductService {
           discountAmount: round(sumBy(orderItemObjs, 'discountAmount')),
           taxAmount: round(sumBy(orderItemObjs, 'taxAmount')),
           totalAmount: round(sumBy(orderItemObjs, 'totalAmount')),
+          ...this.orderDecision(orderItemObjs),
+          // The website collects no evidence yet (decision 9, online payments deferred)
+          taxEvidence: TaxEngineService.notCollectedEvidence({
+            requiresEvidence: orderItemObjs.some((item) => item.requiresEvidence),
+            taxMasterId: orderItemObjs.find((item) => item.requiresEvidence)?.taxMasterId ?? null,
+          }),
           active: true,
           createdIp: requestedIp,
           modifiedIp: requestedIp,

@@ -208,5 +208,19 @@ export class TxnMemberProductOrderItem extends Model<TxnMemberProductOrderItem> 
     type: DataType.STRING(8),
   })
   declare hsnSacCode: string | null;
+  /** The Tax Master rule that priced the sale (configurable tax treatment, decision 13) */
+  @Column({
+    allowNull: true,
+    field: 'tax_master_id',
+    type: DataType.INTEGER,
+  })
+  declare taxMasterId: number | null;
+  /** The franchise registration the sale is invoiced under; null = unregistered */
+  @Column({
+    allowNull: true,
+    field: 'tax_registration_id',
+    type: DataType.INTEGER,
+  })
+  declare taxRegistrationId: number | null;
 }
 

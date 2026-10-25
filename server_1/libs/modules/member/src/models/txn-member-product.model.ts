@@ -18,6 +18,8 @@ import {
 import { MstPaymentMode, MstPaymentStatus, TxnAddress } from '@server_1/platform';
 import { TxnMember } from './txn-member.model';
 import {
+  CustomerTypeEnum,
+  ITaxEvidence,
   InputLengthEnum,
   InvoiceSeriesEnum,
   PaymentRouteEnum,
@@ -378,6 +380,27 @@ export class TxnMemberProduct extends Model<TxnMemberProduct> {
     type: DataType.STRING(100),
   })
   declare remittanceReference: string | null;
+  /** The franchise registration the sale is invoiced under; null = unregistered */
+  @Column({
+    allowNull: true,
+    field: 'tax_registration_id',
+    type: DataType.INTEGER,
+  })
+  declare taxRegistrationId: number | null;
+  /** Zero-rating evidence and any finance decision (decision 9) */
+  @Column({
+    allowNull: true,
+    field: 'tax_evidence',
+    type: DataType.JSONB,
+  })
+  declare taxEvidence: ITaxEvidence | null;
+  /** B2B with a valid customer GSTIN / TRN, else B2C (decision 10) */
+  @Column({
+    allowNull: true,
+    field: 'customer_type',
+    type: DataType.STRING(3),
+  })
+  declare customerType: CustomerTypeEnum | null;
 
   @Column({
     allowNull: true,

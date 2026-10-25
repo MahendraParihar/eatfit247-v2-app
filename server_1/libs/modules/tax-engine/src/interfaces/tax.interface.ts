@@ -1,14 +1,4 @@
-import { PaymentRouteEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
-
-export interface ITaxRuleLookup {
-  franchiseId: number;
-  referenceId: number;
-  transactionType: TransactionType;
-  /** Country of the rule: the supplier's own country (decision 1) */
-  countryCode: string;
-  /** Date the rule must be effective on (supply date, YYYY-MM-DD) */
-  onDate: string;
-}
+import { CustomerTypeEnum, PaymentRouteEnum, TaxCategoryEnum, TaxMode, TaxTypeEnum, TransactionType } from '@eatfit247-shared-lib';
 
 export interface TaxInput {
   baseAmount: number; // price before discount
@@ -57,4 +47,12 @@ export interface TaxResult {
   placeOfSupplyStateCode?: string | null;
   /** HSN / SAC of the rule that priced the line */
   hsnSacCode?: string | null;
+  /** The Tax Master rule that priced the line (configurable tax treatment, decision 13) */
+  taxMasterId?: number | null;
+  /** The franchise's registration the sale is invoiced under; null = unregistered */
+  taxRegistrationId?: number | null;
+  /** The facts' customer type (B2C until the customer GSTIN / TRN feeds the facts, plan group 9) */
+  customerType?: CustomerTypeEnum | null;
+  /** The rule has an evidence policy (decision 9) */
+  requiresEvidence?: boolean;
 }
