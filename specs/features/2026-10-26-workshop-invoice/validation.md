@@ -56,6 +56,12 @@
 - [ ] Specs and code are in sync. Every fix made during review is reflected back into `requirements.md` / `plan.md`.
 - [ ] I can explain the change (read the key tests, run them under the debugger if needed).
 
+## Gate log
+
+| Date | Gate | Result | Notes |
+|------|------|--------|-------|
+| 2026-10-26 | G1 migration | ✅ | `eatfit_wi`: 151 applied twice (second run only NOTICEs); table, checks, FKs and indexes as specified; WorkshopInvoice (subject 48, franchise-scoped) has read/create/update/delete for roles 1 and 7. A fresh-DB run isn't possible locally (no seeded empty schema); covered by the production-copy run. |
+
 ## Release Notes (production)
 
 1. [ ] Apply `151_workshop_invoices.sql` and deploy.

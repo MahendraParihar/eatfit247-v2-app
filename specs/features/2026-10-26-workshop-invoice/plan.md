@@ -6,18 +6,19 @@
 
 ## Group 1: Database
 
-- [ ] 1.1 `db_changes/151_workshop_invoices.sql` (one transaction, idempotent):
+- [x] 1.1 `db_changes/151_workshop_invoices.sql` (one transaction, idempotent):
   - `txn_workshop_invoices` with the columns in requirements § Technical Constraints.
   - FKs to franchise, country, state, payment status and payment mode.
   - `UNIQUE (invoice_id)` (nullable); `CHECK (quantity > 0)` and `CHECK (unit_rate >= 0)`.
   - Indexes on `(franchise_id, invoice_date)` and `payment_status_id`.
   - The standard audit columns and `active` default true.
   - `txn_invoice_renumber_log` (run ID, table, row ID, old and new invoice number, reason, audit columns; decision 16).
-- [ ] 1.2 In the same file:
+- [x] 1.2 In the same file:
   - Insert the `WorkshopInvoice` subject into `mst_admin_subjects` with `franchise_scoped = true` and `ON CONFLICT DO NOTHING`. The trigger grants it to Super Admin.
   - Seed all four actions for `financial_manager`, following the 119 pattern.
-- [ ] 1.3 Apply the migration to the local DB and re-run it to prove it is idempotent.
+- [x] 1.3 Apply the migration to the local DB and re-run it to prove it is idempotent.
 - **Gate:** the migration applies twice without error, `\d txn_workshop_invoices` matches the spec, and the permission rows exist for roles 1 and 7.
+- **As built:** money columns are `NUMERIC(12,2)` (member payments use 10,2; a 574-seat invoice still fits either). `sac_code` stays NULL until the number is issued (decision 9). The log has `old_invoice_id` nullable (a workshop invoice has no number before the script). Applied to the local walk-through DB `eatfit_wi` (clone of `eatfit_rh145`, the 14 Oct production copy, with the tax-branch `series` column dropped and the 136 unique key restored, so `mst_invoice_sequences` matches production).
 
 ## Group 2: Shared Library
 
