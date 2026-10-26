@@ -15,6 +15,7 @@ import {
   AdminSubjectEnum,
   BusinessTypeEnum,
   ConfigParam,
+  IAddress,
   IAuthUser,
   ICalculateTaxResponse,
   IFranchise,
@@ -58,6 +59,8 @@ import { TxnWorkshopInvoice } from '../models';
 
 const INDIA_COUNTRY_CODE = 'IN';
 const DEFAULT_BUSINESS_TIMEZONE = 'Asia/Kolkata';
+/** NUMERIC(12,2) holds < 10,000,000,000; this leaves room for any tax on top. */
+const MAX_TAXABLE_AMOUNT = 5_000_000_000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const LOCKED_FIELD_LABELS: Record<WorkshopInvoiceLockedField, string> = {
@@ -207,6 +210,7 @@ export class WorkshopInvoiceService {
       await this.confirmBackdate(obj, franchise);
     }
 
+    let workshopInvoiceId: number;
     const t = await this.sequelize.transaction();
     try {
       const row = await this.workshopInvoiceRepository.create(
@@ -223,12 +227,14 @@ export class WorkshopInvoiceService {
       if (willIssue) {
         await this.issueInvoiceNumber(row, franchise, t);
       }
+      workshopInvoiceId = row.workshopInvoiceId;
       await t.commit();
-      return this.findById(row.workshopInvoiceId, user);
     } catch (error) {
       await t.rollback();
       throw error;
     }
+    // Read back after the transaction: a failure here must not look like a failed save.
+    return this.findById(workshopInvoiceId, user);
   }
 
   public async update(
@@ -288,11 +294,11 @@ export class WorkshopInvoiceService {
         await this.issueInvoiceNumber(row, franchise, t);
       }
       await t.commit();
-      return this.findById(id, user);
     } catch (error) {
       await t.rollback();
       throw error;
     }
+    return this.findById(id, user);
   }
 
   /**
@@ -328,7 +334,7 @@ export class WorkshopInvoiceService {
     }
     const [franchise, franchiseAddress] = await Promise.all([
       this.franchiseService.fetchById(invoice.franchiseId),
-      this.addressService.findByTableIdAndPk(TableEnum.MST_FRANCHISES, invoice.franchiseId),
+      this.franchiseAddress(invoice.franchiseId),
     ]);
     if (!franchiseAddress) {
       throw new BadRequestException('The franchise has no address');
@@ -527,11 +533,11 @@ export class WorkshopInvoiceService {
    */
   private async buildTaxDraft(req: IWorkshopInvoiceTaxRequest): Promise<IWorkshopInvoiceDraft> {
     const placeOfSupplyStateId = req.placeOfSupplyStateId || req.billToStateId;
-    const [customerCountry, billToState, placeOfSupplyState, franchiseAddresses] = await Promise.all([
+    const [customerCountry, billToState, placeOfSupplyState, franchiseAddress] = await Promise.all([
       this.countryService.fetchById(req.billToCountryId),
       this.stateService.fetchById(req.billToStateId),
       this.stateService.fetchById(placeOfSupplyStateId),
-      this.addressService.filterByTableIdAndPk(TableEnum.MST_FRANCHISES, req.franchiseId),
+      this.franchiseAddress(req.franchiseId),
     ]);
     if (Number(billToState.countryId) !== Number(req.billToCountryId)) {
       throw new BadRequestException('The bill-to State is not in the bill-to country');
@@ -539,7 +545,6 @@ export class WorkshopInvoiceService {
     if (Number(placeOfSupplyState.countryId) !== Number(req.billToCountryId)) {
       throw new BadRequestException('The place-of-supply State is not in the bill-to country');
     }
-    const franchiseAddress = franchiseAddresses?.[0];
     if (!franchiseAddress?.countryId) {
       throw new BadRequestException('The franchise has no address; add one before raising invoices');
     }
@@ -549,6 +554,9 @@ export class WorkshopInvoiceService {
     ]);
 
     const baseAmount = round2(req.quantity * req.unitRate);
+    if (baseAmount > MAX_TAXABLE_AMOUNT) {
+      throw new BadRequestException('Quantity × unit rate is too large for one invoice');
+    }
     let taxResult: TaxResult;
     try {
       taxResult = await this.taxEngineService.calculate({
@@ -710,6 +718,12 @@ export class WorkshopInvoiceService {
     );
     row.sacCode = this.appConfigService.getString(ConfigParam.DIET_SAC_CODE);
     await row.save({ transaction: t });
+  }
+
+  /** The franchise address the tax (supplier State) and the PDF (seller block) both use. */
+  private async franchiseAddress(franchiseId: number): Promise<IAddress | null> {
+    const addresses = await this.addressService.filterByTableIdAndPk(TableEnum.MST_FRANCHISES, franchiseId);
+    return addresses?.[0] ?? null;
   }
 
   /** YYYY-MM-DD → "11 Aug 2026" */

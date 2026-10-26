@@ -422,6 +422,31 @@ describe('WorkshopInvoiceService', () => {
       expect(counter.current('1|2026-27')).toBe(491);
     });
 
+    it('a read-back failure after commit does not roll back or hide the saved invoice', async () => {
+      const { service, sequelize, counter, repository } = setup();
+      const failingRead = { findByPk: async () => { throw new Error('read failed'); } };
+      const scope = repository.scope;
+      repository.scope = (() => failingRead) as unknown as typeof repository.scope;
+      await expect(
+        service.create(payload({ paymentStatusId: PaymentStatusEnum.PAID }), financialManager, '127.0.0.1'),
+      ).rejects.toThrow('read failed');
+      repository.scope = scope;
+      const t = await sequelize.transaction.mock.results[0].value;
+      expect(t.commit).toHaveBeenCalled();
+      expect(t.rollback).not.toHaveBeenCalled();
+      expect(counter.current('1|2026-27')).toBe(492);
+    });
+
+    it('refuses an amount too large for the money columns', async () => {
+      const { service } = setup();
+      await expect(
+        service.calculateTax(
+          { franchiseId: 1, billToCountryId: INDIA, billToStateId: MAHARASHTRA, quantity: 100000, unitRate: 10000000, currency: 'INR' },
+          financialManager,
+        ),
+      ).rejects.toThrow('too large');
+    });
+
     it('copies the configured SAC to the row at issue, not before', async () => {
       const { service, store, config } = setup();
       await service.create(payload(), financialManager, '127.0.0.1');
@@ -600,6 +625,8 @@ describe('WorkshopInvoiceService', () => {
       ['invoiceDate', '11/08/2026'],
       ['quantity', 0],
       ['unitRate', -1],
+      ['invoiceDate', '2026-02-30'],
+      ['supplyDate', '2026-13-01'],
     ])('rejects %s = %p', async (field, value) => {
       expect(await errorsFor({ [field]: value })).toContain(field);
     });

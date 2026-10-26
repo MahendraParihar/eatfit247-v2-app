@@ -75,13 +75,21 @@
         <mat-form-field appearance="outline">
           <mat-label>Quantity (participants)</mat-label>
           <input matInput type="number" min="1" step="1" formControlName="quantity" />
-          <shared-ui-input-error [control]="formGroup.get('quantity')" controlName="Quantity"></shared-ui-input-error>
+          @if (formGroup.get('quantity')?.hasError('pattern')) {
+            <mat-error>Enter a whole number</mat-error>
+          } @else {
+            <shared-ui-input-error [control]="formGroup.get('quantity')" controlName="Quantity"></shared-ui-input-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Unit rate (before tax)</mat-label>
           <input matInput type="number" min="0" step="0.01" formControlName="unitRate" />
-          <shared-ui-input-error [control]="formGroup.get('unitRate')" controlName="Unit rate"></shared-ui-input-error>
+          @if (formGroup.get('unitRate')?.hasError('pattern')) {
+            <mat-error>Use at most 2 decimals</mat-error>
+          } @else {
+            <shared-ui-input-error [control]="formGroup.get('unitRate')" controlName="Unit rate"></shared-ui-input-error>
+          }
         </mat-form-field>
       </div>
 
@@ -110,7 +118,11 @@
         <mat-form-field appearance="outline">
           <mat-label>Email</mat-label>
           <input matInput type="email" formControlName="billToEmail" />
-          <shared-ui-input-error [control]="formGroup.get('billToEmail')" controlName="Email"></shared-ui-input-error>
+          @if (formGroup.get('billToEmail')?.hasError('pattern')) {
+            <mat-error>Please enter a valid email address</mat-error>
+          } @else {
+            <shared-ui-input-error [control]="formGroup.get('billToEmail')" controlName="Email"></shared-ui-input-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="outline">

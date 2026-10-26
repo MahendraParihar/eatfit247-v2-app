@@ -2,7 +2,7 @@
 
 | Field | Value |
 |-------|-------|
-| Status | Draft |
+| Status | Code complete, awaiting production rollout (2026-10-26). Set to Shipped after the renumbering run. |
 | Branch | `feature/workship-invoice`, branched from `m3-cms-update` (owner decision: not stacked on 4.5–4.14) |
 | Roadmap | Phase 4: new item **4.15 Workshop invoices** (added at close-out; 4.5–4.14 are taken on `feature/configurable-tax-treatment`) |
 | References | Request from Foram Nayak (Accounts), 25 Oct 2026; [mission.md § Product Principles](../../product/mission.md#product-principles) |

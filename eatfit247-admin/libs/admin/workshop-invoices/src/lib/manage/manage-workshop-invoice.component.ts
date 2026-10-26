@@ -32,6 +32,12 @@ const GSTIN_PATTERN = /^[0-9]{2}[A-Za-z]{5}[0-9]{4}[A-Za-z][1-9A-Za-z][Zz][0-9A-
 const PHONE_PATTERN = /^[+0-9][0-9 ()-]{5,24}$/;
 const INDIA_PINCODE = /^\d{6}$/;
 const OTHER_PINCODE = /^[A-Za-z0-9 -]{3,10}$/;
+/** Same limits as the API DTO: whole participants, a rate with at most 2 decimals, a domain with a dot. */
+const WHOLE_NUMBER = /^\d+$/;
+const TWO_DECIMALS = /^\d+(\.\d{1,2})?$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/** The API's backdate warning (decision 4); any other 409 is a plain error. */
+const BACKDATE_WARNING = 'series already has an invoice dated';
 
 /** Fields that drive the tax preview. */
 const TAX_FIELDS = ['franchiseId', 'billToCountryId', 'billToStateId', 'placeOfSupplyStateId', 'quantity', 'unitRate', 'currency'];
@@ -83,6 +89,7 @@ export class ManageWorkshopInvoice implements OnInit, OnDestroy {
   taxPreview: ICalculateTaxResponse | null = null;
   taxPreviewError = '';
   taxPreviewLoading = false;
+  private taxRequestSeq = 0;
 
   get locked(): boolean {
     return !!this.invoice?.locked;
@@ -122,12 +129,12 @@ export class ManageWorkshopInvoice implements OnInit, OnDestroy {
       invoiceDate: [this.today.clone(), Validators.required],
       supplyDate: [null, Validators.required],
       description: ['', [Validators.required, Validators.maxLength(500)]],
-      quantity: [null, [Validators.required, Validators.min(1), Validators.max(100000)]],
-      unitRate: [null, [Validators.required, Validators.min(0), Validators.max(10000000)]],
+      quantity: [null, [Validators.required, Validators.min(1), Validators.max(100000), Validators.pattern(WHOLE_NUMBER)]],
+      unitRate: [null, [Validators.required, Validators.min(0), Validators.max(10000000), Validators.pattern(TWO_DECIMALS)]],
       currency: ['INR', Validators.required],
       billToName: ['', [Validators.required, Validators.maxLength(200)]],
       billToContactPerson: ['', Validators.maxLength(150)],
-      billToEmail: ['', [Validators.email, Validators.maxLength(150)]],
+      billToEmail: ['', [Validators.pattern(EMAIL_PATTERN), Validators.maxLength(150)]],
       billToPhone: ['', Validators.pattern(PHONE_PATTERN)],
       billToGstin: ['', Validators.pattern(GSTIN_PATTERN)],
       billToAddressLine1: ['', [Validators.required, Validators.maxLength(250)]],
@@ -255,10 +262,15 @@ export class ManageWorkshopInvoice implements OnInit, OnDestroy {
   }
 
   private async loadStates(countryId: number): Promise<void> {
+    let states: IDropdownItem[] = [];
     try {
-      this.stateOptions = await this.apiService.getStates(countryId);
+      states = await this.apiService.getStates(countryId);
     } catch {
-      this.stateOptions = [];
+      states = [];
+    }
+    // A reply for a country the admin has since changed away from is ignored.
+    if (this.formGroup.get('billToCountryId')?.value === countryId) {
+      this.stateOptions = states;
     }
   }
 
@@ -306,15 +318,22 @@ export class ManageWorkshopInvoice implements OnInit, OnDestroy {
       this.taxPreviewError = '';
       return;
     }
+    // Only the latest request may update the preview; earlier replies can arrive later.
+    const seq = ++this.taxRequestSeq;
     this.taxPreviewLoading = true;
     try {
-      this.taxPreview = await this.apiService.calculateTax(request);
+      const preview = await this.apiService.calculateTax(request);
+      if (seq !== this.taxRequestSeq) return;
+      this.taxPreview = preview;
       this.taxPreviewError = '';
     } catch (error) {
+      if (seq !== this.taxRequestSeq) return;
       this.taxPreview = null;
       this.taxPreviewError = (error as IWorkshopInvoiceApiError).message || 'Tax could not be calculated';
     } finally {
-      this.taxPreviewLoading = false;
+      if (seq === this.taxRequestSeq) {
+        this.taxPreviewLoading = false;
+      }
     }
   }
 
@@ -383,7 +402,7 @@ export class ManageWorkshopInvoice implements OnInit, OnDestroy {
       this.router.navigate(['/workshop-invoices']);
     } catch (error) {
       const apiError = error as IWorkshopInvoiceApiError;
-      if (apiError.status === 409 && !confirmBackdate) {
+      if (apiError.status === 409 && !confirmBackdate && apiError.message?.includes(BACKDATE_WARNING)) {
         this.saving = false;
         if (await this.confirmBackdate(apiError.message)) {
           await this.save(true);

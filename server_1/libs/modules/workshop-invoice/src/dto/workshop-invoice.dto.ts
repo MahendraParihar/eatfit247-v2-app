@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsISO8601,
   IsEmail,
   IsIn,
   IsInt,
@@ -73,9 +74,11 @@ export class WorkshopInvoiceTaxDto implements IWorkshopInvoiceTaxRequest {
 
 export class ManageWorkshopInvoiceDto extends WorkshopInvoiceTaxDto implements IManageWorkshopInvoice {
   @Matches(DATE_ONLY)
+  @IsISO8601({ strict: true })
   invoiceDate: string;
 
   @Matches(DATE_ONLY)
+  @IsISO8601({ strict: true })
   supplyDate: string;
 
   @Transform(trim)
@@ -159,6 +162,7 @@ export class ManageWorkshopInvoiceDto extends WorkshopInvoiceTaxDto implements I
   @IsOptional()
   @ValidateIf((o: ManageWorkshopInvoiceDto) => hasValue(o.paymentDate))
   @Matches(DATE_ONLY)
+  @IsISO8601({ strict: true })
   paymentDate?: string | null;
 
   @IsOptional()
@@ -184,10 +188,12 @@ export class WorkshopInvoiceSearchDto extends BasicSearchDto implements IWorksho
 
   @IsOptional()
   @Matches(DATE_ONLY)
+  @IsISO8601({ strict: true })
   invoiceDateFrom?: string | null;
 
   @IsOptional()
   @Matches(DATE_ONLY)
+  @IsISO8601({ strict: true })
   invoiceDateTo?: string | null;
 
   @IsOptional()

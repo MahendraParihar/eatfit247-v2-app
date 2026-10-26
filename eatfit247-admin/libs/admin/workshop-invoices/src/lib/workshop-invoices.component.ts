@@ -59,9 +59,18 @@ export class WorkshopInvoiceList implements OnInit {
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
-  readonly canCreate = this.can('create');
-  readonly canUpdate = this.can('update');
-  readonly canCancel = this.can('delete');
+  // Read live: the stored user can be replaced by the profile reload after a hard refresh.
+  get canCreate(): boolean {
+    return this.can('create');
+  }
+
+  get canUpdate(): boolean {
+    return this.can('update');
+  }
+
+  get canCancel(): boolean {
+    return this.can('delete');
+  }
 
   data: IWorkshopInvoice[] = [];
   totalCount = 0;

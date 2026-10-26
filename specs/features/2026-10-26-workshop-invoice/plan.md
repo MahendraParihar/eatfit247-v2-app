@@ -157,8 +157,24 @@
 
 ## Group 9: Close-out
 
-- [ ] 9.1 Every check in `validation.md` passes; the deep review by subagents is done (bugs, franchise leakage, invoice gaps, conventions).
+- [x] 9.1 Every check in `validation.md` passes; the deep review by subagents is done (bugs, franchise leakage, invoice gaps, conventions).
 - [ ] 9.2 (roadmap row 4.15 added as 🚧 code complete; status → Shipped after the production run) `requirements.md` status → Shipped. Add roadmap row **4.15 Workshop invoices** ✅ with a link, and note:
   - the merge-forward follow-up: move to `InvoiceIssueService` when 4.5–4.14 lands, running the renumbering first;
   - the owner-approved exception to "issued invoices are never changed".
 - [x] 9.3 (noted: yes, adopt it; 4.5–4.14's InvoiceIssueService should take the invoice date the same way) Note for replanning: should the 4.5–4.14 branch adopt the optional `invoiceDate` from group 3?
+
+## Group 9b: Review fixes (two review subagents, 2026-10-26)
+
+No blockers. Fixed:
+- [x] 9b.1 `create`/`update` read the invoice back inside the `try` after `commit`; a read failure then called `rollback` on a committed transaction and returned a 500 for a saved, numbered invoice (a retry would issue a second number). The read-back now runs after the transaction.
+- [x] 9b.2 quantity × rate up to 1e12 passed the DTO but overflows `NUMERIC(12,2)` (500). The service refuses a taxable amount above 5,000,000,000 (400).
+- [x] 9b.3 The tax used the franchise's first address (`filterByTableIdAndPk()[0]`) and the PDF `findByTableIdAndPk`; both now use the same lookup.
+- [x] 9b.4 Impossible dates (`2026-02-30`) passed the YYYY-MM-DD pattern and failed in Postgres (500). The DTO adds `@IsISO8601({ strict: true })` (400).
+- [x] 9b.5 Admin: the tax preview ignores replies older than the latest request; only the backdate 409 opens the "Earlier invoice date" dialog (the "changed while you were editing" 409 is a plain error); a State list for a country the admin has left is ignored; quantity must be whole, the rate has at most 2 decimals, and the email needs a dotted domain (as the DTO); list permissions are read live, not once at construction.
+
+Kept as is:
+- After issue the status can still move between Paid, Pending, Failed and Refund and the number stays, as on member payments (`MemberPlanService.update` accepts any status).
+- Supply date range and currency-vs-franchise checks: not in the spec.
+- Release notes gained: flush `rbac:permissions:*` after migration 151; check `txn_invoice_renumber_log` is empty before the run; the dry run also locks the counter for its few seconds.
+- CI note: `libs/core` specs now load `@eatfit247-shared-lib` from its `dist`, so build shared-library before `nx test core`.
+
