@@ -116,17 +116,17 @@
 
 ## Group 7: One-off renumbering script (money, production data)
 
-- [ ] 7.1 TypeScript script in `server_1`, run with ts-node.
+- [x] 7.1 TypeScript script in `server_1`, run with ts-node.
   - **Inputs:** franchise ID, cut-off date (2026-08-11), the three workshop invoice IDs in order, and `--apply` (dry run without it).
   - **Steps:** one transaction, following decision 14 (lock the counter row, find N, move the numbers, assign N+1…N+3, set PAID, add 3 to the counter).
-- [ ] 7.2 Guards and output (decision 15):
+- [x] 7.2 Guards and output (decision 15):
   - before and after checks that the series has no gaps or duplicates;
   - the three invoices' preconditions;
   - refuse a second run (checked in the log);
   - moves go through temporary values so the unique index never clashes;
   - prints N and the old → new list, and writes a CSV.
-- [ ] 7.3 Log every changed row in `txn_invoice_renumber_log` (decision 16).
-- [ ] 7.4 Tests on a seeded copy:
+- [x] 7.3 Log every changed row in `txn_invoice_renumber_log` (decision 16).
+- [x] 7.4 Tests on a seeded copy:
   - a series with numbers dated before and after the cut-off, including out-of-date-order rows;
   - dry run writes nothing;
   - apply gives the expected mapping and counter +3, with no gaps or duplicates;
@@ -135,6 +135,12 @@
   - an injected error rolls everything back;
   - product (P) invoices and other franchises are unchanged.
 - **Gate:** the tests pass, and a dry run on the local production copy prints N = the highest number dated on or before 11 Aug (000351 on the 17 Oct copy) and the expected shift count.
+- **As built:**
+  - `server_1/scripts/workshop-invoice-renumber.ts` uses `pg` directly and runs with `node --experimental-strip-types` (Node 22), like `scripts/pocket-guide-move-private.ts`, so it runs inside the production admin-api container, which has no ts-node. It also typechecks under `tsc --strict`.
+  - The dry run executes the same statements as `--apply` and then rolls back, so its mapping is exactly what apply writes.
+  - Guards refuse with exit code 2: gap, duplicate (also across the two tables) or bad format in 1…counter; not exactly one SERVICE counter row (this also catches a database with the tax branch's `series` column); an invoice that is missing, cancelled, already numbered, not PENDING, on another franchise, not dated on the cut-off, or lacks payment mode/reference/date; `DIET_SAC_CODE` unset; already in the log. An unexpected error exits 1 after rolling back.
+  - Placed invoices become PAID and get the configured SAC (decision 9). Moved rows change `invoice_id` only.
+  - `scripts/workshop-invoice-renumber.test.ts` (node:test) clones a template database per test and injects the failure and the lock wait with triggers in the clone, so the script has no test hooks.
 
 ## Group 8: Local walk-through with the real request
 
