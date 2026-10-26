@@ -56,6 +56,8 @@ export class PaymentReportController {
       'Content-Type': 'application/zip',
       'Content-Disposition': `attachment; filename="${filename}"`,
     });
+    // pipe() does not forward errors; an unhandled 'error' event would crash the process.
+    archive.on('error', (error) => res.destroy(error));
     archive.pipe(res);
   }
 

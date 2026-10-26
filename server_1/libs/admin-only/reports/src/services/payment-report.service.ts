@@ -174,7 +174,10 @@ export class PaymentReportService {
       );
     }
 
-    await archive.finalize();
+    // Not awaited: finalize() resolves only once the stream has been read to the end,
+    // and nothing reads it until the controller pipes it to the response — awaiting
+    // here deadlocks as soon as the ZIP outgrows the stream buffer.
+    archive.finalize().catch((error) => this.logger.error('Failed to finalize payment report ZIP', { error }));
     return archive;
   }
 
