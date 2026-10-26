@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { AdminSubjectEnum } from '@eatfit247-shared-lib';
 import { MenuItem, NavSection } from '../interfaces/nav-item';
 
 const NAV_CONFIG: NavSection[] = [
@@ -76,6 +77,17 @@ const NAV_CONFIG: NavSection[] = [
         label: 'Courier Provider Warehouse Mapping',
         icon: 'local_shipping',
         route: '/delivery/courier-provider-warehouses',
+      },
+    ],
+  },
+  {
+    label: 'Finance',
+    items: [
+      {
+        label: 'Workshop Invoices',
+        icon: 'receipt_long',
+        route: '/workshop-invoices',
+        subject: AdminSubjectEnum.WorkshopInvoice,
       },
     ],
   },
@@ -247,4 +259,15 @@ const NAV_CONFIG: NavSection[] = [
 @Injectable({ providedIn: 'root' })
 export class NavigationService {
   readonly navSections: NavSection[] = NAV_CONFIG;
+
+  /**
+   * The menu for a user: items tagged with a subject need read permission on it, and
+   * sections left empty are dropped. Untagged items are always shown.
+   */
+  visibleSections(permissions: Record<string, string[]> | undefined): NavSection[] {
+    const canRead = (item: MenuItem) => !item.subject || (permissions?.[item.subject] ?? []).includes('read');
+    return NAV_CONFIG.map((section) => ({ ...section, items: section.items.filter(canRead) })).filter(
+      (section) => section.items.length > 0,
+    );
+  }
 }

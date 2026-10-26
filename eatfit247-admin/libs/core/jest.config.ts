@@ -3,6 +3,8 @@ export default {
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
   coverageDirectory: '../../coverage/libs/core',
+  // Specs that use shared-library values (enums) load its compiled build; its sources need tslib.
+  moduleNameMapper: { '^@eatfit247-shared-lib$': '<rootDir>/../../../shared-library/dist/index.js' },
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',

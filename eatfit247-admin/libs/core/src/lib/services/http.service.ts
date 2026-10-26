@@ -6,7 +6,7 @@
  * Provides GET, POST, PUT, DELETE methods with consistent error handling
  */
 import { inject, Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpContext, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '@env';
 import { IResponse } from '@eatfit247-shared-lib';
@@ -18,6 +18,7 @@ export interface HttpOptions {
   reportProgress?: boolean;
   responseType?: 'json' | 'text' | 'blob' | 'arraybuffer';
   withCredentials?: boolean; // For HttpOnly cookies
+  context?: HttpContext; // e.g. SUPPRESS_ERROR_NOTIFICATION for an error the caller handles
 }
 
 @Injectable({
@@ -114,6 +115,9 @@ export class HttpService {
     if (options?.observe && options.observe !== 'body') {
       requestOptions.observe = options.observe;
     }
+    if (options?.context) {
+      requestOptions.context = options.context;
+    }
     try {
       const result = await firstValueFrom(this.http.get<IResponse<T>>(url, requestOptions));
       return result as IResponse<T>;
@@ -144,6 +148,9 @@ export class HttpService {
     }
     if (options?.observe && options.observe !== 'body') {
       requestOptions.observe = options.observe;
+    }
+    if (options?.context) {
+      requestOptions.context = options.context;
     }
     try {
       const result = await firstValueFrom(this.http.post<IResponse<T>>(url, body, requestOptions));
@@ -176,6 +183,9 @@ export class HttpService {
     if (options?.observe && options.observe !== 'body') {
       requestOptions.observe = options.observe;
     }
+    if (options?.context) {
+      requestOptions.context = options.context;
+    }
     try {
       const result = await firstValueFrom(this.http.put<IResponse<T>>(url, body, requestOptions));
       return result as IResponse<T>;
@@ -207,6 +217,9 @@ export class HttpService {
     if (options?.observe && options.observe !== 'body') {
       requestOptions.observe = options.observe;
     }
+    if (options?.context) {
+      requestOptions.context = options.context;
+    }
     try {
       const result = await firstValueFrom(this.http.patch<IResponse<T>>(url, body, requestOptions));
       return result as IResponse<T>;
@@ -236,6 +249,9 @@ export class HttpService {
     }
     if (options?.observe && options.observe !== 'body') {
       requestOptions.observe = options.observe;
+    }
+    if (options?.context) {
+      requestOptions.context = options.context;
     }
     try {
       const result = await firstValueFrom(this.http.delete<IResponse<T>>(url, requestOptions));

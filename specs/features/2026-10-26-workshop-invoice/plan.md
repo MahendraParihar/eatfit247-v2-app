@@ -95,9 +95,9 @@
 
 ## Group 6: Admin CMS (`libs/admin/workshop-invoices`)
 
-- [ ] 6.1 Feature lib following the convention: `api.service.ts`, `lib.routes.ts`, list, `manage/`.
-- [ ] 6.2 List: franchise, invoice-date range, status and search; columns for number, invoice date, supply date, bill-to, qty, total, status and cancelled; PDF and cancel actions shown by permission.
-- [ ] 6.3 Form, in Material with `var(--mat-*)` tokens:
+- [x] 6.1 Feature lib following the convention: `api.service.ts`, `lib.routes.ts`, list, `manage/`.
+- [x] 6.2 List: franchise, invoice-date range, status and search; columns for number, invoice date, supply date, bill-to, qty, total, status and cancelled; PDF and cancel actions shown by permission.
+- [x] 6.3 Form, in Material with `var(--mat-*)` tokens:
   - franchise (the admin's only); bill-to block with country/State pickers and optional GSTIN; place-of-supply State defaulting to the bill-to State;
   - required/optional bill-to fields and their validation messages as in decision 13;
   - description, quantity, unit rate and currency (no SAC input; it comes from production config, decision 9);
@@ -105,8 +105,14 @@
   - payment status, mode, reference and date; invoice date (default today) and supply date;
   - the confirmation dialog for the backdate warning;
   - locked fields disabled after issue.
-- [ ] 6.4 Menu item under finance, hidden without Read.
+- [x] 6.4 Menu item under finance, hidden without Read.
 - **Gate:** `cd eatfit247-admin && npx nx affected --target=lint,test,build`, then the browser walk-through in validation.
+- **As built:**
+  - `libs/admin/workshop-invoices` (standalone components, `inject()`): `api.service.ts`, `lib.routes.ts` (`''`, `new`, `edit/:id`), list, `manage/`, and a cancel dialog that requires a reason. Route `/workshop-invoices`.
+  - The admin menu had no permission filtering. `MenuItem` gains an optional `subject`; `NavigationService.visibleSections(permissions)` drops tagged items without read (and empty sections), and the layout recomputes it when the user changes. Untagged items behave as before. A new **Finance** section holds Workshop Invoices.
+  - `HttpService` options gain `context` so a caller can set `SUPPRESS_ERROR_NOTIFICATION`. The form uses it for save (it shows the 409 backdate warning as a confirmation dialog and other errors in its own snackbar) and for the live tax preview (errors shown inline).
+  - The form: franchise defaults to the admin's only franchise; invoice date defaults to today with `max` today; country defaults to India; the place of supply follows the bill-to State until changed; pincode must be 6 digits for India; GSTIN/email/phone formats match the DTO; payment mode, reference and date are required (manual payment rule). An issued invoice disables the locked fields and shows the stored tax; a cancelled one is read-only.
+  - `libs/core/jest.config.ts` maps `@eatfit247-shared-lib` to its `dist` build so core specs can use runtime enums (the source needs `tslib`, which the shared library doesn't have).
 
 ## Group 7: One-off renumbering script (money, production data)
 

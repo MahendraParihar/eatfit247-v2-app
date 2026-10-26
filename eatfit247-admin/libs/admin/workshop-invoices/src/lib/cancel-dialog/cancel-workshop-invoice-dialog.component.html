@@ -1,0 +1,19 @@
+<h2 mat-dialog-title>Cancel {{ data.invoiceLabel }}</h2>
+<mat-dialog-content>
+  <p class="dialog-note">
+    @if (data.issued) {
+      The invoice number stays issued and the PDF will be stamped CANCELLED. This can't be undone.
+    } @else {
+      The invoice has no number yet. It will be marked cancelled and can't be edited again.
+    }
+  </p>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Reason</mat-label>
+    <textarea matInput [formControl]="reason" rows="3" maxlength="500"></textarea>
+    <shared-ui-input-error [control]="reason" controlName="Reason"></shared-ui-input-error>
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()">Keep invoice</button>
+  <button mat-raised-button color="warn" type="button" (click)="onConfirm()">Cancel invoice</button>
+</mat-dialog-actions>
