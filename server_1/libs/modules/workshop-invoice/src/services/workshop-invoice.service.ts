@@ -596,7 +596,8 @@ export class WorkshopInvoiceService {
     const taxAmount = round2(result.taxAmount);
     const taxObj: Record<string, { amount: number; taxPercentage: number }> = {};
     for (const [key, value] of Object.entries(result.taxObj || {})) {
-      taxObj[key] = { amount: round2(value.amount), taxPercentage: value.taxPercentage };
+      // Tax Master rates are DECIMAL columns and arrive as strings ("18.00"); store numbers.
+      taxObj[key] = { amount: round2(value.amount), taxPercentage: Number(value.taxPercentage) };
     }
     if (taxObj['CGST'] && taxObj['SGST']) {
       taxObj['CGST'].amount = round2(taxAmount / 2);
@@ -612,7 +613,7 @@ export class WorkshopInvoiceService {
       orderAmount,
       discountAmount,
       taxableAmount,
-      taxPercentage: result.taxPercentage,
+      taxPercentage: Number(result.taxPercentage),
       taxAmount,
       totalAmount: round2(taxableAmount + taxAmount),
       taxObj,

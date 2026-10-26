@@ -19,6 +19,7 @@ export interface IInvoiceDocument {
   termsAndConditions?: string[];
   currencyCode: string;
   notes?: string; // Printed in the Notes column; the template's default notes show when absent
+  showAmountInWords?: boolean; // Prints the total in words under the summary (workshop invoices)
 }
 
 export interface IInvoiceHeader {

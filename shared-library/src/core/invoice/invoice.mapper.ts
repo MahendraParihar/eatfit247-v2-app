@@ -600,5 +600,6 @@ export function mapWorkshopInvoiceToInvoiceDocument(
     termsAndConditions: conditions,
     currencyCode: invoice.currency,
     notes: invoice.notes || undefined,
+    showAmountInWords: true,
   };
 }

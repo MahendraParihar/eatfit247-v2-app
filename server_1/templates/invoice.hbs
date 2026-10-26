@@ -577,6 +577,9 @@
 </div>
 
 <!-- Three Column Section: Terms, QR Code, Notes -->
+{{#if invoice.showAmountInWords}}
+  <div style="margin: 0 0 8px 0; font-size: 9px;"><strong>Amount in words:</strong> {{amountInWords invoice.total.amount invoice.currencyCode}}</div>
+{{/if}}
 <div class="three-column-section">
   <!-- Terms and Conditions Column -->
   <div class="column-terms">

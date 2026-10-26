@@ -86,7 +86,12 @@
 - [x] 5.2 PDF through `InvoicePdfService` with the workshop terms (decision 12), returned as `IFileModel` and not written to `media-files/` (decision 11). A row without a number returns 400.
 - [x] 5.3 Register the module in admin-api only.
 - **Gate:** curl the happy path and one failure per endpoint (validation A1–A12). A role without the permission gets 403.
-- **Status 2026-10-26:** code done, unit tests 67/67 (incl. PDF: 400 before issue, stored values, workshop terms, base64 with nothing written, CANCELLED, scoping). **Live curl gate NOT run yet.** Plan for it: run a second admin-api on :3002 against `eatfit_wi` (`DB_NAME=eatfit_wi ADMIN_API_PORT=3002`, ts-node on `apps/admin-api/src/main.ts`) so the user's :3001 server on `eatfit` stays untouched. **Before starting it**, set `SYSTEM_EMAIL_ENABLE=false` in `eatfit_wi.mst_configs` and deactivate its courier provider accounts: the shipment retry/sync crons call the live NimbusPost API and the appointment reminder cron sends email.
+- **As built:** routes `GET workshop-invoice/master-data`, `GET workshop-invoice`, `GET :id`, `POST calculate-tax`, `POST`, `PUT :id`, `PUT :id/cancel`, `GET :id/invoice`. The preview uses Read (it stores nothing). The PDF is rendered on each request and returned as `IFileModel` with an empty `filePath`.
+
+## Group 5b: Review fixes from the group 5 live run
+
+- [x] 5b.1 Tax Master's DECIMAL rate arrived as the string `"18.00"` in the preview and in the stored `tax_obj` (IGST row). `roundTax` now stores numbers; the spec's Tax Master stub returns `'18.00'` to cover it.
+- [x] 5b.2 A10 needs the amount in words, but the template never printed it. Added `IInvoiceDocument.showAmountInWords` (set only by the workshop mapper) and a line under the summary. The first version used `{{amountInWords}}`, which Handlebars resolved to the same-named helper with no argument ("Rupees Zero Only"); it now calls the helper with `invoice.total.amount invoice.currencyCode`. Member HTML is still byte-identical.
 
 ## Group 6: Admin CMS (`libs/admin/workshop-invoices`)
 

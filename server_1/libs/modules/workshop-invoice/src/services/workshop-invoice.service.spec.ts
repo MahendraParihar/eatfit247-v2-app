@@ -212,7 +212,7 @@ const setup = (latestIssuedDate: string | null = null) => {
   };
   const taxMaster = {
     getApplicableTaxRule: jest.fn(async () => ({
-      taxPercent: 18,
+      taxPercent: '18.00', // DECIMAL column: Sequelize returns a string
       isTaxInclusive: false,
       taxSystem: TaxTypeEnum.GST,
       countryCode: 'IN',
@@ -282,6 +282,8 @@ describe('WorkshopInvoiceService', () => {
       expect(result.totalAmount).toBe(total);
       expect(result.taxMode).toBe(TaxMode.DOMESTIC_GST);
       expect(Object.fromEntries(Object.entries(result.taxObj).map(([k, v]) => [k, v.amount]))).toEqual(split);
+      expect(result.taxPercentage).toBe(18);
+      for (const v of Object.values(result.taxObj)) expect(typeof v.taxPercentage).toBe('number');
     });
 
     it('place of supply overrides the bill-to State (CGST+SGST → IGST)', async () => {
