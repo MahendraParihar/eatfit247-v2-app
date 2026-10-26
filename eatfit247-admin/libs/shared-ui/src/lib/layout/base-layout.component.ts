@@ -17,7 +17,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDividerModule } from '@angular/material/divider';
-import { AuthService, NavigationService, ThemeService } from '@core';
+import { AuthService, NavigationService, NavSection, ThemeService } from '@core';
 import { IAuthUser } from '@eatfit247-shared-lib';
 import { BreadcrumbComponent } from '../breadcrumb/breadcrumb.component';
 
@@ -54,7 +54,7 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
   expandedMenus: Set<string> = new Set();
 
   private readonly navigationService = inject(NavigationService);
-  readonly navSections = this.navigationService.navSections;
+  navSections: NavSection[] = this.navigationService.visibleSections(undefined);
 
   private userSubscription?: Subscription;
   private routerSubscription?: Subscription;
@@ -82,6 +82,7 @@ export class BaseLayoutComponent implements OnInit, OnDestroy {
     this.userSubscription = this.authService.currentUser$.subscribe((user) => {
       this.currentUser = user;
       this.isAuthenticated = this.authService.isAuthenticated();
+      this.navSections = this.navigationService.visibleSections(user?.permissions);
     });
 
     if (this.authService.isAuthenticated()) {

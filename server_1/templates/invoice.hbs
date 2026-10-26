@@ -345,6 +345,9 @@
   </style>
 </head>
 <body>
+{{#if invoice.header.cancelled}}
+  <div style="position: fixed; top: 40%; left: 0; right: 0; text-align: center; font-size: 72px; font-weight: bold; letter-spacing: 8px; color: rgba(200, 0, 0, 0.25); transform: rotate(-30deg); z-index: 10;">CANCELLED</div>
+{{/if}}
 <!-- Invoice Header -->
 <div class="invoice-header">
   <div class="invoice-header-franchise">
@@ -360,10 +363,16 @@
       <span class="invoice-meta-label">Invoice Date:</span>
       <span>{{formatDate invoice.header.invoiceDate}}</span>
     </div>
-    {{#if invoice.header.playOfSupply}}
+    {{#if invoice.header.supplyDate}}
+      <div class="invoice-meta-item">
+        <span class="invoice-meta-label">Date of Supply:</span>
+        <span>{{formatDate invoice.header.supplyDate}}</span>
+      </div>
+    {{/if}}
+    {{#if invoice.header.placeOfSupply}}
       <div class="invoice-meta-item">
         <span class="invoice-meta-label">Place of Supply:</span>
-        <span>{{formatDate invoice.header.playOfSupply}}</span>
+        <span>{{invoice.header.placeOfSupply}}</span>
       </div>
     {{/if}}
   </div>
@@ -403,6 +412,11 @@
   <div class="party-block">
     <div class="party-title">Bill To</div>
     <div class="party-name">{{invoice.buyer.name}}</div>
+    {{#if invoice.buyer.contactPerson}}
+      <div class="party-contact">
+        <strong>Contact Person:</strong> {{invoice.buyer.contactPerson}}
+      </div>
+    {{/if}}
     <div class="party-address">
       {{#if invoice.buyer.address.line1}}{{invoice.buyer.address.line1}}<br>{{/if}}
       {{#if invoice.buyer.address.line2}}{{invoice.buyer.address.line2}}<br>{{/if}}
@@ -563,6 +577,9 @@
 </div>
 
 <!-- Three Column Section: Terms, QR Code, Notes -->
+{{#if invoice.showAmountInWords}}
+  <div style="margin: 0 0 8px 0; font-size: 9px;"><strong>Amount in words:</strong> {{amountInWords invoice.total.amount invoice.currencyCode}}</div>
+{{/if}}
 <div class="three-column-section">
   <!-- Terms and Conditions Column -->
   <div class="column-terms">

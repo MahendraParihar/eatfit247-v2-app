@@ -1,0 +1,59 @@
+<div class="list-container">
+  <div class="filters">
+    @if (franchiseOptions.length > 1) {
+      <mat-form-field appearance="outline">
+        <mat-label>Franchise</mat-label>
+        <mat-select [(ngModel)]="franchiseId" (selectionChange)="onFiltersChange()">
+          <mat-option [value]="null">All franchises</mat-option>
+          @for (franchise of franchiseOptions; track franchise.id) {
+            <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+    <mat-form-field appearance="outline">
+      <mat-label>Invoice date from</mat-label>
+      <input matInput [matDatepicker]="fromPicker" [(ngModel)]="invoiceDateFrom" (dateChange)="onFiltersChange()" />
+      <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+      <mat-datepicker #fromPicker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Invoice date to</mat-label>
+      <input matInput [matDatepicker]="toPicker" [(ngModel)]="invoiceDateTo" (dateChange)="onFiltersChange()" />
+      <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+      <mat-datepicker #toPicker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="paymentStatusId" (selectionChange)="onFiltersChange()">
+        <mat-option [value]="null">All statuses</mat-option>
+        @for (status of statusOptions; track status.id) {
+          <mat-option [value]="status.id">{{ status.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <mat-checkbox [(ngModel)]="includeCancelled" (change)="onFiltersChange()">Show cancelled</mat-checkbox>
+    <button mat-stroked-button type="button" (click)="clearFilters()">
+      <mat-icon>filter_alt_off</mat-icon>
+      Clear
+    </button>
+  </div>
+
+  <shared-ui-data-table
+    [config]="tableConfig"
+    [data]="data"
+    [totalCount]="totalCount"
+    [loading]="loading"
+    (pageChange)="onPageChange($event)"
+    (searchChange)="onSearchChange($event)"
+  >
+    <div headerActions>
+      @if (canCreate) {
+        <button mat-raised-button color="primary" (click)="createItem()">
+          <mat-icon>add</mat-icon>
+          New Workshop Invoice
+        </button>
+      }
+    </div>
+  </shared-ui-data-table>
+</div>

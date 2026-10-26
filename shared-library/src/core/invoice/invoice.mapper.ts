@@ -3,6 +3,15 @@ import { TaxMode, TaxTypeEnum, TransactionType } from '../../enum';
 import { IFranchise } from '../franchise.interface';
 import { IAddress } from '../location.interface';
 import {IMemberPayment, IMemberProduct} from "../member";
+import { IWorkshopInvoice } from '../workshop-invoice.interface';
+
+/**
+ * Address fields the invoice party blocks print (IAddress and the workshop bill-to snapshot both fit)
+ */
+type IInvoiceAddressSource = Pick<
+  IAddress,
+  'postalAddress' | 'addressName' | 'cityVillage' | 'state' | 'stateCode' | 'pinCode' | 'country'
+>;
 
 /**
  * Optional member information for buyer details
@@ -298,7 +307,7 @@ function buildSellerInfo(
  * Builds buyer (member) information
  */
 function buildBuyerInfo(
-  address: IAddress,
+  address: IInvoiceAddressSource,
   gstNumber?: string,
   taxType?: TaxTypeEnum,
   memberInfo?: IMemberInfo,
@@ -477,3 +486,120 @@ export function mapProductOrderToInvoiceDocument(
   };
 }
 
+
+/**
+ * Maps a workshop invoice to InvoiceDocument (one line: description × quantity at the unit rate)
+ *
+ * IMPORTANT: Does NOT calculate tax - uses the tax result stored on the workshop invoice
+ *
+ * @param invoice - Workshop invoice with its stored tax result
+ * @param franchise - Franchise entity for seller information
+ * @param franchiseAddress - Franchise address
+ * @param conditions - Workshop terms
+ * @returns InvoiceDocument ready for PDF rendering
+ */
+export function mapWorkshopInvoiceToInvoiceDocument(
+  invoice: IWorkshopInvoice,
+  franchise: IFranchise,
+  franchiseAddress: IAddress,
+  conditions: string[] = [],
+): IInvoiceDocument {
+  const taxType = invoice.taxType as TaxTypeEnum;
+  const taxMode = invoice.taxMode as TaxMode;
+  const taxRows: IInvoiceTaxRow[] = buildTaxRows(invoice.taxObj || {}, taxType, taxMode);
+  const items: IInvoiceItem[] = [
+    {
+      type: TransactionType.SERVICE,
+      description: invoice.description,
+      sacCode: invoice.sacCode || undefined,
+      hsnCode: undefined,
+      qty: invoice.quantity,
+      unitPrice: invoice.unitRate,
+      amount: invoice.orderAmount,
+      discount: invoice.discountAmount,
+      taxPercentage: invoice.taxPercentage,
+      taxAmount: invoice.taxAmount,
+      totalAmount: invoice.totalAmount,
+      taxType,
+      taxMode,
+      taxRows,
+    },
+  ];
+  const taxableAmount = invoice.orderAmount - (invoice.discountAmount || 0);
+  const qrCodeEnabled = taxType === TaxTypeEnum.GST && taxMode === TaxMode.DOMESTIC_GST;
+  let qrCodeValue = '';
+  if (qrCodeEnabled && franchise.gstNumber) {
+    qrCodeValue = buildQrCodeValue(
+      franchise.gstNumber,
+      invoice.invoiceId || '',
+      invoice.invoiceDate,
+      invoice.totalAmount,
+      invoice.taxAmount,
+      taxableAmount,
+      invoice.billToGstin || undefined,
+      items.length,
+      invoice.taxObj,
+    );
+  }
+  const seller = buildSellerInfo(franchise, taxType, franchiseAddress);
+  const buyer = buildBuyerInfo(invoice.billToAddress, invoice.billToGstin || undefined, taxType, {
+    fullName: invoice.billToName,
+    emailId: invoice.billToEmail || undefined,
+    contactNumber: invoice.billToPhone || undefined,
+  });
+  if (invoice.billToContactPerson) {
+    buyer.contactPerson = invoice.billToContactPerson;
+  }
+  return {
+    header: {
+      brandName: franchise.companyName,
+      title: taxType === TaxTypeEnum.GST ? 'TAX INVOICE' : 'INVOICE',
+      invoiceNumber: invoice.invoiceId || `WS-${invoice.workshopInvoiceId}`,
+      invoiceDate: invoice.invoiceDate,
+      currency: invoice.currency,
+      supplyDate: invoice.supplyDate,
+      placeOfSupply: invoice.placeOfSupplyState || undefined,
+      cancelled: !invoice.active,
+    },
+    seller,
+    buyer,
+    items,
+    pricing: {
+      subtotal: invoice.orderAmount,
+      discount: invoice.discountAmount,
+      taxableAmount,
+      taxAmount: invoice.taxAmount,
+      totalAmount: invoice.totalAmount,
+    },
+    tax: {
+      taxType,
+      taxMode,
+      rows: taxRows,
+      totalTax: invoice.taxAmount,
+      note: buildTaxNote(taxMode),
+    },
+    total: {
+      label: 'Total Amount Payable',
+      amount: invoice.totalAmount,
+    },
+    payment: {
+      methods: [invoice.paymentMode || '-'],
+      status: invoice.paymentStatus,
+      transactionId: invoice.transactionId || undefined,
+    },
+    qrCode: qrCodeEnabled
+      ? {
+          enabled: true,
+          value: qrCodeValue,
+          label: 'Scan QR Code for Invoice Verification',
+        }
+      : undefined,
+    footer: {
+      legalNote: 'This is a computer-generated invoice and is valid without signature.',
+    },
+    termsAndConditions: conditions,
+    currencyCode: invoice.currency,
+    notes: invoice.notes || undefined,
+    showAmountInWords: true,
+  };
+}

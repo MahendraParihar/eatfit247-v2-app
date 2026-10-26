@@ -137,6 +137,11 @@ export const appRoutes: Route[] = [
         loadChildren: () => import('tax-master').then((m) => m.taxMasterRoutes),
       },
       {
+        path: 'workshop-invoices',
+        loadChildren: () =>
+          import('workshop-invoices').then((m) => m.workshopInvoicesRoutes),
+      },
+      {
         path: 'setting',
         loadChildren: () => import('admin-user').then((m) => m.settingRoutes),
       },

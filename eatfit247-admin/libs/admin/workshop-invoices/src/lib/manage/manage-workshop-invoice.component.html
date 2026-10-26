@@ -1,0 +1,273 @@
+<mat-card class="form-card">
+  <mat-card-header>
+    <mat-card-title>{{ pageTitle }}</mat-card-title>
+    <mat-card-subtitle>
+      @if (invoice?.invoiceId) {
+        Invoice {{ invoice?.invoiceId }}
+      } @else {
+        The invoice number is issued when the invoice is first saved as Paid.
+      }
+    </mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    @if (cancelled) {
+      <div class="banner banner-warn">
+        <mat-icon>block</mat-icon>
+        <span>Cancelled: {{ invoice?.cancelReason }}. This invoice can no longer be changed.</span>
+      </div>
+    } @else if (locked) {
+      <div class="banner">
+        <mat-icon>lock</mat-icon>
+        <span>
+          The number is issued, so the franchise, dates, line, amounts, bill-to country/State and place of supply are
+          locked. Bill-to contact and address lines, payment details and notes can still be edited.
+        </span>
+      </div>
+    }
+
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+      <h3 class="section-title">Invoice</h3>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Franchise</mat-label>
+          <mat-select formControlName="franchiseId">
+            @for (franchise of franchiseOptions; track franchise.id) {
+              <mat-option [value]="franchise.id">{{ franchise.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('franchiseId')" controlName="Franchise"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Invoice date</mat-label>
+          <input matInput [matDatepicker]="invoiceDatePicker" formControlName="invoiceDate" [max]="today" />
+          <mat-datepicker-toggle matSuffix [for]="invoiceDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #invoiceDatePicker></mat-datepicker>
+          <mat-hint>No future dates; only the current financial year</mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('invoiceDate')" controlName="Invoice date"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Date of supply (workshop date)</mat-label>
+          <input matInput [matDatepicker]="supplyDatePicker" formControlName="supplyDate" />
+          <mat-datepicker-toggle matSuffix [for]="supplyDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #supplyDatePicker></mat-datepicker>
+          <shared-ui-input-error [control]="formGroup.get('supplyDate')" controlName="Date of supply"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Currency</mat-label>
+          <mat-select formControlName="currency">
+            @for (currency of currencyOptions; track currency.id) {
+              <mat-option [value]="currency.id">{{ currency.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('currency')" controlName="Currency"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Description</mat-label>
+          <input matInput formControlName="description" placeholder="Gut reset programme workshop" />
+          <mat-hint>The SAC is the production service code; it is added when the number is issued.</mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('description')" controlName="Description"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Quantity (participants)</mat-label>
+          <input matInput type="number" min="1" step="1" formControlName="quantity" />
+          @if (formGroup.get('quantity')?.hasError('pattern')) {
+            <mat-error>Enter a whole number</mat-error>
+          } @else {
+            <shared-ui-input-error [control]="formGroup.get('quantity')" controlName="Quantity"></shared-ui-input-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Unit rate (before tax)</mat-label>
+          <input matInput type="number" min="0" step="0.01" formControlName="unitRate" />
+          @if (formGroup.get('unitRate')?.hasError('pattern')) {
+            <mat-error>Use at most 2 decimals</mat-error>
+          } @else {
+            <shared-ui-input-error [control]="formGroup.get('unitRate')" controlName="Unit rate"></shared-ui-input-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <h3 class="section-title">Bill to</h3>
+      <div class="form-grid">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Legal name</mat-label>
+          <input matInput formControlName="billToName" />
+          <shared-ui-input-error [control]="formGroup.get('billToName')" controlName="Legal name"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Contact person</mat-label>
+          <input matInput formControlName="billToContactPerson" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>GSTIN</mat-label>
+          <input matInput formControlName="billToGstin" maxlength="15" />
+          <mat-hint>Optional. Stored and printed only.</mat-hint>
+          @if (formGroup.get('billToGstin')?.hasError('pattern')) {
+            <mat-error>Enter a valid 15-character GSTIN</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="billToEmail" />
+          @if (formGroup.get('billToEmail')?.hasError('pattern')) {
+            <mat-error>Please enter a valid email address</mat-error>
+          } @else {
+            <shared-ui-input-error [control]="formGroup.get('billToEmail')" controlName="Email"></shared-ui-input-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Phone</mat-label>
+          <input matInput formControlName="billToPhone" />
+          @if (formGroup.get('billToPhone')?.hasError('pattern')) {
+            <mat-error>Enter a valid phone number</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Address line 1</mat-label>
+          <input matInput formControlName="billToAddressLine1" />
+          <shared-ui-input-error [control]="formGroup.get('billToAddressLine1')" controlName="Address line 1"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Address line 2</mat-label>
+          <input matInput formControlName="billToAddressLine2" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>City</mat-label>
+          <input matInput formControlName="billToCity" />
+          <shared-ui-input-error [control]="formGroup.get('billToCity')" controlName="City"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Pincode</mat-label>
+          <input matInput formControlName="billToPinCode" />
+          @if (formGroup.get('billToPinCode')?.hasError('pattern')) {
+            <mat-error>{{ isIndia ? 'Pincode must be 6 digits' : 'Enter a valid postal code' }}</mat-error>
+          } @else {
+            <shared-ui-input-error [control]="formGroup.get('billToPinCode')" controlName="Pincode"></shared-ui-input-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Country</mat-label>
+          <mat-select formControlName="billToCountryId">
+            @for (country of countryOptions; track country.id) {
+              <mat-option [value]="country.id">{{ country.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('billToCountryId')" controlName="Country"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>State</mat-label>
+          <mat-select formControlName="billToStateId">
+            @for (state of stateOptions; track state.id) {
+              <mat-option [value]="state.id">{{ state.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('billToStateId')" controlName="State"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Place of supply (State)</mat-label>
+          <mat-select formControlName="placeOfSupplyStateId">
+            @for (state of stateOptions; track state.id) {
+              <mat-option [value]="state.id">{{ state.label }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Defaults to the bill-to State; change it if the CA says so</mat-hint>
+          <shared-ui-input-error [control]="formGroup.get('placeOfSupplyStateId')" controlName="Place of supply"></shared-ui-input-error>
+        </mat-form-field>
+      </div>
+
+      <h3 class="section-title">Payment</h3>
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Payment status</mat-label>
+          <mat-select formControlName="paymentStatusId">
+            @for (status of paymentStatusOptions; track status.id) {
+              <mat-option [value]="status.id">{{ status.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('paymentStatusId')" controlName="Payment status"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Payment mode</mat-label>
+          <mat-select formControlName="paymentModeId">
+            @for (mode of paymentModeOptions; track mode.id) {
+              <mat-option [value]="mode.id">{{ mode.label }}</mat-option>
+            }
+          </mat-select>
+          <shared-ui-input-error [control]="formGroup.get('paymentModeId')" controlName="Payment mode"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Payment reference</mat-label>
+          <input matInput formControlName="transactionId" />
+          <shared-ui-input-error [control]="formGroup.get('transactionId')" controlName="Payment reference"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Payment date</mat-label>
+          <input matInput [matDatepicker]="paymentDatePicker" formControlName="paymentDate" />
+          <mat-datepicker-toggle matSuffix [for]="paymentDatePicker"></mat-datepicker-toggle>
+          <mat-datepicker #paymentDatePicker></mat-datepicker>
+          <shared-ui-input-error [control]="formGroup.get('paymentDate')" controlName="Payment date"></shared-ui-input-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Notes (printed on the invoice)</mat-label>
+          <textarea matInput rows="2" formControlName="notes"></textarea>
+        </mat-form-field>
+      </div>
+
+      <h3 class="section-title">Tax</h3>
+      <div class="tax-preview">
+        @if (taxPreviewLoading) {
+          <mat-progress-spinner diameter="24" mode="indeterminate"></mat-progress-spinner>
+        } @else if (taxPreviewError) {
+          <p class="tax-error">{{ taxPreviewError }}</p>
+        } @else if (taxPreview) {
+          <dl class="tax-rows">
+            <dt>Taxable value</dt>
+            <dd>{{ formatMoney(taxPreview.taxableAmount, taxPreview.currency) }}</dd>
+            @for (row of taxRows(); track row.label) {
+              <dt>{{ row.label }} &#64; {{ row.percentage }}%</dt>
+              <dd>{{ formatMoney(row.amount, taxPreview.currency) }}</dd>
+            }
+            <dt class="total">Total</dt>
+            <dd class="total">{{ formatMoney(taxPreview.totalAmount, taxPreview.currency) }}</dd>
+          </dl>
+          @if (locked) {
+            <p class="tax-note">Stored when the number was issued; it is not recalculated.</p>
+          }
+        } @else {
+          <p class="tax-note">Fill in the franchise, bill-to country and State, quantity and rate to see the tax.</p>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button mat-stroked-button type="button" (click)="onCancel()">Back</button>
+        @if (!cancelled) {
+          <button mat-raised-button color="primary" type="submit" [disabled]="saving">
+            <mat-icon>save</mat-icon>
+            Save
+          </button>
+        }
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

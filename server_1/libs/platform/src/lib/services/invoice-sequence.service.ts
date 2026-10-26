@@ -18,6 +18,8 @@ export class InvoiceSequenceService {
    * @param franchiseCode
    * @param invoiceType - Type of invoice: 'PRODUCT' or 'SERVICE'
    * @param trx - Database transaction
+   * @param invoiceDate - Optional invoice date (YYYY-MM-DD). The FY comes from it when given,
+   *   otherwise from today. Workshop invoices pass it; member and product invoices don't.
    * @returns Generated invoice number in format: {entityCode}/{financialYear}/{typeCode}/{sequenceNumber}
    */
   async generateInvoiceNumber(
@@ -26,8 +28,12 @@ export class InvoiceSequenceService {
     franchiseCode: string,
     invoiceType: BusinessTypeEnum,
     trx: Transaction,
+    invoiceDate?: string,
   ) {
-    const fy = this.getFinancialYear(new Date(), startMonth);
+    const fy = this.getFinancialYear(
+      invoiceDate ? this.parseDateOnly(invoiceDate) : new Date(),
+      startMonth,
+    );
     const [sequence] = await this.invoiceSequenceModel.findOrCreate({
       where: {
         franchiseId: franchiseId,
@@ -42,6 +48,27 @@ export class InvoiceSequenceService {
     await sequence.save({ transaction: trx });
     const typeCode = invoiceType === BusinessTypeEnum.PRODUCT ? 'P' : 'S';
     return `${franchiseCode}/${fy}/${typeCode}/${String(sequence.currentNumber).padStart(6, '0')}`;
+  }
+
+  /**
+   * The FY label ("2026-27", or "2026" for a January start) that a date falls into.
+   * @param date - A Date, or a YYYY-MM-DD string
+   * @param fyStartMonth - The franchise's FY start month
+   */
+  financialYearFor(date: Date | string, fyStartMonth: number): string {
+    return this.getFinancialYear(typeof date === 'string' ? this.parseDateOnly(date) : date, fyStartMonth);
+  }
+
+  /**
+   * YYYY-MM-DD as a local date. `new Date('2026-04-01')` is UTC midnight, which is
+   * 31 Mar in a negative-offset timezone and would pick the wrong FY.
+   */
+  private parseDateOnly(value: string): Date {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+    if (!match) {
+      throw new Error(`Invalid invoice date: ${value}`);
+    }
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
   }
 
   private getFinancialYear(date: Date, fyStartMonth: number) {
