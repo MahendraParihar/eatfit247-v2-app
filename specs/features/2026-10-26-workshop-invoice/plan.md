@@ -144,14 +144,16 @@
 
 ## Group 8: Local walk-through with the real request
 
-- [ ] 8.1 On a DB matching this branch's schema (see the validation pre-condition), create the three invoices as Financial Manager: 200 / 200 / 174 × ₹850 for EFMUM, **PENDING**, invoice date and supply date 11 Aug 2026, with payment details filled. Use placeholder bill-to details locally; the admin enters the real organiser details in production.
-- [ ] 8.2 Run the script dry, then with `--apply`. Check:
+- [x] 8.1 On a DB matching this branch's schema (see the validation pre-condition), create the three invoices as Financial Manager: 200 / 200 / 174 × ₹850 for EFMUM, **PENDING**, invoice date and supply date 11 Aug 2026, with payment details filled. Use placeholder bill-to details locally; the admin enters the real organiser details in production.
+- [x] 8.2 Run the script dry, then with `--apply`. Check:
   - the three invoices are PAID with numbers N+1…N+3;
   - totals are ₹200,600 / ₹200,600 / ₹174,522;
   - every later number moved up by 3 and the counter grew by 3;
   - a member invoice PDF downloaded after the run shows its new number;
   - the workshop PDFs show the description, qty, rate, SAC, tax split, date of supply and amount in words.
-- [ ] 8.3 Create one more test workshop invoice and mark it PAID: it takes the next number with no gap. Cancel it: the number stays and the PDF says CANCELLED.
+- [x] 8.3 Create one more test workshop invoice and mark it PAID: it takes the next number with no gap. Cancel it: the number stays and the PDF says CANCELLED.
+
+- **As built:** run on `eatfit_wi8`, a fresh clone of the 14 Oct production copy at 136 + 151 (S 1…491, counter 491), through admin-api :3002 as a QA Financial Manager, with placeholder bill-to details. See the G8 gate-log row.
 
 ## Group 9: Close-out
 
