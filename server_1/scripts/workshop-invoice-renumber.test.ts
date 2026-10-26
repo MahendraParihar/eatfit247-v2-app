@@ -52,6 +52,7 @@ const connect = async (database: string): Promise<PgClient> => {
 };
 
 let dbCounter = 0;
+let csvCounter = 0;
 async function cloneDb(): Promise<string> {
   const name = `wi_renumber_test_${process.pid}_${++dbCounter}`;
   const admin = await connect('postgres');
@@ -122,8 +123,10 @@ interface RunResult {
 
 function runScript(database: string, args: string[]): Promise<RunResult> {
   const started = Date.now();
+  // Keep every CSV in the temp folder, never in server_1.
+  const csvArgs = args.includes('--csv') ? [] : ['--csv', path.join(outDir, `run-${++csvCounter}.csv`)];
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, ['--experimental-strip-types', '--no-warnings', SCRIPT, ...args], {
+    const child = spawn(process.execPath, ['--experimental-strip-types', '--no-warnings', SCRIPT, ...args, ...csvArgs], {
       cwd: process.cwd(),
       env: { ...process.env, DB_NAME: database },
     });
