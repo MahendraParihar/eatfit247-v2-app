@@ -158,7 +158,7 @@
 ## Group 9: Close-out
 
 - [ ] 9.1 Every check in `validation.md` passes; the deep review by subagents is done (bugs, franchise leakage, invoice gaps, conventions).
-- [ ] 9.2 `requirements.md` status → Shipped. Add roadmap row **4.15 Workshop invoices** ✅ with a link, and note:
+- [ ] 9.2 (roadmap row 4.15 added as 🚧 code complete; status → Shipped after the production run) `requirements.md` status → Shipped. Add roadmap row **4.15 Workshop invoices** ✅ with a link, and note:
   - the merge-forward follow-up: move to `InvoiceIssueService` when 4.5–4.14 lands, running the renumbering first;
   - the owner-approved exception to "issued invoices are never changed".
-- [ ] 9.3 Note for replanning: should the 4.5–4.14 branch adopt the optional `invoiceDate` from group 3?
+- [x] 9.3 (noted: yes, adopt it; 4.5–4.14's InvoiceIssueService should take the invoice date the same way) Note for replanning: should the 4.5–4.14 branch adopt the optional `invoiceDate` from group 3?
